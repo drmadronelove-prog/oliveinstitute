@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { withBasePath } from "@/lib/basePath";
 
 export type MaterialItem = {
   id: string;
@@ -33,7 +34,7 @@ export function MaterialsList({
 }) {
   if (materials.length === 0) {
     return (
-      <p className="font-serif text-sm text-[var(--color-ink-muted)]">
+      <p className="font-body text-sm text-[var(--color-ink-muted)]">
         No materials have been added yet.
       </p>
     );
@@ -43,13 +44,17 @@ export function MaterialsList({
     <ul className="flex flex-col gap-4">
       {materials.map((material) => {
         const embedUrl = material.type === "VIDEO" ? youTubeEmbedUrl(material.url) : null;
+        // Uploaded files are stored as "/api/files/…"; external links are
+        // absolute URLs and must not be prefixed.
+        const href =
+          material.type === "PDF" ? withBasePath(material.url) : material.url;
 
         return (
-          <li key={material.id} className="rounded-lg bg-[var(--color-cream)] p-4">
+          <li key={material.id} className="rounded-lg bg-[var(--color-sage-pale)] p-4">
             <div className="mb-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Badge>{material.type}</Badge>
-                <span className="font-serif text-sm font-medium text-[var(--color-ink)]">
+                <span className="font-body text-sm font-medium text-[var(--color-ink)]">
                   {material.title}
                 </span>
               </div>
@@ -58,10 +63,10 @@ export function MaterialsList({
 
             {material.type === "PDF" ? (
               <a
-                href={material.url}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-serif text-sm text-[var(--color-forest)] underline underline-offset-2"
+                className="font-body text-sm text-[var(--color-olive)] underline underline-offset-2"
               >
                 View / download PDF ↗
               </a>
@@ -79,7 +84,7 @@ export function MaterialsList({
                 href={material.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-serif text-sm text-[var(--color-forest)] underline underline-offset-2"
+                className="font-body text-sm text-[var(--color-olive)] underline underline-offset-2"
               >
                 {material.type === "VIDEO" ? "Watch video ↗" : "Open link ↗"}
               </a>

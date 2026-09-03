@@ -24,7 +24,7 @@ export function DeleteMaterialButton({
       <button
         type="submit"
         disabled={pending}
-        className="font-serif text-xs text-red-700 underline underline-offset-2 disabled:opacity-60"
+        className="font-body text-xs text-red-700 underline underline-offset-2 disabled:opacity-60"
       >
         {pending ? "Removing…" : "Remove"}
       </button>

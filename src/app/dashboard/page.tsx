@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { signOut } from "@/lib/auth";
+import { withBasePath } from "@/lib/basePath";
 import { requireSession } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/shell/AppShell";
@@ -6,14 +8,14 @@ import { HeroCard } from "@/components/dashboard/HeroCard";
 import { RolePanel } from "@/components/dashboard/RolePanel";
 
 async function loadRolePanelData(userId: string, role: string) {
-  if (role === "PROFESSOR") {
+  if (role === "INSTRUCTOR") {
     const courses = await prisma.course.findMany({
       where: { professorId: userId },
       orderBy: { createdAt: "desc" },
       include: { _count: { select: { enrollments: true } } },
     });
     return {
-      role: "PROFESSOR" as const,
+      role: "INSTRUCTOR" as const,
       courses: courses.map((course) => ({
         id: course.id,
         title: course.title,
@@ -24,14 +26,14 @@ async function loadRolePanelData(userId: string, role: string) {
     };
   }
 
-  if (role === "STUDENT") {
+  if (role === "LEARNER") {
     const enrollments = await prisma.enrollment.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       include: { course: true },
     });
     return {
-      role: "STUDENT" as const,
+      role: "LEARNER" as const,
       courses: enrollments.map((enrollment) => ({
         id: enrollment.course.id,
         title: enrollment.course.title,
@@ -53,7 +55,7 @@ function AccountBar({
 }) {
   return (
     <div className="mb-8 flex items-center justify-between gap-4">
-      <p className="font-serif text-sm text-[var(--color-ink-muted)]">
+      <p className="font-body text-sm text-[var(--color-ink-muted)]">
         Signed in as{" "}
         <span className="font-medium text-[var(--color-ink)]">{name}</span>{" "}
         &middot;{" "}
@@ -62,21 +64,21 @@ function AccountBar({
         </span>
       </p>
       <div className="flex items-center gap-4">
-        <a
+        <Link
           href="/settings/password"
-          className="font-serif text-sm text-[var(--color-forest)] underline underline-offset-2 hover:text-[var(--color-forest-dark)]"
+          className="font-body text-sm text-[var(--color-olive)] underline underline-offset-2 hover:text-[var(--color-olive-dark)]"
         >
           Change password
-        </a>
+        </Link>
         <form
           action={async () => {
             "use server";
-            await signOut({ redirectTo: "/login" });
+            await signOut({ redirectTo: withBasePath("/login") });
           }}
         >
           <button
             type="submit"
-            className="font-serif text-sm text-[var(--color-forest)] underline underline-offset-2 hover:text-[var(--color-forest-dark)]"
+            className="font-body text-sm text-[var(--color-olive)] underline underline-offset-2 hover:text-[var(--color-olive-dark)]"
           >
             Sign out
           </button>
@@ -89,7 +91,7 @@ function AccountBar({
 export default async function DashboardPage() {
   const session = await requireSession();
 
-  if (session.user.role === "STUDENT") {
+  if (session.user.role === "LEARNER") {
     const rolePanelData = await loadRolePanelData(session.user.id, session.user.role);
     return (
       <AppShell>

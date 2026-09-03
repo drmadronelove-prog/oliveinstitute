@@ -24,7 +24,7 @@ export function UnenrollButton({
       <button
         type="submit"
         disabled={pending}
-        className="font-serif text-xs text-[var(--color-forest)] underline underline-offset-2 hover:text-[var(--color-forest-dark)] disabled:opacity-60"
+        className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2 hover:text-[var(--color-olive-dark)] disabled:opacity-60"
       >
         {pending ? "Removing…" : "Unenroll"}
       </button>

@@ -28,7 +28,8 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run dev",
-    url: "http://localhost:3000",
+    // The app is mounted under basePath, so "/" is a 404 — poll a real page.
+    url: "http://localhost:3000/institute/login",
     reuseExistingServer: true,
     timeout: 60_000,
   },

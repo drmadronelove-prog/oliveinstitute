@@ -1,37 +1,109 @@
 import { TopNav } from "@/components/shell/TopNav";
+import { Wordmark } from "@/components/shell/Wordmark";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { HeroCard } from "@/components/dashboard/HeroCard";
+import { CourseTile } from "@/components/dashboard/CourseTile";
+import { MaterialsList } from "@/components/course/MaterialsList";
 
-const SWATCHES: Array<{ name: string; token: string }> = [
-  { name: "Forest", token: "var(--color-forest)" },
-  { name: "Forest Dark", token: "var(--color-forest-dark)" },
-  { name: "Sage", token: "var(--color-sage)" },
-  { name: "Sage Dark", token: "var(--color-sage-dark)" },
-  { name: "Cream", token: "var(--color-cream)" },
-  { name: "Cream Warm", token: "var(--color-cream-warm)" },
-  { name: "Gold", token: "var(--color-gold)" },
-  { name: "Gold Light", token: "var(--color-gold-light)" },
-  { name: "Card", token: "var(--color-card)" },
-  { name: "Ink", token: "var(--color-ink)" },
-  { name: "Ink Muted", token: "var(--color-ink-muted)" },
+type Swatch = { name: string; token: string; hex: string; note?: string };
+
+const BRAND: Swatch[] = [
+  { name: "Deep olive", token: "--color-olive", hex: "#3F4F33", note: "Nav, headings" },
+  { name: "Sage", token: "--color-sage", hex: "#7E9068", note: "Badges, hero" },
+  { name: "Pale sage", token: "--color-sage-pale", hex: "#EDF0E8", note: "Inset rows" },
+  { name: "Warm ivory", token: "--color-ivory", hex: "#FAF8F2", note: "Page ground" },
+  { name: "Terracotta", token: "--color-terracotta", hex: "#A0553A", note: "Accent" },
+  { name: "Muted gold", token: "--color-gold", hex: "#A98B4F", note: "Dividers" },
+];
+
+const SHADES: Swatch[] = [
+  { name: "Olive dark", token: "--color-olive-dark", hex: "#32402A" },
+  { name: "Olive light", token: "--color-olive-light", hex: "#55684A" },
+  { name: "Sage dark", token: "--color-sage-dark", hex: "#667554" },
+  { name: "Sage light", token: "--color-sage-light", hex: "#98A886" },
+  { name: "Pale sage top", token: "--color-sage-pale-top", hex: "#F5F7F1" },
+  { name: "Pale sage deep", token: "--color-sage-pale-deep", hex: "#E0E5D8" },
+  { name: "Terracotta dark", token: "--color-terracotta-dark", hex: "#83432D" },
+  { name: "Terracotta light", token: "--color-terracotta-light", hex: "#B96B4F" },
+  { name: "Gold dark", token: "--color-gold-dark", hex: "#856C3B" },
+  { name: "Gold light", token: "--color-gold-light", hex: "#C0A369" },
+  { name: "Card", token: "--color-card", hex: "#FFFFFF" },
+  { name: "Ink", token: "--color-ink", hex: "#2B3323" },
+  { name: "Ink muted", token: "--color-ink-muted", hex: "#5A6350" },
+];
+
+const SAMPLE_MATERIALS = [
+  {
+    id: "m1",
+    type: "PDF" as const,
+    title: "Course reader (PDF)",
+    url: "/api/files/demo/reader.pdf",
+    uploadedAt: new Date("2026-01-01"),
+  },
+  {
+    id: "m2",
+    type: "LINK" as const,
+    title: "Further reading",
+    url: "https://example.org/reading",
+    uploadedAt: new Date("2026-01-01"),
+  },
 ];
 
 function Section({
   title,
+  description,
   children,
 }: {
   title: string;
+  description?: string;
   children: React.ReactNode;
 }) {
   return (
     <section className="mb-14">
-      <h2 className="mb-5 font-heading text-2xl italic text-[var(--color-forest)]">
+      <h2 className="mb-1 font-heading text-2xl italic text-[var(--color-olive)]">
         {title}
       </h2>
+      {description ? (
+        <p className="mb-5 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
+          {description}
+        </p>
+      ) : (
+        <div className="mb-5" />
+      )}
       {children}
     </section>
+  );
+}
+
+function SwatchGrid({ swatches }: { swatches: Swatch[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+      {swatches.map((swatch) => (
+        <div
+          key={swatch.token}
+          className="overflow-hidden rounded-lg ring-1 ring-black/5"
+        >
+          <div
+            className="h-16 w-full"
+            style={{ backgroundColor: `var(${swatch.token})` }}
+          />
+          <div className="bg-[var(--color-card)] px-3 py-2">
+            <p className="font-body text-xs font-medium text-[var(--color-ink)]">
+              {swatch.name}
+            </p>
+            <p className="font-body text-[0.6875rem] text-[var(--color-ink-muted)]">
+              {swatch.hex}
+              {swatch.note ? ` · ${swatch.note}` : ""}
+            </p>
+            <code className="mt-1 block font-body text-[0.625rem] text-[var(--color-ink-muted)]">
+              {swatch.token}
+            </code>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -41,64 +113,96 @@ export default function StyleGuidePage() {
       <TopNav />
 
       <div className="mx-auto w-full max-w-7xl px-6 py-10">
-        <h1 className="mb-2 font-heading text-4xl font-semibold text-[var(--color-forest)]">
+        <h1 className="mb-2 font-heading text-4xl font-semibold text-[var(--color-olive)]">
           Style Guide
         </h1>
-        <p className="mb-12 max-w-prose font-serif text-[var(--color-ink-muted)]">
-          Every shared component in isolation, matching the Olive Institute
-          reference dashboard: warm cream backgrounds, forest green and sage
-          accents, gold dividers, and serif type throughout.
+        <p className="mb-12 max-w-prose font-body text-[var(--color-ink-muted)]">
+          Every design token and shared component in isolation. The palette is
+          deep olive and sage on warm ivory, with terracotta as the single
+          accent and muted gold for fine rules. Headings are Cormorant
+          Garamond; body and UI text are DM Sans.
         </p>
 
-        <Section title="Color palette">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {SWATCHES.map((swatch) => (
-              <div key={swatch.name} className="overflow-hidden rounded-lg ring-1 ring-black/5">
-                <div
-                  className="h-16 w-full"
-                  style={{ backgroundColor: swatch.token }}
-                />
-                <div className="bg-[var(--color-card)] px-3 py-2 font-serif text-xs text-[var(--color-ink)]">
-                  {swatch.name}
-                </div>
-              </div>
-            ))}
-          </div>
+        <Section
+          title="Brand palette"
+          description="The six brand colors. Everything else on this page is built from these."
+        >
+          <SwatchGrid swatches={BRAND} />
         </Section>
 
-        <Section title="Typography">
+        <Section
+          title="Derived shades"
+          description="Hover, gradient, divider, and type steps derived from the brand colors."
+        >
+          <SwatchGrid swatches={SHADES} />
+        </Section>
+
+        <Section
+          title="Typography"
+          description="font-heading is Cormorant Garamond; font-body is DM Sans. There is no font-serif utility."
+        >
           <div className="flex flex-col gap-3">
-            <p className="font-serif text-4xl font-semibold text-[var(--color-ink)]">
-              Heading / 4xl semibold
+            <p className="font-heading text-4xl font-semibold text-[var(--color-olive)]">
+              Heading / Cormorant Garamond 4xl semibold
             </p>
-            <p className="font-serif text-2xl italic text-[var(--color-forest)]">
-              Section heading / 2xl italic
+            <p className="font-heading text-2xl italic text-[var(--color-olive)]">
+              Section heading / Cormorant Garamond 2xl italic
             </p>
-            <p className="font-serif text-lg font-semibold text-[var(--color-ink)]">
-              Card title / lg semibold
+            <p className="font-heading text-lg font-semibold text-[var(--color-ink)]">
+              Card title / Cormorant Garamond lg semibold
             </p>
-            <p className="font-serif text-base text-[var(--color-ink)]">
-              Body text / base — the quick brown fox jumps over the lazy dog.
+            <p className="font-body text-base text-[var(--color-ink)]">
+              Body text / DM Sans base — the quick brown fox jumps over the
+              lazy dog.
             </p>
-            <p className="font-serif text-sm text-[var(--color-ink-muted)]">
-              Muted / small — used for metadata like dates and captions.
+            <p className="font-body text-sm text-[var(--color-ink-muted)]">
+              Muted / DM Sans small — metadata like dates and captions.
             </p>
-            <p className="font-serif text-xs uppercase tracking-[0.18em] text-[var(--color-forest)]">
+            <p className="font-body text-xs uppercase tracking-[0.18em] text-[var(--color-olive)]">
               Small caps label
             </p>
           </div>
         </Section>
 
-        <Section title="Quicklink buttons (neumorphic)">
+        <Section
+          title="Wordmark"
+          description="Stands in for a logo asset. tone=light sits on olive; tone=dark sits on ivory."
+        >
+          <div className="flex flex-col gap-4">
+            <div className="rounded-lg bg-[var(--color-olive)] px-6 py-4">
+              <Wordmark />
+            </div>
+            <div className="rounded-lg bg-[var(--color-ivory)] px-6 py-4 ring-1 ring-black/5">
+              <Wordmark tone="dark" />
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Top nav">
+          <div className="overflow-hidden rounded-lg ring-1 ring-black/5">
+            <TopNav />
+          </div>
+        </Section>
+
+        <Section
+          title="Sidebar"
+          description="Rendered only for learners; lists their enrolled courses."
+        >
           <div className="max-w-xs">
-            <Sidebar />
+            <Sidebar
+              learnerCourses={[
+                { id: "c1", title: "Foundations of Practice" },
+                { id: "c2", title: "Readings in Ethics" },
+              ]}
+            />
           </div>
         </Section>
 
         <Section title="Badges">
-          <div className="flex gap-3">
-            <Badge>Registration</Badge>
-            <Badge>Course Materials</Badge>
+          <div className="flex flex-wrap gap-3">
+            <Badge>PDF</Badge>
+            <Badge>LINK</Badge>
+            <Badge>VIDEO</Badge>
             <Badge>Enrolled</Badge>
           </div>
         </Section>
@@ -106,26 +210,72 @@ export default function StyleGuidePage() {
         <Section title="Hero card">
           <HeroCard
             title="Olive Institute"
-            subtext="A structured path of study and practice for students committed to deepening their understanding of the Buddhist tradition."
+            subtext="Self-paced courses you can start whenever you're ready, and work through at your own pace."
           />
         </Section>
 
-        <Section title="Generic card">
-          <Card className="max-w-md">
-            <p className="font-serif text-sm text-[var(--color-ink-muted)]">
-              The base <code>Card</code> component — a white, rounded-corner
-              surface used as the building block for course tiles and other
-              content panels.
-            </p>
+        <Section
+          title="Course tiles"
+          description="Default and muted treatments, with and without a secondary label."
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <CourseTile
+              href="/style-guide"
+              title="Foundations of Practice"
+              term="Self-paced"
+              credits={3}
+              secondaryLabel="12 enrolled"
+            />
+            <CourseTile
+              href="/style-guide"
+              title="Readings in Ethics"
+              term="Self-paced"
+              credits={2}
+            />
+            <CourseTile
+              href="/style-guide"
+              title="Archived Seminar"
+              term="Self-paced"
+              credits={1}
+              secondaryLabel="Closed"
+              muted
+            />
+          </div>
+        </Section>
+
+        <Section
+          title="Cards"
+          description="The base surface. accentColor adds a left rule."
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <p className="font-body text-sm text-[var(--color-ink-muted)]">
+                The base <code>Card</code> — a white, rounded surface used as
+                the building block for every content panel.
+              </p>
+            </Card>
+            <Card accentColor="var(--color-terracotta)">
+              <p className="font-body text-sm text-[var(--color-ink-muted)]">
+                The same card with a terracotta accent rule, used to draw the
+                eye to a single panel.
+              </p>
+            </Card>
+          </div>
+        </Section>
+
+        <Section
+          title="Materials list"
+          description="How course materials render for instructors and learners."
+        >
+          <Card>
+            <MaterialsList materials={SAMPLE_MATERIALS} />
           </Card>
         </Section>
 
-        <Section title="Full shell preview">
-          <p className="mb-4 font-serif text-sm text-[var(--color-ink-muted)]">
-            The top nav and sidebar above are the same components rendered
-            on every dashboard page — only the main panel content changes
-            per role. See <code>/dashboard</code> for the assembled shell.
-          </p>
+        <Section title="Empty state">
+          <Card>
+            <MaterialsList materials={[]} />
+          </Card>
         </Section>
       </div>
     </div>

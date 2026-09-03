@@ -14,10 +14,10 @@ export default async function AdminUsersPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-forest)]">
+      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-olive)]">
         Manage users
       </h1>
-      <p className="mb-8 max-w-prose font-serif text-sm text-[var(--color-ink-muted)]">
+      <p className="mb-8 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
         Accounts are admin-created — there is no public sign-up. Set an
         initial password here and share it with the new user out of band;
         they can change it from Settings once signed in.
@@ -29,7 +29,7 @@ export default async function AdminUsersPage() {
             All users
           </h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-left font-serif text-sm">
+            <table className="w-full text-left font-body text-sm">
               <thead>
                 <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
                   <th className="py-2 pr-4">Name</th>
@@ -57,7 +57,7 @@ export default async function AdminUsersPage() {
                         <ResetPasswordButton userId={user.id} />
                         <Link
                           href={`/admin/users/${user.id}/email`}
-                          className="font-serif text-xs text-[var(--color-forest)] underline underline-offset-2"
+                          className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2"
                         >
                           Email
                         </Link>

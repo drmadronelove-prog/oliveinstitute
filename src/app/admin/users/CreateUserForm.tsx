@@ -14,40 +14,40 @@ export function CreateUserForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div>
-        <label className="mb-1 block font-serif text-sm font-medium text-[var(--color-ink)]">
+        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
           Name
         </label>
         <input
           name="name"
           type="text"
           required
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-serif text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-slate-blue)]"
+          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
       </div>
 
       <div>
-        <label className="mb-1 block font-serif text-sm font-medium text-[var(--color-ink)]">
+        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
           Email
         </label>
         <input
           name="email"
           type="email"
           required
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-serif text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-slate-blue)]"
+          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
       </div>
 
       <div>
-        <label className="mb-1 block font-serif text-sm font-medium text-[var(--color-ink)]">
+        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
           Role
         </label>
         <select
           name="role"
-          defaultValue="STUDENT"
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-serif text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-slate-blue)]"
+          defaultValue="LEARNER"
+          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         >
-          <option value="STUDENT">Student</option>
-          <option value="PROFESSOR">Professor</option>
+          <option value="LEARNER">Learner</option>
+          <option value="INSTRUCTOR">Instructor</option>
           <option value="ADMIN">Admin</option>
         </select>
       </div>
@@ -55,19 +55,19 @@ export function CreateUserForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-[var(--color-forest)] px-4 py-2 font-serif text-sm font-medium text-white transition-colors hover:bg-[var(--color-forest-dark)] disabled:opacity-60"
+        className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
       >
         {pending ? "Creating…" : "Create user"}
       </button>
 
       {state.status === "error" ? (
-        <p className="font-serif text-sm text-red-700" role="alert">
+        <p className="font-body text-sm text-red-700" role="alert">
           {state.message}
         </p>
       ) : null}
 
       {state.status === "success" ? (
-        <div className="rounded-md bg-[var(--color-sage)]/10 p-3 font-serif text-sm text-[var(--color-ink)]">
+        <div className="rounded-md bg-[var(--color-sage)]/10 p-3 font-body text-sm text-[var(--color-ink)]">
           <p className="mb-1 font-medium">
             Account created for {state.createdEmail}.
           </p>

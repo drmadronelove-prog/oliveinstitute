@@ -25,7 +25,7 @@ export function ReassignProfessorForm({
       <select
         name="professorId"
         defaultValue={currentProfessorId}
-        className="rounded-md border border-black/10 bg-white px-3 py-2 font-serif text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-slate-blue)]"
+        className="rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
       >
         {professors.map((professor) => (
           <option key={professor.id} value={professor.id}>
@@ -36,15 +36,15 @@ export function ReassignProfessorForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md border border-[var(--color-forest)] px-3 py-2 font-serif text-sm text-[var(--color-forest)] transition-colors hover:bg-[var(--color-forest)] hover:text-white disabled:opacity-60"
+        className="rounded-md border border-[var(--color-olive)] px-3 py-2 font-body text-sm text-[var(--color-olive)] transition-colors hover:bg-[var(--color-olive)] hover:text-white disabled:opacity-60"
       >
         {pending ? "Saving…" : "Save"}
       </button>
       {state.status === "error" ? (
-        <span className="font-serif text-xs text-red-700">{state.message}</span>
+        <span className="font-body text-xs text-red-700">{state.message}</span>
       ) : null}
       {state.status === "success" ? (
-        <span className="font-serif text-xs text-[var(--color-forest)]">
+        <span className="font-body text-xs text-[var(--color-olive)]">
           Saved.
         </span>
       ) : null}

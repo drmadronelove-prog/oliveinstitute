@@ -43,13 +43,13 @@ export async function GET(
 
   let allowed = role === Role.ADMIN;
 
-  if (!allowed && role === Role.PROFESSOR) {
+  if (!allowed && role === Role.INSTRUCTOR) {
     const course = await prisma.course.findUnique({
       where: { id: material.courseId },
     });
     allowed = course?.professorId === userId;
   }
-  if (!allowed && role === Role.STUDENT) {
+  if (!allowed && role === Role.LEARNER) {
     const enrollment = await prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId: material.courseId } },
     });

@@ -35,13 +35,13 @@ export default async function AdminCourseDetailPage({
 
   const [professors, enrolledStudents] = await Promise.all([
     prisma.user.findMany({
-      where: { role: Role.PROFESSOR },
+      where: { role: Role.INSTRUCTOR },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
     prisma.user.findMany({
       where: {
-        role: Role.STUDENT,
+        role: Role.LEARNER,
         id: { notIn: course.enrollments.map((e) => e.user.id) },
       },
       orderBy: { name: "asc" },
@@ -51,16 +51,16 @@ export default async function AdminCourseDetailPage({
 
   return (
     <AppShell>
-      <p className="mb-2 font-serif text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
+      <p className="mb-2 font-body text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
         <Link href="/admin/courses" className="underline underline-offset-2">
           Manage courses
         </Link>{" "}
         / {course.title}
       </p>
-      <h1 className="mb-1 font-heading text-3xl font-semibold text-[var(--color-forest)]">
+      <h1 className="mb-1 font-heading text-3xl font-semibold text-[var(--color-olive)]">
         {course.title}
       </h1>
-      <p className="mb-8 font-serif text-sm text-[var(--color-ink-muted)]">
+      <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
         {course.term} &middot; {course.credits} credits
       </p>
 
@@ -68,7 +68,7 @@ export default async function AdminCourseDetailPage({
         <div className="flex flex-col gap-8">
           <Card>
             <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
-              Professor
+              Instructor
             </h2>
             <ReassignProfessorForm
               courseId={course.id}
@@ -86,15 +86,15 @@ export default async function AdminCourseDetailPage({
 
           <Card>
             <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
-              Enrolled students
+              Enrolled learners
             </h2>
             {course.enrollments.length === 0 ? (
-              <p className="font-serif text-sm text-[var(--color-ink-muted)]">
-                No students enrolled yet.
+              <p className="font-body text-sm text-[var(--color-ink-muted)]">
+                No learners enrolled yet.
               </p>
             ) : (
               <div className="overflow-x-auto">
-              <table className="w-full text-left font-serif text-sm">
+              <table className="w-full text-left font-body text-sm">
                 <thead>
                   <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
                     <th className="py-2 pr-4">Name</th>
@@ -127,7 +127,7 @@ export default async function AdminCourseDetailPage({
 
         <Card>
           <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
-            Enroll a student
+            Enroll a learner
           </h2>
           <EnrollStudentForm courseId={course.id} students={enrolledStudents} />
         </Card>

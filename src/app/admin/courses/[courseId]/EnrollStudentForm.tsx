@@ -23,9 +23,9 @@ export function EnrollStudentForm({
       <select
         name="studentId"
         required
-        className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-serif text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-slate-blue)]"
+        className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
       >
-        <option value="">Select a student…</option>
+        <option value="">Select a learner…</option>
         {students.map((student) => (
           <option key={student.id} value={student.id}>
             {student.name}
@@ -36,25 +36,25 @@ export function EnrollStudentForm({
       <button
         type="submit"
         disabled={pending || students.length === 0}
-        className="rounded-md bg-[var(--color-forest)] px-4 py-2 font-serif text-sm font-medium text-white transition-colors hover:bg-[var(--color-forest-dark)] disabled:opacity-60"
+        className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
       >
-        {pending ? "Enrolling…" : "Enroll student"}
+        {pending ? "Enrolling…" : "Enroll learner"}
       </button>
 
       {students.length === 0 ? (
-        <p className="font-serif text-xs text-[var(--color-ink-muted)]">
-          All students are already enrolled, or no student accounts exist
+        <p className="font-body text-xs text-[var(--color-ink-muted)]">
+          All learners are already enrolled, or no learner accounts exist
           yet.
         </p>
       ) : null}
 
       {state.status === "error" ? (
-        <p className="font-serif text-sm text-red-700" role="alert">
+        <p className="font-body text-sm text-red-700" role="alert">
           {state.message}
         </p>
       ) : null}
       {state.status === "success" ? (
-        <p className="font-serif text-sm text-[var(--color-forest)]">
+        <p className="font-body text-sm text-[var(--color-olive)]">
           {state.message}
         </p>
       ) : null}

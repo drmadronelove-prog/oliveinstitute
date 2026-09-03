@@ -34,7 +34,7 @@ export async function addMaterialAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const session = await requireRole([Role.PROFESSOR, Role.ADMIN]);
+  const session = await requireRole([Role.INSTRUCTOR, Role.ADMIN]);
 
   const courseId = String(formData.get("courseId") ?? "");
   const type = formData.get("type");
@@ -112,7 +112,7 @@ export async function deleteMaterialAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const session = await requireRole([Role.PROFESSOR, Role.ADMIN]);
+  const session = await requireRole([Role.INSTRUCTOR, Role.ADMIN]);
 
   const parsed = deleteSchema.safeParse({
     materialId: formData.get("materialId"),
@@ -139,14 +139,14 @@ export async function deleteMaterialAction(
 
 const enrollSchema = z.object({
   courseId: z.string().trim().min(1),
-  studentId: z.string().trim().min(1, "Choose a student"),
+  studentId: z.string().trim().min(1, "Choose a learner"),
 });
 
 export async function enrollStudentAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const session = await requireRole([Role.PROFESSOR, Role.ADMIN]);
+  const session = await requireRole([Role.INSTRUCTOR, Role.ADMIN]);
 
   const parsed = enrollSchema.safeParse({
     courseId: formData.get("courseId"),
@@ -167,8 +167,8 @@ export async function enrollStudentAction(
   const student = await prisma.user.findUnique({
     where: { id: parsed.data.studentId },
   });
-  if (!student || student.role !== Role.STUDENT) {
-    return { status: "error", message: "Selected student is invalid." };
+  if (!student || student.role !== Role.LEARNER) {
+    return { status: "error", message: "Selected learner is invalid." };
   }
 
   const existing = await prisma.enrollment.findUnique({

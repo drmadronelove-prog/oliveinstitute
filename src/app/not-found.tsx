@@ -9,12 +9,12 @@ export default function NotFound() {
         <h1 className="mb-2 font-heading text-xl font-semibold text-[var(--color-ink)]">
           404 — Page not found
         </h1>
-        <p className="mb-4 font-serif text-sm text-[var(--color-ink-muted)]">
+        <p className="mb-4 font-body text-sm text-[var(--color-ink-muted)]">
           That page doesn&apos;t exist, or you don&apos;t have access to it.
         </p>
         <Link
           href="/dashboard"
-          className="font-serif text-sm text-[var(--color-forest)] underline underline-offset-2"
+          className="font-body text-sm text-[var(--color-olive)] underline underline-offset-2"
         >
           Return to your dashboard
         </Link>

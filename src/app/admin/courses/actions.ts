@@ -12,7 +12,7 @@ const createCourseSchema = z.object({
   term: z.string().trim().min(1, "Term is required").max(100),
   credits: z.coerce.number().int().min(0).max(20),
   meetingTimes: z.string().trim().max(200).optional().default(""),
-  professorId: z.string().trim().min(1, "Choose a professor"),
+  professorId: z.string().trim().min(1, "Choose an instructor"),
 });
 
 export type CreateCourseState = {
@@ -45,8 +45,8 @@ export async function createCourseAction(
   const professor = await prisma.user.findUnique({
     where: { id: parsed.data.professorId },
   });
-  if (!professor || professor.role !== Role.PROFESSOR) {
-    return { status: "error", message: "Selected professor is invalid." };
+  if (!professor || professor.role !== Role.INSTRUCTOR) {
+    return { status: "error", message: "Selected instructor is invalid." };
   }
 
   await prisma.course.create({

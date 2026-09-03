@@ -8,7 +8,7 @@ export default async function ChangePasswordPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-6 font-heading text-3xl font-semibold text-[var(--color-forest)]">
+      <h1 className="mb-6 font-heading text-3xl font-semibold text-[var(--color-olive)]">
         Change password
       </h1>
       <Card className="max-w-md">

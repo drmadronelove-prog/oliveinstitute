@@ -18,7 +18,7 @@ export default async function AdminCoursesPage() {
       },
     }),
     prisma.user.findMany({
-      where: { role: Role.PROFESSOR },
+      where: { role: Role.INSTRUCTOR },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
@@ -26,12 +26,12 @@ export default async function AdminCoursesPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-forest)]">
+      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-olive)]">
         Manage courses
       </h1>
-      <p className="mb-8 max-w-prose font-serif text-sm text-[var(--color-ink-muted)]">
-        Create courses, assign a professor, and manage each course&apos;s
-        enrolled students.
+      <p className="mb-8 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
+        Create courses, assign an instructor, and manage each course&apos;s
+        enrolled learners.
       </p>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -40,18 +40,18 @@ export default async function AdminCoursesPage() {
             All courses
           </h2>
           {courses.length === 0 ? (
-            <p className="font-serif text-sm text-[var(--color-ink-muted)]">
+            <p className="font-body text-sm text-[var(--color-ink-muted)]">
               No courses yet — create the first one.
             </p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left font-serif text-sm">
+              <table className="w-full text-left font-body text-sm">
                 <thead>
                   <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
                     <th className="py-2 pr-4">Title</th>
                     <th className="py-2 pr-4">Term</th>
                     <th className="py-2 pr-4">Credits</th>
-                    <th className="py-2 pr-4">Professor</th>
+                    <th className="py-2 pr-4">Instructor</th>
                     <th className="py-2 pr-4">Enrolled</th>
                     <th className="py-2" />
                   </tr>
@@ -67,7 +67,7 @@ export default async function AdminCoursesPage() {
                       <td className="py-3">
                         <Link
                           href={`/admin/courses/${course.id}`}
-                          className="font-serif text-xs text-[var(--color-forest)] underline underline-offset-2"
+                          className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2"
                         >
                           Manage →
                         </Link>

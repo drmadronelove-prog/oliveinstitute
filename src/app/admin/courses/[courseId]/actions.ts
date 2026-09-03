@@ -13,7 +13,7 @@ export type ActionState = {
 
 const enrollSchema = z.object({
   courseId: z.string().trim().min(1),
-  studentId: z.string().trim().min(1, "Choose a student"),
+  studentId: z.string().trim().min(1, "Choose a learner"),
 });
 
 export async function enrollStudentAction(
@@ -36,8 +36,8 @@ export async function enrollStudentAction(
   const student = await prisma.user.findUnique({
     where: { id: parsed.data.studentId },
   });
-  if (!student || student.role !== Role.STUDENT) {
-    return { status: "error", message: "Selected student is invalid." };
+  if (!student || student.role !== Role.LEARNER) {
+    return { status: "error", message: "Selected learner is invalid." };
   }
 
   const existing = await prisma.enrollment.findUnique({
@@ -88,12 +88,12 @@ export async function unenrollStudentAction(
 
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
 
-  return { status: "success", message: "Student unenrolled." };
+  return { status: "success", message: "Learner unenrolled." };
 }
 
 const reassignSchema = z.object({
   courseId: z.string().trim().min(1),
-  professorId: z.string().trim().min(1, "Choose a professor"),
+  professorId: z.string().trim().min(1, "Choose an instructor"),
 });
 
 export async function reassignProfessorAction(
@@ -116,8 +116,8 @@ export async function reassignProfessorAction(
   const professor = await prisma.user.findUnique({
     where: { id: parsed.data.professorId },
   });
-  if (!professor || professor.role !== Role.PROFESSOR) {
-    return { status: "error", message: "Selected professor is invalid." };
+  if (!professor || professor.role !== Role.INSTRUCTOR) {
+    return { status: "error", message: "Selected instructor is invalid." };
   }
 
   await prisma.course.update({
@@ -127,7 +127,7 @@ export async function reassignProfessorAction(
 
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
 
-  return { status: "success", message: `Professor set to ${professor.name}.` };
+  return { status: "success", message: `Instructor set to ${professor.name}.` };
 }
 
 const meetingTimesSchema = z.object({

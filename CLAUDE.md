@@ -6,7 +6,7 @@ data model; this file covers intent and the decisions already made.
 ## What this is
 
 A storefront for **self-paced** courses. Admins create accounts and
-courses; professors attach materials; students enroll and work through
+courses; instructors attach materials; learners enroll and work through
 them whenever they like.
 
 This repository began as a fork of SatiLMS, a cohort-based LMS, and was
@@ -41,18 +41,40 @@ by a single `init` migration matching the current schema.
 
 `src/lib/auth.ts`, `src/lib/rbac.ts`, `src/lib/storage.ts`,
 `src/lib/email.ts`, the `AppShell` shell and `ui/` components, and
-`/api/files`. `Role` still has `PROFESSOR` and `STUDENT` alongside `ADMIN`,
-and `Course` still has one owning professor.
+`/api/files`. `Role` still has two non-admin values alongside `ADMIN`, and
+`Course` still has one owning instructor.
 
 ## Known loose ends
 
 - `Course.meetingTimes` and its admin form survive the conversion even
   though `/schedule` is gone. It is unused by any remaining page and is a
   reasonable next thing to drop.
-- `public/brand/logo.png` is still the original Sati Center mark, renamed.
-  Replace it with real Olive Institute artwork.
+- There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
+  text wordmark; swap real artwork in there when it exists.
 - `docs/screenshots/` was removed as stale; regenerate if screenshots are
   wanted in the README again.
+- Route segments and Prisma fields still read `professor`/`student`
+  (`/professor/courses/[id]`, `Course.professorId`). Only the `Role` enum
+  values and user-facing wording were renamed — changing URLs and column
+  names is a separate, breaking change.
+- `Course.meetingTimes` and its admin form remain unused by any page.
+
+## Rebrand (phase 2)
+
+The Sati palette and typography were replaced wholesale:
+
+- **Palette** (`src/app/globals.css`): deep olive `#3F4F33`, sage
+  `#7E9068`, pale sage `#EDF0E8`, warm ivory `#FAF8F2`, terracotta
+  `#A0553A`, muted gold `#A98B4F`, plus derived shades. The old
+  forest/cream/slate-blue tokens are gone — don't reintroduce a cool
+  accent, terracotta is the one warm accent.
+- **Type**: Cormorant Garamond (`font-heading`) and DM Sans (`font-body`),
+  both via `next/font`. The `font-serif` utility was removed rather than
+  left pointing at a sans face.
+- **Roles**: `PROFESSOR` → `INSTRUCTOR`, `STUDENT` → `LEARNER`, migrated
+  with `ALTER TYPE ... RENAME VALUE` so existing rows keep their role.
+- **Base path**: the app is mounted at `/institute`; see README for the
+  three places that need `withBasePath()`.
 
 ## Working notes
 

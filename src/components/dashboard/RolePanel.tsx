@@ -12,23 +12,23 @@ type CourseSummary = {
 
 type RolePanelProps =
   | { role: "ADMIN" }
-  | { role: "PROFESSOR"; courses: (CourseSummary & { secondaryLabel: string })[] }
-  | { role: "STUDENT"; courses: CourseSummary[] };
+  | { role: "INSTRUCTOR"; courses: (CourseSummary & { secondaryLabel: string })[] }
+  | { role: "LEARNER"; courses: CourseSummary[] };
 
 export function RolePanel(props: RolePanelProps) {
   if (props.role === "ADMIN") {
     const toolButtonClassName =
-      "flex h-[100px] items-center rounded-[22px] border border-[var(--color-slate-blue-dark)]/40 bg-[var(--color-slate-blue)] px-[55px] opacity-60 transition-colors duration-150 hover:bg-[var(--color-slate-blue-dark)]";
+      "flex h-[100px] items-center rounded-[22px] border border-[var(--color-olive-dark)]/40 bg-[var(--color-olive)] px-[55px] opacity-60 transition-colors duration-150 hover:bg-[var(--color-olive-dark)]";
     const toolLabelClassName = "font-heading text-2xl font-semibold text-white";
 
     return (
       <div className="flex flex-col gap-[18px]">
-        <div className="flex flex-col gap-[5px] border-b border-[var(--color-forest)]/[0.14] pb-3">
-          <h2 className="font-heading text-2xl font-semibold text-[var(--color-forest)]">
+        <div className="flex flex-col gap-[5px] border-b border-[var(--color-olive)]/[0.14] pb-3">
+          <h2 className="font-heading text-2xl font-semibold text-[var(--color-olive)]">
             Admin tools
           </h2>
-          <p className="text-[13.5px] font-serif text-[#5a6360]">
-            Create and manage Professor and Student accounts, courses, and
+          <p className="text-[13.5px] font-body text-[#5a6360]">
+            Create and manage Instructor and Learner accounts, courses, and
             enrollment.
           </p>
         </div>
@@ -50,14 +50,14 @@ export function RolePanel(props: RolePanelProps) {
     );
   }
 
-  if (props.role === "STUDENT") {
+  if (props.role === "LEARNER") {
     return (
       <div>
         <h3 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
           Your courses
         </h3>
         {props.courses.length === 0 ? (
-          <p className="font-serif text-sm text-[var(--color-ink-muted)]">
+          <p className="font-body text-sm text-[var(--color-ink-muted)]">
             You aren&apos;t enrolled in any courses yet.
           </p>
         ) : (
@@ -84,9 +84,9 @@ export function RolePanel(props: RolePanelProps) {
         Your courses
       </h3>
       {props.courses.length === 0 ? (
-        <p className="font-serif text-sm text-[var(--color-ink-muted)]">
+        <p className="font-body text-sm text-[var(--color-ink-muted)]">
           You haven&apos;t been assigned any courses yet. Ask an admin to
-          assign you as professor on a course.
+          assign you as instructor on a course.
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -94,17 +94,17 @@ export function RolePanel(props: RolePanelProps) {
             <li key={course.id}>
               <Link
                 href={`/professor/courses/${course.id}`}
-                className="flex items-center justify-between gap-4 rounded-lg bg-[var(--color-cream)] px-4 py-3 transition-colors hover:bg-[var(--color-cream-deep)]"
+                className="flex items-center justify-between gap-4 rounded-lg bg-[var(--color-sage-pale)] px-4 py-3 transition-colors hover:bg-[var(--color-sage-pale-deep)]"
               >
                 <div>
-                  <p className="font-serif text-sm font-medium text-[var(--color-ink)]">
+                  <p className="font-body text-sm font-medium text-[var(--color-ink)]">
                     {course.title}
                   </p>
-                  <p className="font-serif text-xs text-[var(--color-ink-muted)]">
+                  <p className="font-body text-xs text-[var(--color-ink-muted)]">
                     {course.term} &middot; {course.credits} credits
                   </p>
                 </div>
-                <span className="font-serif text-xs text-[var(--color-ink-muted)]">
+                <span className="font-body text-xs text-[var(--color-ink-muted)]">
                   {course.secondaryLabel}
                 </span>
               </Link>

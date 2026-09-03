@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function GlobalError({
   error,
   reset,
@@ -13,12 +15,12 @@ export default function GlobalError({
         <h1 className="mb-2 font-heading text-xl font-semibold text-[var(--color-ink)]">
           Something went wrong
         </h1>
-        <p className="mb-4 font-serif text-sm text-[var(--color-ink-muted)]">
+        <p className="mb-4 font-body text-sm text-[var(--color-ink-muted)]">
           An unexpected error occurred. You can try again, or head back to
           your dashboard.
         </p>
         {error.digest ? (
-          <p className="mb-4 font-serif text-xs text-[var(--color-ink-muted)]">
+          <p className="mb-4 font-body text-xs text-[var(--color-ink-muted)]">
             Error reference: {error.digest}
           </p>
         ) : null}
@@ -26,16 +28,16 @@ export default function GlobalError({
           <button
             type="button"
             onClick={reset}
-            className="rounded-md bg-[var(--color-forest)] px-4 py-2 font-serif text-sm font-medium text-white transition-colors hover:bg-[var(--color-forest-dark)]"
+            className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
           >
             Try again
           </button>
-          <a
+          <Link
             href="/dashboard"
-            className="rounded-md border border-black/10 px-4 py-2 font-serif text-sm text-[var(--color-ink)] hover:bg-[var(--color-cream)]"
+            className="rounded-md border border-black/10 px-4 py-2 font-body text-sm text-[var(--color-ink)] hover:bg-[var(--color-sage-pale)]"
           >
             Dashboard
-          </a>
+          </Link>
         </div>
       </div>
     </div>

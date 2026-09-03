@@ -15,7 +15,7 @@ export default async function ProfessorCourseDetailPage({
 }: {
   params: Promise<{ courseId: string }>;
 }) {
-  const session = await requireRole([Role.PROFESSOR, Role.ADMIN]);
+  const session = await requireRole([Role.INSTRUCTOR, Role.ADMIN]);
   const { courseId } = await params;
 
   const course = await prisma.course.findUnique({
@@ -33,7 +33,7 @@ export default async function ProfessorCourseDetailPage({
 
   const availableStudents = await prisma.user.findMany({
     where: {
-      role: Role.STUDENT,
+      role: Role.LEARNER,
       id: { notIn: course.enrollments.map((e) => e.userId) },
     },
     orderBy: { name: "asc" },
@@ -42,23 +42,23 @@ export default async function ProfessorCourseDetailPage({
 
   return (
     <AppShell>
-      <p className="mb-2 font-serif text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
+      <p className="mb-2 font-body text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
         <Link href="/dashboard" className="underline underline-offset-2">
           Your courses
         </Link>{" "}
         / {course.title}
       </p>
-      <h1 className="mb-1 font-heading text-3xl font-semibold text-[var(--color-forest)]">
+      <h1 className="mb-1 font-heading text-3xl font-semibold text-[var(--color-olive)]">
         {course.title}
       </h1>
-      <p className="mb-8 font-serif text-sm text-[var(--color-ink-muted)]">
+      <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
         {course.term} &middot; {course.credits} credits &middot;{" "}
         {course._count.enrollments} enrolled
       </p>
 
       <Card className="mb-8 max-w-sm">
         <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
-          Enroll a student
+          Enroll a learner
         </h2>
         <EnrollStudentForm courseId={course.id} students={availableStudents} />
       </Card>

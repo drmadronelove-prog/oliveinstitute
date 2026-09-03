@@ -26,17 +26,17 @@ export function MeetingTimesForm({
         type="text"
         defaultValue={currentValue}
         placeholder="Tuesdays &amp; Thursdays, 6:00–7:30 PM"
-        className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-serif text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-slate-blue)]"
+        className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
       />
       <button
         type="submit"
         disabled={pending}
-        className="shrink-0 rounded-md border border-[var(--color-forest)] px-3 py-2 font-serif text-sm text-[var(--color-forest)] transition-colors hover:bg-[var(--color-forest)] hover:text-white disabled:opacity-60"
+        className="shrink-0 rounded-md border border-[var(--color-olive)] px-3 py-2 font-body text-sm text-[var(--color-olive)] transition-colors hover:bg-[var(--color-olive)] hover:text-white disabled:opacity-60"
       >
         {pending ? "Saving…" : "Save"}
       </button>
       {state.status === "success" ? (
-        <span className="shrink-0 font-serif text-xs text-[var(--color-forest)]">
+        <span className="shrink-0 font-body text-xs text-[var(--color-olive)]">
           Saved
         </span>
       ) : null}

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { withBasePath } from "@/lib/basePath";
 
 const SESSION_COOKIE_NAMES = [
   "authjs.session-token",
@@ -11,7 +12,8 @@ export function proxy(request: NextRequest) {
   );
 
   if (!hasSession) {
-    const loginUrl = new URL("/login", request.nextUrl.origin);
+    // NextResponse.redirect takes a full URL, so basePath is ours to add.
+    const loginUrl = new URL(withBasePath("/login"), request.nextUrl.origin);
     return NextResponse.redirect(loginUrl);
   }
 }

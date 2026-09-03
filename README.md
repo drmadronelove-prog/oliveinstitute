@@ -1,9 +1,9 @@
 # Olive Institute
 
 A self-hosted storefront for self-paced courses. An admin creates accounts
-and courses, assigns a professor to each, and enrolls students; professors
-publish course materials (PDFs, links, videos); students sign in and work
-through the materials at their own pace.
+and courses, assigns an instructor to each, and enrolls learners;
+instructors publish course materials (PDFs, links, videos); learners sign in
+and work through the materials at their own pace.
 
 There is no cohort machinery — no assignments, submissions, grading,
 attendance, credit tracking, class schedule, or in-app messaging. Courses
@@ -16,7 +16,7 @@ are always-available content, not live classes.
 - **Database:** PostgreSQL via Prisma ORM (pinned to Prisma 6 — see note
   below)
 - **Auth:** NextAuth.js v5 (Auth.js) with a Credentials provider, JWT
-  sessions, and a `role` field (`ADMIN` | `PROFESSOR` | `STUDENT`) exposed
+  sessions, and a `role` field (`ADMIN` | `INSTRUCTOR` | `LEARNER`) exposed
   on the session. Passwords are hashed with bcrypt.
 - **File storage:** local disk, abstracted behind a `StorageService`
   interface (`src/lib/storage.ts`) so swapping to S3 is a config change.
@@ -38,9 +38,41 @@ scale, so we stay on Prisma 6 and the standard `new PrismaClient()` +
 Four tables, in `prisma/schema.prisma`:
 
 - `User` — name, email, bcrypt password hash, role
-- `Course` — title, description, term, credits, owning professor
+- `Course` — title, description, term, credits, owning instructor
 - `Enrollment` — a user in a course (unique on `userId` + `courseId`)
 - `CourseMaterial` — PDF, link, or video attached to a course
+
+## Design system
+
+Tokens live in `src/app/globals.css`. Six brand colors — deep olive
+`#3F4F33`, sage `#7E9068`, pale sage `#EDF0E8`, warm ivory `#FAF8F2`,
+terracotta `#A0553A`, muted gold `#A98B4F` — plus hover/gradient/type steps
+derived from them. Headings use Cormorant Garamond (`font-heading`); body
+and UI text use DM Sans (`font-body`). There is deliberately no
+`font-serif` utility, so a class name can't drift from the face it renders.
+
+`/style-guide` renders every token and shared component in isolation; it is
+the fastest way to check a change against the whole system.
+
+There is no logo asset — `src/components/shell/Wordmark.tsx` is a text
+wordmark, and is the one place to swap artwork in when it exists.
+
+## Base path
+
+The app is mounted under `/institute` (`basePath` in `next.config.ts`,
+sourced from `src/lib/basePath.ts`). The Auth.js session cookie is scoped to
+that path too, so nothing outside the app ever receives the token.
+
+`next/link`, `next/image`, `useRouter`, and `redirect()` prepend the prefix
+themselves. Three things do not, and use `withBasePath()` instead:
+
+- `NextResponse.redirect` in `src/proxy.ts`, which takes a full URL
+- Auth.js `redirectTo` / `pages.signIn`, resolved against the origin
+- `<a href>` to a stored file URL, and `next/image` sources from `public/`
+
+Sign-in runs through a Server Action (`src/app/login/actions.ts`) rather
+than `next-auth/react`, because the client helper builds its request URL
+from `NEXTAUTH_URL` and ignores the base path.
 
 ## Local setup
 
@@ -94,14 +126,17 @@ Four tables, in `prisma/schema.prisma`:
 
 ## Routes
 
+Every route is served under the `/institute` base path — `/dashboard` is
+reached at `/institute/dashboard`. The table lists app-relative paths.
+
 | Route | Who |
 | --- | --- |
 | `/login` | anyone |
 | `/dashboard` | any signed-in user; content varies by role |
 | `/admin/users` | ADMIN — create accounts, reset passwords |
-| `/admin/courses`, `/admin/courses/[id]` | ADMIN — create courses, assign a professor, enroll/unenroll |
-| `/professor/courses/[id]` | course's professor or ADMIN — materials, enroll students |
-| `/student/courses/[id]` | enrolled student — read-only materials |
+| `/admin/courses`, `/admin/courses/[id]` | ADMIN — create courses, assign an instructor, enroll/unenroll |
+| `/professor/courses/[id]` | course's instructor or ADMIN — materials, enroll learners |
+| `/student/courses/[id]` | enrolled learner — read-only materials |
 | `/settings/password` | any signed-in user |
 | `/api/files/[...key]` | authorized readers of a course material |
 | `/style-guide` | design-system reference |
@@ -114,8 +149,8 @@ Every protected page and Server Action calls `requireSession` /
 never depends on it alone.
 
 `/api/files/[...key]` re-checks per request: it resolves the key to a
-`CourseMaterial` row and allows an admin, the owning professor, or an
-enrolled student. Uploads live outside `public/`, so they are never served
+`CourseMaterial` row and allows an admin, the owning instructor, or an
+enrolled learner. Uploads live outside `public/`, so they are never served
 unauthenticated by the static file server.
 
 ## Testing
