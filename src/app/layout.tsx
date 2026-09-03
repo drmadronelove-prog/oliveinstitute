@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -16,8 +17,19 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Olive Institute",
+  // Absolute base for the canonical and Open Graph URLs each page builds.
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    // Page titles read "Course title — Olive Institute".
+    template: `%s — ${SITE_NAME}`,
+  },
   description: "Self-paced courses from Olive Institute",
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_US",
+  },
 };
 
 export default function RootLayout({

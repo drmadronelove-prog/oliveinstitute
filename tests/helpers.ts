@@ -20,6 +20,14 @@ export function appPath(path: string): string {
   return `${BASE_PATH}${path}`;
 }
 
+/**
+ * Regex matching an app path at the end of a URL. "/" is special: the browser
+ * normalises `/institute/` to `/institute`, so the trailing slash is optional.
+ */
+export function appUrlPattern(path: string): RegExp {
+  return new RegExp(`${BASE_PATH}${path === "/" ? "/?" : path}$`);
+}
+
 export async function login(page: Page, email: string, password: string) {
   await page.goto(appPath("/login"));
   await page.fill('input[type="email"]', email);

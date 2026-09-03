@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { appPath, login, logout, SEEDED_ADMIN } from "./helpers";
+import { appPath, appUrlPattern, login, logout, SEEDED_ADMIN } from "./helpers";
 
 test.beforeAll(() => {
   if (!SEEDED_ADMIN.email || !SEEDED_ADMIN.password) {
@@ -17,7 +17,7 @@ test.describe("login", () => {
 
   test("seeded admin can log in and reach the dashboard", async ({ page }) => {
     await login(page, SEEDED_ADMIN.email, SEEDED_ADMIN.password);
-    await expect(page).toHaveURL(new RegExp(`${appPath("/dashboard")}$`));
+    await expect(page).toHaveURL(appUrlPattern("/dashboard"));
     const signedInAs = page.locator("p", { hasText: "Signed in as" });
     await expect(signedInAs).toContainText("ADMIN");
     await logout(page);
@@ -61,15 +61,22 @@ test.describe("base path", () => {
     await logout(page);
   });
 
-  test("the root page redirects with the base path intact", async ({ page }) => {
-    // "/" is outside the proxy matcher, so this exercises Next's own
-    // redirect() rather than the proxy's hand-built one.
+  test("the root page is the public storefront, signed in or out", async ({
+    page,
+  }) => {
+    // "/" used to redirect to /login or /dashboard. It is the storefront home
+    // now, so it renders either way — only the nav's account link changes.
     await page.goto(appPath("/"));
-    await expect(page).toHaveURL(new RegExp(`${appPath("/login")}$`));
+    await expect(page).toHaveURL(appUrlPattern("/"));
+    await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
 
     await login(page, SEEDED_ADMIN.email, SEEDED_ADMIN.password);
     await page.goto(appPath("/"));
-    await expect(page).toHaveURL(new RegExp(`${appPath("/dashboard")}$`));
+    await expect(page).toHaveURL(appUrlPattern("/"));
+    const myCourses = page.getByRole("link", { name: "My courses" });
+    await expect(myCourses).toBeVisible();
+    await myCourses.click();
+    await expect(page).toHaveURL(appUrlPattern("/dashboard"));
     await logout(page);
   });
 

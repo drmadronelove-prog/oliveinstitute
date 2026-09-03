@@ -17,7 +17,8 @@ import { prisma } from "@/lib/prisma";
  *   ARCHIVED still grants access: archiving retires a course from the
  *   storefront, it does not revoke what people already own.
  * - A lesson flagged `isFreePreview` on a PUBLISHED course is the one thing
- *   visible without an entitlement — it is the course's sample.
+ *   visible without an entitlement — it is the course's sample, and the one
+ *   case that resolves for a logged-out visitor.
  *
  * Both functions deny by default: an unknown user, course, or lesson is
  * false, never an error.
@@ -66,12 +67,16 @@ export async function hasAccess(
  * True if `userId` may open `lessonId` — either because they have access to
  * the course it belongs to, or because it is a free preview of a published
  * course.
+ *
+ * `userId` is null for a logged-out visitor. Only the free-preview rule can
+ * resolve true for them; everything else needs an account, so the storefront
+ * can ask this the same way a signed-in page does.
  */
 export async function canViewLesson(
-  userId: string,
+  userId: string | null,
   lessonId: string,
 ): Promise<boolean> {
-  if (!userId || !lessonId) return false;
+  if (!lessonId) return false;
 
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
@@ -90,6 +95,8 @@ export async function canViewLesson(
   if (lesson.isFreePreview && course.status === CourseStatus.PUBLISHED) {
     return true;
   }
+
+  if (!userId) return false;
 
   return hasAccess(userId, course.id);
 }

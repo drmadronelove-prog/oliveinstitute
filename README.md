@@ -55,6 +55,37 @@ In `prisma/schema.prisma`:
 - `LessonProgress` — per learner, per lesson: `completedAt` and
   `lastPositionSeconds`. Unique on `userId` + `lessonId`
 
+## The storefront
+
+`/`, `/clinicians`, `/explore`, and `/courses/[slug]` render for logged-out
+visitors. Only PUBLISHED courses are ever listed or reachable — every
+listing goes through `listPublishedCourses` in `src/lib/catalog.ts`, and the
+sales page queries `{ slug, status: PUBLISHED }`, so a DRAFT or ARCHIVED
+slug is a 404. People who own an archived course still reach it through
+`/student/courses/[id]`.
+
+The free preview lesson plays inline with no account. Whether it may be
+shown is `canViewLesson`'s decision, not the page's — the sales page never
+reads `isFreePreview` to gate anything, so a logged-out visitor and a
+signed-in one go through exactly the same rule.
+
+Set `NEXT_PUBLIC_VIDEO_EMBED_BASE` to the video host's embed URL; a lesson's
+`videoUid` is appended to it. Until it is set, the preview says so rather
+than rendering a broken frame.
+
+### SEO
+
+Every public page sets a title, description, canonical URL, and Open Graph
+tags; the sales page pulls them from the Course record. `metadataBase` comes
+from `NEXT_PUBLIC_SITE_URL` (falling back to `NEXTAUTH_URL`), so canonical
+and `og:url` are absolute and carry the base path.
+
+There is deliberately no root `loading.tsx`. One used to exist, and its
+Suspense boundary made Next flush a `200` shell before the page resolved, so
+every `notFound()` in the app rendered the 404 page under a 200 status — a
+soft 404 that crawlers index. Re-adding one at the root would reintroduce
+that; scope any loading UI to a segment that never calls `notFound()`.
+
 ## Access control
 
 `src/lib/entitlements.ts` is the single place any code asks whether someone
@@ -162,8 +193,16 @@ from `NEXTAUTH_URL` and ignores the base path.
 Every route is served under the `/institute` base path — `/dashboard` is
 reached at `/institute/dashboard`. The table lists app-relative paths.
 
+The storefront is public; everything else requires a session. `proxy.ts`
+holds an allowlist of the *protected* areas, so a new route is public unless
+it is added there.
+
 | Route | Who |
 | --- | --- |
+| `/` | anyone — storefront home, split by track |
+| `/clinicians` | anyone — catalogue filtered to CLINICIAN |
+| `/explore` | anyone — catalogue filtered to PUBLIC |
+| `/courses/[slug]` | anyone — sales page; only PUBLISHED slugs resolve |
 | `/login` | anyone |
 | `/dashboard` | any signed-in user; content varies by role |
 | `/admin/users` | ADMIN — create accounts, reset passwords |

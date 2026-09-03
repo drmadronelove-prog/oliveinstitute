@@ -19,6 +19,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // An allowlist of the *protected* areas, so the storefront is public by
+  // construction: "/", "/clinicians", "/explore", "/courses/:slug", "/login"
+  // and the API routes are not listed here and so are never redirected.
+  // Adding a signed-in area means adding it below.
   matcher: [
     "/dashboard/:path*",
     "/admin/:path*",

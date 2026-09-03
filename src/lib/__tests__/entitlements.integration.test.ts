@@ -232,3 +232,23 @@ describe("canViewLesson", () => {
     expect(await canViewLesson(f.adminId, "nope")).toBe(false);
   });
 });
+
+describe("canViewLesson, logged out", () => {
+  it("opens a free preview on a published course", async () => {
+    expect(await canViewLesson(null, f.previewLessonId)).toBe(true);
+  });
+
+  it("keeps every other lesson closed", async () => {
+    expect(await canViewLesson(null, f.paidLessonId)).toBe(false);
+    expect(await canViewLesson(null, f.archivedLessonId)).toBe(false);
+  });
+
+  it("does not leak a draft course's preview", async () => {
+    expect(await canViewLesson(null, f.draftPreviewLessonId)).toBe(false);
+  });
+
+  it("denies an unknown lesson rather than throwing", async () => {
+    expect(await canViewLesson(null, "nope")).toBe(false);
+    expect(await canViewLesson(null, "")).toBe(false);
+  });
+});

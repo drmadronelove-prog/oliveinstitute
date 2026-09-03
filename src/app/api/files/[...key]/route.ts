@@ -25,11 +25,10 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // No session is not itself a refusal: a free-preview lesson's resources
+  // are readable by a logged-out visitor, and canViewLesson is what decides.
   const session = await auth();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const { id: userId } = session.user;
+  const userId = session?.user.id ?? null;
 
   const url = `/api/files/${key.join("/")}`;
 
@@ -45,7 +44,10 @@ export async function GET(
   }
 
   if (!(await canViewLesson(userId, resource.lessonId))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // 401 when signing in could plausibly help, 403 when it would not.
+    return session
+      ? NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      : NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const relativePath = path.join(...key);
