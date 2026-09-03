@@ -198,14 +198,50 @@ elsewhere.
 - The position-save throttle (ten seconds) is enforced in
   `saveLessonPosition` itself, not just by the client — it checks the
   existing row's `updatedAt` age and silently drops an early write.
-- `VideoPlayer` (`src/components/learn/VideoPlayer.tsx`) is a native
-  `<video>` element, not the iframe embed `LessonPreview` uses on the sales
-  page — real position tracking needs `timeupdate`/`currentTime`, which an
-  iframe can't report without a provider-specific postMessage protocol
-  this app doesn't have. It reuses `NEXT_PUBLIC_VIDEO_EMBED_BASE` +
-  `videoUid` as its `src`, treating the resolved URL as directly playable
-  media rather than an embed page. No video provider is chosen yet, so
-  this is a judgment call to revisit — see "Known loose ends".
+- `VideoPlayer` (`src/components/video/VideoPlayer.tsx`) is the one video
+  player, shared by the lesson page and `LessonPreview`. It plays through
+  Cloudflare Stream — see "Video (phase 8)".
+
+## Video (phase 8)
+
+Lesson video moved off the placeholder "embed base + videoUid" scheme onto
+[Cloudflare Stream](https://developers.cloudflare.com/stream/), a real,
+signed-URL video host. `src/lib/video.ts` is the one place that talks to
+Stream's API — same role `stripe.ts` plays for payments, including the
+`streamConfigured` guard so `next build` never needs live credentials.
+
+- **Every video requires a signed token to play.** Uploads are created
+  with `requireSignedURLs: true`. `GET /api/stream/token/[videoUid]` is
+  the only way to get one: it resolves the lesson by `videoUid`, calls
+  `canViewLesson` — the same rule everything else in this app defers to —
+  and mints a token if allowed. `VideoPlayer` fetches its own token
+  client-side rather than being handed one, since it expires and the
+  component doesn't control how long the page stays open.
+- **Uploading never touches this server.** `/admin/courses/[id]`'s
+  `VideoUploadPanel` gets a one-time `direct_upload` URL from a Server
+  Action (which stores the returned uid on `Lesson.videoUid` immediately,
+  before any bytes have moved), then the browser `POST`s the file straight
+  to Cloudflare.
+- **Duration and captions are written back automatically, not typed in by
+  hand.** Once the upload finishes, the panel bounded-auto-polls (a
+  capped, chained `setTimeout` — never a bare `setInterval` left running)
+  a Server Action that checks Stream's processing status; once ready, it
+  writes the real `durationSeconds` onto the lesson and requests automatic
+  captions. A second bounded poll waits for the caption track, then stores
+  its WebVTT as plain text (`vttToPlainText`, pure and unit-tested) onto
+  `Lesson.transcript` — the same field the lesson page already renders.
+  Cloudflare's Stream Player shows its own CC toggle once a caption track
+  exists; nothing else needs wiring for that.
+- **Network constraint, same shape as Payments:** this sandbox's egress
+  blocks `api.cloudflare.com`, so `video.ts` is covered by unit tests
+  against a mocked `fetch` (proving request/response shape, not that a
+  real account accepts them) rather than an integration test against a
+  live API — there is no Stripe-CLI-style local-signing equivalent for
+  Cloudflare's playback tokens (minting one is a real API call, not a
+  locally-computable HMAC). The token route's `404`/`403`/`502` paths were
+  each verified by hand against a running dev server with fake
+  credentials, confirming the real request reaches (and is correctly
+  rejected by) the blocked network rather than short-circuiting.
 
 ## Known loose ends
 

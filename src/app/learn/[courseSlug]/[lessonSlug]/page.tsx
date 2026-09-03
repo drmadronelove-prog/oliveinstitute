@@ -9,7 +9,7 @@ import { formatDuration } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ResourceList } from "@/components/course/ResourceList";
-import { VideoPlayer } from "@/components/learn/VideoPlayer";
+import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { MarkCompleteButton } from "@/components/learn/MarkCompleteButton";
 
 async function loadLesson(courseSlug: string, lessonSlug: string) {

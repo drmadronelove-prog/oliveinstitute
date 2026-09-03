@@ -1,15 +1,18 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Role } from "@prisma/client";
+import { LessonType, Role } from "@prisma/client";
 import { requireRole } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
-import { formatMinutes, formatPrice, trackLabel } from "@/lib/format";
+import { formatDuration, formatMinutes, formatPrice, trackLabel } from "@/lib/format";
+import { streamConfigured } from "@/lib/video";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { EnrollStudentForm } from "./EnrollStudentForm";
 import { UnenrollButton } from "./UnenrollButton";
 import { ReassignInstructorForm } from "./ReassignInstructorForm";
 import { CourseStatusForm } from "./CourseStatusForm";
+import { VideoUploadPanel } from "./VideoUploadPanel";
 
 export default async function AdminCourseDetailPage({
   params,
@@ -25,7 +28,19 @@ export default async function AdminCourseDetailPage({
       instructor: { select: { id: true, name: true } },
       modules: {
         orderBy: { sortOrder: "asc" },
-        include: { _count: { select: { lessons: true } } },
+        include: {
+          lessons: {
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              title: true,
+              type: true,
+              durationSeconds: true,
+              videoUid: true,
+              transcript: true,
+            },
+          },
+        },
       },
       enrollments: {
         include: { user: { select: { id: true, name: true, email: true } } },
@@ -55,7 +70,7 @@ export default async function AdminCourseDetailPage({
   ]);
 
   const lessonCount = course.modules.reduce(
-    (total, m) => total + m._count.lessons,
+    (total, m) => total + m.lessons.length,
     0,
   );
 
@@ -114,22 +129,50 @@ export default async function AdminCourseDetailPage({
                 No modules yet.
               </p>
             ) : (
-              <ol className="flex flex-col gap-2">
+              <div className="flex flex-col gap-6">
                 {course.modules.map((courseModule) => (
-                  <li
-                    key={courseModule.id}
-                    className="flex items-center justify-between rounded-lg bg-[var(--color-sage-pale)] px-4 py-2 font-body text-sm"
-                  >
-                    <span className="text-[var(--color-ink)]">
+                  <section key={courseModule.id}>
+                    <h3 className="mb-2 font-heading text-base font-semibold text-[var(--color-ink)]">
                       {courseModule.sortOrder}. {courseModule.title}
-                    </span>
-                    <span className="text-xs text-[var(--color-ink-muted)]">
-                      {courseModule._count.lessons} lesson
-                      {courseModule._count.lessons === 1 ? "" : "s"}
-                    </span>
-                  </li>
+                    </h3>
+                    {courseModule.lessons.length === 0 ? (
+                      <p className="font-body text-xs text-[var(--color-ink-muted)]">
+                        No lessons in this module.
+                      </p>
+                    ) : (
+                      <ul className="flex flex-col gap-3">
+                        {courseModule.lessons.map((lesson) => (
+                          <li
+                            key={lesson.id}
+                            className="rounded-lg bg-[var(--color-sage-pale)] p-4"
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge>{lesson.type}</Badge>
+                              <span className="font-body text-sm font-medium text-[var(--color-ink)]">
+                                {lesson.title}
+                              </span>
+                              <span className="font-body text-xs text-[var(--color-ink-muted)]">
+                                {formatDuration(lesson.durationSeconds)}
+                              </span>
+                            </div>
+                            {lesson.type === LessonType.VIDEO ? (
+                              <div className="mt-3">
+                                <VideoUploadPanel
+                                  lessonId={lesson.id}
+                                  initialVideoUid={lesson.videoUid}
+                                  initialDurationSeconds={lesson.durationSeconds}
+                                  hasTranscript={Boolean(lesson.transcript)}
+                                  streamConfigured={streamConfigured}
+                                />
+                              </div>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
                 ))}
-              </ol>
+              </div>
             )}
           </Card>
 

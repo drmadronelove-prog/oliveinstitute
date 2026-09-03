@@ -1,17 +1,7 @@
 import { withBasePath } from "@/lib/basePath";
 import { formatDuration } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
-
-/**
- * Base URL of the video host, e.g. "https://player.example.com/embed". A
- * lesson's `videoUid` is appended to it. Left unset until a provider is
- * chosen, in which case the preview says so rather than rendering a
- * broken frame.
- */
-const VIDEO_EMBED_BASE = process.env.NEXT_PUBLIC_VIDEO_EMBED_BASE?.replace(
-  /\/$/,
-  "",
-);
+import { VideoPlayer } from "@/components/video/VideoPlayer";
 
 function youTubeEmbedUrl(url: string): string | null {
   try {
@@ -29,6 +19,7 @@ function youTubeEmbedUrl(url: string): string | null {
 }
 
 export type PreviewLesson = {
+  id: string;
   title: string;
   type: string;
   durationSeconds: number;
@@ -41,19 +32,18 @@ export type PreviewLesson = {
  * The free sample lesson, rendered inline on the sales page. Whether it may
  * be shown at all is decided by `canViewLesson` on the server — this
  * component only draws what it is handed.
+ *
+ * The lesson's own video (`videoUid`) plays through Cloudflare Stream, the
+ * same `VideoPlayer` the full learner player uses, just without progress
+ * tracking (there's no account to save a free preview's position against).
+ * A linked YouTube resource is still embedded directly — that's an
+ * instructor-pasted external link, not something hosted on Stream.
  */
 export function LessonPreview({ lesson }: { lesson: PreviewLesson }) {
-  const hostedEmbed =
-    VIDEO_EMBED_BASE && lesson.videoUid
-      ? `${VIDEO_EMBED_BASE}/${lesson.videoUid}`
-      : null;
-
   const linkedVideo = lesson.resources.find(
     (resource) => resource.type === "VIDEO" && youTubeEmbedUrl(resource.url),
   );
-  const embedUrl =
-    hostedEmbed ??
-    (linkedVideo ? youTubeEmbedUrl(linkedVideo.url) : null);
+  const youTubeUrl = linkedVideo ? youTubeEmbedUrl(linkedVideo.url) : null;
 
   return (
     <div className="rounded-xl bg-[var(--color-card)] p-6 shadow-sm ring-1 ring-black/5">
@@ -67,10 +57,17 @@ export function LessonPreview({ lesson }: { lesson: PreviewLesson }) {
         </span>
       </div>
 
-      {embedUrl ? (
+      {lesson.videoUid ? (
+        <VideoPlayer
+          lessonId={lesson.id}
+          videoUid={lesson.videoUid}
+          initialPositionSeconds={0}
+          trackProgress={false}
+        />
+      ) : youTubeUrl ? (
         <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
           <iframe
-            src={embedUrl}
+            src={youTubeUrl}
             title={lesson.title}
             className="h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -80,9 +77,7 @@ export function LessonPreview({ lesson }: { lesson: PreviewLesson }) {
       ) : lesson.type === "VIDEO" ? (
         <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-[var(--color-sage-pale)] px-6 text-center">
           <p className="font-body text-sm text-[var(--color-ink-muted)]">
-            This preview has no video host configured yet. Set
-            <code className="mx-1">NEXT_PUBLIC_VIDEO_EMBED_BASE</code>
-            to play it inline.
+            This preview has no video uploaded yet.
           </p>
         </div>
       ) : null}

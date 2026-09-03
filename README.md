@@ -71,8 +71,9 @@ shown is `canViewLesson`'s decision, not the page's — the sales page never
 reads `isFreePreview` to gate anything, so a logged-out visitor and a
 signed-in one go through exactly the same rule.
 
-Set `NEXT_PUBLIC_VIDEO_EMBED_BASE` to the video host's embed URL; a lesson's
-`videoUid` is appended to it. Until it is set, the preview says so rather
+The free preview's own video plays through Cloudflare Stream — see
+"Video (Cloudflare Stream)" below. Set `CLOUDFLARE_ACCOUNT_ID` and
+`CLOUDFLARE_STREAM_TOKEN`; until both are set, the preview says so rather
 than rendering a broken frame.
 
 ### SEO
@@ -224,6 +225,7 @@ it is added there.
 | `/api/checkout` | verified, signed-in user — starts a Stripe Checkout Session |
 | `/api/webhooks/stripe` | Stripe only, verified by signature — the only place access is granted |
 | `/api/files/[...key]` | readers a lesson resource is visible to |
+| `/api/stream/token/[videoUid]` | `canViewLesson` — mints a 2h signed Stream playback token |
 | `/style-guide` | design-system reference |
 
 ## Accounts
@@ -381,17 +383,79 @@ the same role `entitlements.ts` plays for access.
   write more often. It never touches `completedAt`. `progress.integration.test.ts`
   proves the throttle by backdating a row's `updatedAt` directly (via raw
   SQL) rather than waiting ten real seconds.
-- **The video player is a native `<video>` element, not the iframe embed
-  the sales page's `LessonPreview` uses.** Real position tracking
-  (`timeupdate`, resuming via `currentTime`) needs a native element; an
-  opaque iframe can't report playback position without a provider-specific
-  postMessage protocol this app doesn't have. It resolves a src from the
-  same `NEXT_PUBLIC_VIDEO_EMBED_BASE` + `videoUid` pair `LessonPreview`
-  uses for its iframe `src`, but treats the result as directly playable
-  media. No provider is configured yet (the env var is unset by default,
-  same as the marketing preview), so this is a documented assumption to
-  revisit once one is chosen — the chosen provider's actual playback URL
-  may need its own env var if it differs from its embed URL.
+- **`src/components/video/VideoPlayer.tsx` is the one video player**,
+  shared by the learner lesson page (`trackProgress` true, with resume) and
+  the sales page's `LessonPreview` (`trackProgress` false — there's no
+  account to save a free preview's position against). It plays through
+  Cloudflare Stream; see "Video (Cloudflare Stream)" below for how.
+
+## Video (Cloudflare Stream)
+
+Lesson video is hosted on [Cloudflare Stream](https://developers.cloudflare.com/stream/).
+`src/lib/video.ts` wraps its REST API behind `CLOUDFLARE_ACCOUNT_ID` and
+`CLOUDFLARE_STREAM_TOKEN`, exporting `streamConfigured` the same way
+`stripe.ts` exports `stripeConfigured` — every route and Server Action that
+can reach Stream's API checks it first, so `next build` never needs live
+credentials and an unconfigured deployment fails with one clear message
+instead of a broken player.
+
+**Every video requires a signed playback URL.** Uploads are created with
+`requireSignedURLs: true` (`createDirectUploadUrl`), so a bare video uid is
+never enough to play one — `GET /api/stream/token/[videoUid]` is the only
+way to get a token. It resolves the lesson by `videoUid`, runs the same
+`canViewLesson` check every other lesson-gated route runs, and mints a
+two-hour token (`mintPlaybackToken`) if allowed, `403` if not, `404` if the
+video doesn't belong to any lesson. `VideoPlayer` fetches its own token
+client-side from this route rather than being handed one by the server
+component that renders it — the token expires, and the player doesn't know
+in advance how long the page will stay open.
+
+**Uploading, from `/admin/courses/[id]`:** each `VIDEO`-type lesson gets a
+`VideoUploadPanel`. Choosing a file calls `createVideoUploadAction`, which
+asks Stream for a one-time `direct_upload` URL and immediately stores the
+returned uid on `Lesson.videoUid` — before anything has actually uploaded,
+so a lesson mid-upload is already linked to it. The browser then `POST`s
+the file straight to that URL; **the file never passes through this
+server.** Once that upload request resolves, the panel bounded-auto-polls
+(a chained `setTimeout`, capped at 45 tries ~4s apart, never a bare
+`setInterval`) `checkVideoStatusAction`, which asks Stream whether the
+video has finished processing and, once it has, writes the real
+`durationSeconds` back onto the lesson and requests automatic captions
+(`generateCaptions`) — a no-op if a caption track already exists, so it's
+safe to call on every poll rather than tracking "did we already ask"
+separately. The panel then polls `checkCaptionStatusAction` the same way
+until the caption track reports generated, fetches its WebVTT, and stores
+the plain text (via the pure, unit-tested `vttToPlainText`) onto
+`Lesson.transcript` — the same field the lesson page already renders as a
+"Transcript" section. A manual "Check now" button covers the case where an
+admin navigates away and back before a bounded poll finishes.
+
+**Captions are exposed automatically.** Once Stream has processed a
+caption track, its own Player web component surfaces a CC toggle with no
+extra wiring on this app's side — `vttToPlainText`'s job is only to get the
+same content onto the page as plain text, not to render the track itself.
+
+**The player itself** (`VideoPlayer`) loads Cloudflare's Stream Player web
+component script once per page and renders a `<stream>` custom element
+(typed by hand in `src/types/stream-element.d.ts`, since it isn't a
+browser-standard element and React's automatic JSX runtime resolves
+`JSX.IntrinsicElements` from the `"react"` module rather than the bare
+global namespace). It never sets `autoplay` — the type that element's
+props are declared with doesn't even have that attribute, a small extra
+guard against ever adding it by accident. Speed (0.5x–2x, a native
+`<select>`, so it's keyboard-operable for free) is remembered in
+`localStorage` and reapplied via the element's `playbackRate` property on
+`loadedmetadata`.
+
+**On the network constraint:** as with Stripe (see "Payments" above), this
+environment's outbound egress blocks `api.cloudflare.com`, so `video.ts`'s
+API-calling functions are covered by unit tests against a mocked `fetch`
+(`src/lib/__tests__/video.test.ts`) rather than a real account — proving
+the request shape (URL, auth header, body) and response parsing, not that
+Cloudflare accepts them. `vttToPlainText` is pure and network-free, so it
+gets real test coverage. The token route's error paths (`404`, `403`, and
+the `502` a real API call failure produces) were each verified by hand
+against a running dev server with fake credentials.
 
 ## Authorization
 
@@ -423,6 +487,10 @@ waiting ten real seconds.
 The webhook tests (and `tests/checkout.spec.ts`) also need
 `STRIPE_WEBHOOK_SECRET` set — any string works, since nothing in them calls
 Stripe's API, only its local, no-network signing/verification helpers.
+`src/lib/__tests__/video.test.ts` is a plain unit test (`test:unit`, not
+`test:integration`) — Cloudflare's API needs real credentials no local
+signing trick can substitute for, so it mocks `fetch` instead; see "Video
+(Cloudflare Stream)" above.
 
 The Playwright suite reads `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` and
 fails fast if they are unset, so it exercises the account that was actually
