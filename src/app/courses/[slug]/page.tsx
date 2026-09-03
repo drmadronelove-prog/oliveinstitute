@@ -10,6 +10,7 @@ import { absoluteUrl, SITE_NAME } from "@/lib/site";
 import { PublicShell } from "@/components/shell/PublicShell";
 import { Badge } from "@/components/ui/Badge";
 import { LessonPreview } from "@/components/storefront/LessonPreview";
+import { BuyButton } from "@/components/storefront/BuyButton";
 
 /**
  * The sales page only ever serves a PUBLISHED course. A draft — or an
@@ -219,6 +220,11 @@ export default async function CourseSalesPage({
                 >
                   Go to course
                 </Link>
+              ) : purchase.allowed ? (
+                <BuyButton
+                  courseId={course.id}
+                  priceLabel={formatPrice(course.priceCents)}
+                />
               ) : session ? (
                 <button
                   type="button"
@@ -252,8 +258,10 @@ export default async function CourseSalesPage({
                   </Link>
                   .
                 </>
+              ) : purchase.allowed ? (
+                "You'll be redirected to Stripe to pay, then straight back here."
               ) : session ? (
-                "Checkout isn't connected yet — an admin can grant access in the meantime."
+                "This course isn't available for purchase right now."
               ) : (
                 <>
                   <Link

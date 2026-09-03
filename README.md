@@ -215,6 +215,9 @@ it is added there.
 | `/admin/courses`, `/admin/courses/[id]` | ADMIN — create courses, assign an instructor, enroll/unenroll |
 | `/professor/courses/[id]` | course's instructor or ADMIN — curriculum, lesson resources, enroll learners |
 | `/student/courses/[id]` | any signed-in user — curriculum, gated per lesson by `canViewLesson` |
+| `/checkout/success`, `/checkout/cancel` | any signed-in user — reads a `Purchase`, never writes access |
+| `/api/checkout` | verified, signed-in user — starts a Stripe Checkout Session |
+| `/api/webhooks/stripe` | Stripe only, verified by signature — the only place access is granted |
 | `/api/files/[...key]` | readers a lesson resource is visible to |
 | `/style-guide` | design-system reference |
 
@@ -229,7 +232,7 @@ password.
 
 **Email verification** doesn't gate signing in or browsing — only buying.
 `src/lib/entitlements.ts`'s `canPurchase` is where that rule lives; the
-sales page and (once it exists) checkout both defer to it rather than
+sales page's CTA and `POST /api/checkout` both defer to it rather than
 re-checking `emailVerifiedAt` themselves. An unverified account resends its
 confirmation email from `/settings`.
 
@@ -257,6 +260,69 @@ In development, set `EMAIL_CAPTURE_DIR` to have every sent email also
 written to disk as JSON — the Playwright suite reads these to follow real
 verification and reset links. Never set it in production.
 
+## Payments
+
+One-time, per-course purchases via [Stripe Checkout](https://stripe.com/docs/payments/checkout).
+There is no subscription billing and no cart — one course, one payment.
+
+**The flow:**
+
+1. The sales page's Buy button (`src/components/storefront/BuyButton.tsx`,
+   the one client-side fetch in an otherwise Server-Action-first codebase —
+   `/api/checkout` is a real REST endpoint, not a Server Action) posts to
+   `POST /api/checkout` with a `courseId` and follows the Stripe-hosted URL
+   it returns.
+2. `POST /api/checkout` calls `canPurchase` — the same rule the sales
+   page's CTA is built from — creates a Stripe Checkout Session (`mode:
+   "payment"`, `price_data` built from `Course.priceCents`/`title`,
+   `client_reference_id` and `metadata` set to the buyer's `userId` and the
+   `courseId`), and writes a `PENDING` `Purchase` row keyed on the returned
+   session id.
+3. The buyer pays on Stripe's hosted page, which redirects back to
+   `/checkout/success?session_id=…` (or `/checkout/cancel` if they back
+   out — nothing was charged either way).
+4. Independently, Stripe delivers a `checkout.session.completed` webhook to
+   `POST /api/webhooks/stripe`. **This is the only place a purchase turns
+   into access** — see the CRITICAL callout below.
+
+**`POST /api/webhooks/stripe`** reads the raw request body (`request.text()`,
+never `request.json()` — signature verification is over the exact bytes
+Stripe sent) and verifies it with `stripe.webhooks.constructEvent` using
+`STRIPE_WEBHOOK_SECRET` before trusting anything in it.
+
+- `checkout.session.completed` looks up the `Purchase` by
+  `stripeCheckoutSessionId`, marks it `PAID`, and `upsert`s an `Enrollment`
+  (`source: PURCHASE`) on the `(userId, courseId)` unique constraint — all
+  inside one transaction. The upsert is what makes a replayed delivery a
+  no-op: Stripe redelivers events at least once, including after a
+  delivery that already succeeded, so this must never depend on only
+  running once. A receipt email goes out after the transaction commits,
+  guarded by the same "already PAID" check so a replay doesn't send it
+  twice.
+- `charge.refunded` marks the `Purchase` `REFUNDED` and removes the
+  `Enrollment` it granted (`deleteMany`, not `delete` — idempotent under a
+  replay once the row is already gone).
+
+**CRITICAL: access is granted only in the webhook, never on
+`/checkout/success`.** That page reads the local `Purchase.status` — set
+exclusively by the webhook — to decide what to show; it never creates or
+upserts anything itself. Reaching that URL only proves Stripe redirected
+the browser there, not that the payment is real or that the event has been
+verified. If the webhook hasn't landed yet by the time the browser is
+redirected back (normally near-instant), the success page shows a
+"finishing up" state with a plain `<meta http-equiv="refresh">` rather than
+guessing that payment succeeded.
+
+**Configuration:** set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
+`src/lib/stripe.ts` exports `stripeConfigured` (true only when a real
+secret key is set); every route that can reach Stripe's API checks it
+first, so `next build` never needs a live key to succeed, and an
+unconfigured deployment fails with one clear message rather than a
+cryptic error later.
+
+**Not yet wired:** `LessonProgress` (per-lesson watch/resume state) and
+`EnrollmentSource.BUNDLE` (buying more than one course at a time).
+
 ## Authorization
 
 Every protected page and Server Action calls `requireSession` /
@@ -274,13 +340,16 @@ never served unauthenticated by the static file server.
 ```bash
 npm run test              # unit + integration + e2e
 npm run test:unit         # vitest, no database needed
-npm run test:integration  # vitest against DATABASE_URL — the entitlement rules
+npm run test:integration  # vitest against DATABASE_URL — any *.integration.test.ts
 npm run test:e2e          # playwright
 ```
 
-The integration suite exercises `entitlements.ts` against a real database
-because the rules are all queries — stubbing them would only test the stub.
-It creates and removes its own fixtures.
+The integration suite exercises `entitlements.ts` and the Stripe webhook
+handler against a real database because both are all queries/transactions —
+stubbing them would only test the stub; each cleans up its own fixtures.
+The webhook tests (and `tests/checkout.spec.ts`) also need
+`STRIPE_WEBHOOK_SECRET` set — any string works, since nothing in them calls
+Stripe's API, only its local, no-network signing/verification helpers.
 
 The Playwright suite reads `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` and
 fails fast if they are unset, so it exercises the account that was actually

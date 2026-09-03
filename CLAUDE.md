@@ -122,6 +122,61 @@ Reversed the original admin-invite model: people register themselves at
   are the one strength definition, used by registration, reset, and
   change-password alike — don't add a second rule.
 
+## Payments (phase 6)
+
+One-time, per-course purchases via Stripe Checkout. `POST /api/checkout`
+and `POST /api/webhooks/stripe` are the only two routes involved; the Buy
+button on the sales page is a thin client wrapper around the first.
+
+- **CRITICAL, and the reason the webhook route's top comment says so in
+  capital letters: access is granted only in the webhook handler.** Nothing
+  else — not `/checkout/success`, not the client-side redirect Stripe sends
+  the browser through — creates or upserts an `Enrollment`. A browser
+  reaching `/checkout/success` proves Stripe redirected it there, not that
+  a signed webhook event verified the payment. Keep this true even under
+  pressure to "just also grant access on the success page as a fallback" —
+  that would let anyone who guesses the URL shape grant themselves a course
+  for free.
+- `/api/checkout` makes no eligibility decision of its own — it calls
+  `canPurchase` (same as the sales page's CTA) and maps the refusal reason
+  to an HTTP status. It creates the Stripe Checkout Session from
+  `Course.priceCents`/`title` via inline `price_data`, not
+  `Course.stripePriceId` (still unused — this route doesn't need a
+  pre-created Stripe Price to work), and writes a `PENDING` `Purchase` row
+  keyed on the session id before returning the redirect URL.
+- The webhook is idempotent by construction: `checkout.session.completed`
+  looks up the `Purchase` by `stripeCheckoutSessionId`, and an `Enrollment`
+  upsert on the `(userId, courseId)` unique constraint means a replayed
+  delivery — Stripe redelivers at least once, including after a delivery
+  that already succeeded — creates at most one `Enrollment`, not a second
+  one or a thrown error. `charge.refunded` is the mirror: marks the
+  `Purchase` `REFUNDED` and `deleteMany`s the enrollment it granted (never
+  `delete`, which would throw on a replay once the row is already gone).
+  Both handlers short-circuit on an already-settled status before doing any
+  writes, which is also what stops the receipt email from going out twice.
+- `src/lib/stripe.ts` exports `stripeConfigured` (true only when
+  `STRIPE_SECRET_KEY` is set) alongside the client. Every route that can
+  reach Stripe's API checks it first, so `next build` — which imports these
+  routes — never needs a live key, and an unconfigured deployment fails
+  with one clear message instead of a cryptic error surfacing later.
+- **On the integration test and the Stripe CLI:** the task that added this
+  phase asked for coverage "using the Stripe CLI fixtures." The CLI needs
+  `stripe login` (an OAuth flow through a browser against a real Stripe
+  account) and network access to stripe.com; neither is available in the
+  sandbox this was built in — outbound requests to `api.stripe.com` and to
+  `github.com` (to fetch the CLI binary) are both blocked by the
+  environment's egress policy. `src/lib/__tests__/checkout-webhook.integration.test.ts`
+  uses Stripe's own officially documented alternative instead: hand-authored
+  fixtures shaped like the events `stripe trigger` would deliver, signed
+  locally with `stripe.webhooks.generateTestHeaderString` (pure HMAC-SHA256,
+  no network call), POSTed to the real exported route handler. This is a
+  hard environment constraint, not a design choice — reach for the real
+  Stripe CLI instead if a network path to Stripe is available.
+  `tests/checkout.spec.ts` does the same signing trick at the Playwright
+  level, over a real HTTP request to the running dev server, to cover the
+  full "webhook lands, success page shows a receipt, the course actually
+  unlocks" loop end to end.
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
@@ -135,14 +190,10 @@ Reversed the original admin-invite model: people register themselves at
 - There is no UI for creating modules or lessons — the seed is the only
   thing that writes them. Instructors can attach resources to an existing
   lesson, and admins can create, publish, and archive courses.
-- Nothing writes `Purchase` or `LessonProgress` yet. The Buy button is
-  therefore a stub: it sends a logged-out visitor to `/register`, and for a
-  signed-in, verified visitor who does not own the course it renders
-  disabled with a note. Wiring Stripe checkout is what makes it real.
-  `EnrollmentSource.PURCHASE` and `BUNDLE` are unused so far — every
-  enrollment the UI creates is a `COMP`. `/settings`' purchase-history panel
-  already reads `Purchase`, so it will show real rows the moment checkout
-  writes them.
+- `LessonProgress` is still never written — nothing marks a lesson watched
+  or resumes video playback partway through. `EnrollmentSource.BUNDLE` is
+  also still unused; only `PURCHASE` (checkout) and `COMP` (an admin
+  granting access by hand) create enrollments so far.
 - `Course.coverImageKey` is still unused, and there is no public route that
   serves an image by key, so pages set no `og:image`. Serving cover images
   needs a public asset route — `/api/files` is entitlement-gated by design
