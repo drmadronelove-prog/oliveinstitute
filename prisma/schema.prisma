@@ -257,7 +257,13 @@ model LessonProgress {
   lesson              Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   completedAt         DateTime?
   lastPositionSeconds Int       @default(0)
+  createdAt           DateTime  @default(now())
+  /// Bumped on every save, including a bare position update. This is what
+  /// "most recently accessed" ordering on /my-courses is computed from, and
+  /// what the position-save Server Action throttles against.
+  updatedAt           DateTime  @updatedAt
 
   @@unique([userId, lessonId])
+  @@index([userId, updatedAt])
   @@map("lesson_progress")
 }

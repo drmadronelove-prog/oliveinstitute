@@ -177,6 +177,36 @@ button on the sales page is a thin client wrapper around the first.
   full "webhook lands, success page shows a receipt, the course actually
   unlocks" loop end to end.
 
+## Learner experience (phase 7)
+
+`/my-courses`, `/learn/[courseSlug]`, and `/learn/[courseSlug]/[lessonSlug]`.
+`src/lib/progress.ts` is the single place progress is computed — percent
+complete, "continue where you left off", the position-save throttle — the
+same role `entitlements.ts` plays for access. Don't re-derive any of that
+elsewhere.
+
+- The course-root route (`hasAccess`) and the lesson route
+  (`canViewLesson`, open to an anonymous free-preview visitor) have
+  different gating rules, so neither is enforced in the shared
+  `layout.tsx` — each page checks for itself. The layout only blocks a
+  DRAFT/ARCHIVED course's structure from leaking to someone who couldn't
+  otherwise see it.
+- Completion is only ever set by the learner's own "Mark complete" click
+  (`markLessonComplete`) — never inferred from playback. Completing a
+  course's last lesson stamps `Enrollment.completedAt`. No autoplay,
+  auto-advance, streaks, or timers anywhere in this feature, by design.
+- The position-save throttle (ten seconds) is enforced in
+  `saveLessonPosition` itself, not just by the client — it checks the
+  existing row's `updatedAt` age and silently drops an early write.
+- `VideoPlayer` (`src/components/learn/VideoPlayer.tsx`) is a native
+  `<video>` element, not the iframe embed `LessonPreview` uses on the sales
+  page — real position tracking needs `timeupdate`/`currentTime`, which an
+  iframe can't report without a provider-specific postMessage protocol
+  this app doesn't have. It reuses `NEXT_PUBLIC_VIDEO_EMBED_BASE` +
+  `videoUid` as its `src`, treating the resolved URL as directly playable
+  media rather than an embed page. No video provider is chosen yet, so
+  this is a judgment call to revisit — see "Known loose ends".
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
@@ -190,10 +220,8 @@ button on the sales page is a thin client wrapper around the first.
 - There is no UI for creating modules or lessons — the seed is the only
   thing that writes them. Instructors can attach resources to an existing
   lesson, and admins can create, publish, and archive courses.
-- `LessonProgress` is still never written — nothing marks a lesson watched
-  or resumes video playback partway through. `EnrollmentSource.BUNDLE` is
-  also still unused; only `PURCHASE` (checkout) and `COMP` (an admin
-  granting access by hand) create enrollments so far.
+- `EnrollmentSource.BUNDLE` is still unused; only `PURCHASE` (checkout) and
+  `COMP` (an admin granting access by hand) create enrollments so far.
 - `Course.coverImageKey` is still unused, and there is no public route that
   serves an image by key, so pages set no `og:image`. Serving cover images
   needs a public asset route — `/api/files` is entitlement-gated by design

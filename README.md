@@ -53,7 +53,9 @@ In `prisma/schema.prisma`:
 - `Purchase` — a Stripe checkout: session id (unique), payment intent,
   `amountCents`, `currency`, `status` (PENDING / PAID / REFUNDED / FAILED)
 - `LessonProgress` — per learner, per lesson: `completedAt` and
-  `lastPositionSeconds`. Unique on `userId` + `lessonId`
+  `lastPositionSeconds`, plus `createdAt`/`updatedAt`. Unique on `userId` +
+  `lessonId`. `updatedAt` is what "most recently accessed" ordering on
+  `/my-courses` and the position-save throttle are both computed from
 
 ## The storefront
 
@@ -211,6 +213,9 @@ it is added there.
 | `/forgot-password`, `/reset-password/[token]` | anyone — request and redeem a reset link |
 | `/dashboard` | any signed-in user; content varies by role |
 | `/settings` | any signed-in user — profile, password, purchase history |
+| `/my-courses` | any signed-in user — every enrollment, percent complete, "continue where you left off" |
+| `/learn/[courseSlug]` | `hasAccess` — resolves the continue lesson and redirects |
+| `/learn/[courseSlug]/[lessonSlug]` | `canViewLesson` — the player; open to a logged-out visitor for a free preview |
 | `/admin/users` | ADMIN — create accounts (emails an invite), send reset links |
 | `/admin/courses`, `/admin/courses/[id]` | ADMIN — create courses, assign an instructor, enroll/unenroll |
 | `/professor/courses/[id]` | course's instructor or ADMIN — curriculum, lesson resources, enroll learners |
@@ -320,8 +325,73 @@ first, so `next build` never needs a live key to succeed, and an
 unconfigured deployment fails with one clear message rather than a
 cryptic error later.
 
-**Not yet wired:** `LessonProgress` (per-lesson watch/resume state) and
-`EnrollmentSource.BUNDLE` (buying more than one course at a time).
+**Not yet wired:** `EnrollmentSource.BUNDLE` (buying more than one course at
+a time).
+
+## The learner experience
+
+`/my-courses`, `/learn/[courseSlug]`, and `/learn/[courseSlug]/[lessonSlug]`
+are the player. `src/lib/progress.ts` is the one place that computes
+progress — percent complete, "most recently accessed" ordering, which lesson
+"continue where you left off" resolves to, and the position-save throttle —
+the same role `entitlements.ts` plays for access.
+
+- **`/my-courses`** lists every `Enrollment`, each with a percent complete
+  (`LessonProgress.completedAt` rows over the course's lesson count) and a
+  "continue where you left off" link resolved by
+  `resolveContinueLessonSlug` — whichever lesson the learner most recently
+  touched (by `LessonProgress.updatedAt`), or the first lesson if they never
+  have. Sorted by that same recency, falling back to `Enrollment.grantedAt`
+  for a course with no activity yet.
+- **`/learn/[courseSlug]`** is gated by `hasAccess` and immediately redirects
+  to the continue lesson; it renders nothing of its own. Its
+  `layout.tsx` is the actual player shell — a persistent, module-grouped
+  lesson sidebar shared by both routes underneath it. The layout itself
+  enforces no access rule beyond keeping a DRAFT/ARCHIVED course's structure
+  from leaking to someone who couldn't otherwise see it (the same rule the
+  sales page uses); each page below it decides its own gating, because the
+  two have different rules (see next point).
+- **`/learn/[courseSlug]/[lessonSlug]`** is gated by `canViewLesson`, not
+  `hasAccess` — a logged-out visitor can reach a course's free preview
+  lesson here the same as on the sales page. Every lesson type renders in
+  one page: `VIDEO` gets the player below; `TEXT` renders `Lesson.body`;
+  `PDF`'s content is its attached `LessonResource` downloads (there is no
+  separate PDF body field); `QUIZ` renders an honest placeholder — there is
+  no question/answer schema yet. Every lesson also gets its transcript
+  (`Lesson.transcript`, when set), its resources (`ResourceList`, reused
+  from the professor/student pages), and previous/next links walked from
+  `getOrderedLessons`. Resume position, the completed checkmark, and the
+  Mark complete button all require `hasAccess`, not just `canViewLesson` —
+  they're an enrolled-learner feature, not something a free-preview visitor
+  who hasn't bought the course gets.
+- **Completion is explicit, never inferred.** `markLessonComplete` (called
+  by `markLessonCompleteAction` in the lesson route's `actions.ts`) only
+  ever runs from the learner's own "Mark complete" click. When it completes
+  the last remaining lesson in the course, it also stamps
+  `Enrollment.completedAt` — nothing else in the app sets that field. There
+  is deliberately no autoplay, no auto-advance on video end, no streaks, and
+  no timers anywhere in this feature.
+- **Position autosave is throttled twice.** `VideoPlayer`
+  (`src/components/learn/VideoPlayer.tsx`) calls
+  `saveLessonPositionAction` from a `timeupdate` handler, itself
+  client-throttled to once per ten seconds — but the real enforcement is
+  server-side, in `saveLessonPosition` (`src/lib/progress.ts`): it reads the
+  existing row's `updatedAt` and silently drops the write if under ten
+  seconds old, so a client that ignored its own throttle still couldn't
+  write more often. It never touches `completedAt`. `progress.integration.test.ts`
+  proves the throttle by backdating a row's `updatedAt` directly (via raw
+  SQL) rather than waiting ten real seconds.
+- **The video player is a native `<video>` element, not the iframe embed
+  the sales page's `LessonPreview` uses.** Real position tracking
+  (`timeupdate`, resuming via `currentTime`) needs a native element; an
+  opaque iframe can't report playback position without a provider-specific
+  postMessage protocol this app doesn't have. It resolves a src from the
+  same `NEXT_PUBLIC_VIDEO_EMBED_BASE` + `videoUid` pair `LessonPreview`
+  uses for its iframe `src`, but treats the result as directly playable
+  media. No provider is configured yet (the env var is unset by default,
+  same as the marketing preview), so this is a documented assumption to
+  revisit once one is chosen — the chosen provider's actual playback URL
+  may need its own env var if it differs from its embed URL.
 
 ## Authorization
 
@@ -344,9 +414,12 @@ npm run test:integration  # vitest against DATABASE_URL — any *.integration.te
 npm run test:e2e          # playwright
 ```
 
-The integration suite exercises `entitlements.ts` and the Stripe webhook
-handler against a real database because both are all queries/transactions —
-stubbing them would only test the stub; each cleans up its own fixtures.
+The integration suite exercises `entitlements.ts`, `progress.ts`, and the
+Stripe webhook handler against a real database because all three are
+queries/transactions — stubbing them would only test the stub; each cleans
+up its own fixtures. The position-save throttle test backdates a
+`LessonProgress` row's `updatedAt` with a raw SQL `UPDATE` rather than
+waiting ten real seconds.
 The webhook tests (and `tests/checkout.spec.ts`) also need
 `STRIPE_WEBHOOK_SECRET` set — any string works, since nothing in them calls
 Stripe's API, only its local, no-network signing/verification helpers.
