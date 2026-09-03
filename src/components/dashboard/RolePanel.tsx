@@ -38,12 +38,12 @@ export function RolePanel(props: RolePanelProps) {
           <Link href="/admin/users" className={toolButtonClassName}>
             <span className={toolLabelClassName}>Manage users</span>
           </Link>
-          <div className={toolButtonClassName}>
+          <Link href="/admin/learners" className={toolButtonClassName}>
             <span className={toolLabelClassName}>Enrollment</span>
-          </div>
-          <div className={toolButtonClassName}>
+          </Link>
+          <Link href="/admin/purchases" className={toolButtonClassName}>
             <span className={toolLabelClassName}>Finances</span>
-          </div>
+          </Link>
         </div>
       </div>
     );

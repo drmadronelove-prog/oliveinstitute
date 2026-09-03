@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { CourseStatus, Role, Track } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 
@@ -113,10 +114,36 @@ export async function updateCourseStatusAction(
 
   const course = await prisma.course.findUnique({
     where: { id: parsed.data.courseId },
-    select: { publishedAt: true },
+    select: {
+      status: true,
+      publishedAt: true,
+      priceCents: true,
+      modules: {
+        select: { lessons: { select: { isFreePreview: true } } },
+      },
+    },
   });
   if (!course) {
     return { status: "error", message: "Course not found." };
+  }
+
+  if (
+    parsed.data.status === CourseStatus.PUBLISHED &&
+    course.status !== CourseStatus.PUBLISHED
+  ) {
+    const lessons = course.modules.flatMap((m) => m.lessons);
+    const problems: string[] = [];
+    if (lessons.length === 0) problems.push("it has no lessons");
+    if (course.priceCents <= 0) problems.push("it has no price set");
+    if (!lessons.some((lesson) => lesson.isFreePreview)) {
+      problems.push("it has no free-preview lesson");
+    }
+    if (problems.length > 0) {
+      return {
+        status: "error",
+        message: `Can't publish — ${problems.join("; ")}.`,
+      };
+    }
   }
 
   // Stamp publishedAt the first time a course goes live, and leave it in
@@ -135,4 +162,92 @@ export async function updateCourseStatusAction(
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
 
   return { status: "success", message: `Status set to ${parsed.data.status}.` };
+}
+
+/**
+ * Deep-clones a course — its modules and lessons, including each lesson's
+ * video, body, transcript, and free-preview flag — as a new DRAFT, never
+ * published automatically. Enrollments, purchases, and progress belong to
+ * the original, not the copy, so none of that is touched. Redirects
+ * straight to the copy's edit page rather than back to the list, since
+ * "duplicate" is normally the start of editing a variant, not the end of
+ * the task.
+ */
+export async function duplicateCourseAction(
+  _prevState: CreateCourseState,
+  formData: FormData,
+): Promise<CreateCourseState> {
+  await requireRole(Role.ADMIN);
+
+  const courseId = String(formData.get("courseId") ?? "").trim();
+  const source = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: {
+      modules: {
+        orderBy: { sortOrder: "asc" },
+        include: { lessons: { orderBy: { sortOrder: "asc" } } },
+      },
+    },
+  });
+  if (!source) {
+    return { status: "error", message: "Course not found." };
+  }
+
+  let slug = `${source.slug}-copy`;
+  let suffix = 2;
+  while (
+    await prisma.course.findUnique({ where: { slug }, select: { id: true } })
+  ) {
+    slug = `${source.slug}-copy-${suffix}`;
+    suffix += 1;
+  }
+
+  const newCourseId = await prisma.$transaction(async (tx) => {
+    const newCourse = await tx.course.create({
+      data: {
+        slug,
+        title: `${source.title} (Copy)`,
+        subtitle: source.subtitle,
+        description: source.description,
+        track: source.track,
+        priceCents: source.priceCents,
+        estimatedMinutes: source.estimatedMinutes,
+        sortOrder: source.sortOrder,
+        status: CourseStatus.DRAFT,
+        instructorId: source.instructorId,
+      },
+    });
+
+    for (const courseModule of source.modules) {
+      const newModule = await tx.module.create({
+        data: {
+          courseId: newCourse.id,
+          title: courseModule.title,
+          sortOrder: courseModule.sortOrder,
+        },
+      });
+
+      for (const lesson of courseModule.lessons) {
+        await tx.lesson.create({
+          data: {
+            moduleId: newModule.id,
+            title: lesson.title,
+            slug: lesson.slug,
+            sortOrder: lesson.sortOrder,
+            type: lesson.type,
+            videoUid: lesson.videoUid,
+            body: lesson.body,
+            transcript: lesson.transcript,
+            durationSeconds: lesson.durationSeconds,
+            isFreePreview: lesson.isFreePreview,
+          },
+        });
+      }
+    }
+
+    return newCourse.id;
+  });
+
+  revalidatePath("/admin/courses");
+  redirect(`/admin/courses/${newCourseId}`);
 }

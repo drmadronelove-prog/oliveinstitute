@@ -243,6 +243,37 @@ Stream's API — same role `stripe.ts` plays for payments, including the
   credentials, confirming the real request reaches (and is correctly
   rejected by) the blocked network rather than short-circuiting.
 
+## Course authoring tool (phase 9)
+
+`/admin/courses/[id]` grew from status/instructor/enrollment management
+into a full editor: every `Course` field (with a cover image, served
+publicly from its own `course-covers` prefix — see "Video (phase 8)" for
+why lesson resources can't just reuse `/api/files` for this), and a
+module/lesson builder (add/rename/reorder/delete, both levels) whose
+per-lesson editor covers type, Markdown body, transcript, free-preview,
+video (`VideoUploadPanel`, reused from phase 8), and resources (`AddResourceForm`/
+`DeleteResourceButton`, reused from the professor route unchanged —
+`canManageCourse` already allows ADMIN).
+
+- A lesson `body` is Markdown, rendered as such via `LessonBody`
+  (`react-markdown`, no `rehype-raw`) everywhere a learner sees it — not
+  a schema change, `body` was always free text; only the authoring
+  convention and the rendering changed.
+- Publishing is validated, not just toggled:
+  `updateCourseStatusAction` refuses `DRAFT` → `PUBLISHED` with a
+  specific reason (no lessons / no price / no free-preview lesson),
+  checking all three rather than stopping at the first.
+- Duplicate deep-clones modules and lessons (including `videoUid`) as a
+  new `DRAFT`, never auto-published. `/admin/learners` and
+  `/admin/purchases` fill in the two inert placeholder tiles
+  (`RolePanel`'s "Enrollment"/"Finances") that had sat there since the
+  dashboard was first built.
+- Reorder is up/down buttons only, not drag-and-drop — "reorder by drag
+  or by up/down buttons" was read as offering a choice of mechanism, and
+  buttons are simpler, need no new dependency, and are keyboard-operable
+  by construction; every builder control got a real `htmlFor`-linked
+  label as part of this (several had none before).
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a

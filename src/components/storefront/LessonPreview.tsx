@@ -2,6 +2,7 @@ import { withBasePath } from "@/lib/basePath";
 import { formatDuration } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
+import { LessonBody } from "@/components/course/LessonBody";
 
 function youTubeEmbedUrl(url: string): string | null {
   try {
@@ -83,9 +84,9 @@ export function LessonPreview({ lesson }: { lesson: PreviewLesson }) {
       ) : null}
 
       {lesson.body ? (
-        <p className="mt-4 whitespace-pre-wrap font-body text-sm text-[var(--color-ink-muted)]">
-          {lesson.body}
-        </p>
+        <div className="mt-4">
+          <LessonBody body={lesson.body} />
+        </div>
       ) : null}
 
       {lesson.resources.length > 0 ? (

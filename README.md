@@ -218,7 +218,9 @@ it is added there.
 | `/learn/[courseSlug]` | `hasAccess` — resolves the continue lesson and redirects |
 | `/learn/[courseSlug]/[lessonSlug]` | `canViewLesson` — the player; open to a logged-out visitor for a free preview |
 | `/admin/users` | ADMIN — create accounts (emails an invite), send reset links |
-| `/admin/courses`, `/admin/courses/[id]` | ADMIN — create courses, assign an instructor, enroll/unenroll |
+| `/admin/courses`, `/admin/courses/[id]` | ADMIN — create, edit, duplicate, archive courses; the module/lesson builder; assign an instructor; enroll/unenroll |
+| `/admin/learners`, `/admin/learners/[id]` | ADMIN — search learners, review enrollments, grant comp access |
+| `/admin/purchases` | ADMIN — every transaction, plus revenue by month |
 | `/professor/courses/[id]` | course's instructor or ADMIN — curriculum, lesson resources, enroll learners |
 | `/student/courses/[id]` | any signed-in user — curriculum, gated per lesson by `canViewLesson` |
 | `/checkout/success`, `/checkout/cancel` | any signed-in user — reads a `Purchase`, never writes access |
@@ -456,6 +458,67 @@ Cloudflare accepts them. `vttToPlainText` is pure and network-free, so it
 gets real test coverage. The token route's error paths (`404`, `403`, and
 the `502` a real API call failure produces) were each verified by hand
 against a running dev server with fake credentials.
+
+## The course authoring tool
+
+`/admin/courses` lists every course — track, status, price, enrollment
+count, and revenue (summed from `PAID` `Purchase` rows) — with Duplicate
+and Archive actions inline. `/admin/courses/[id]` is where a course
+actually gets built:
+
+- **Course details** edits every `Course` field, including a slug
+  uniqueness check (against every *other* course — a course keeping its
+  own slug isn't a conflict with itself), price entered in dollars and
+  converted to `priceCents`, and a cover image upload. A cover image is
+  served publicly, unlike a lesson resource: `GET
+  /api/course-covers/[...key]` has no entitlement check, because the
+  storefront and an Open Graph crawler both need to load it with no
+  session. It lives under its own `course-covers` prefix in
+  `UPLOADS_DIR`, entirely separate from lesson resources, so the route
+  can never be tricked into serving one of those instead. Once set, it
+  renders as a banner on the sales page and as `og:image`.
+- **The module/lesson builder** (`CourseBuilder.tsx` +
+  `course-builder-actions.ts`) supports add, rename, reorder (up/down
+  buttons — every control has a real, `htmlFor`-linked label, so it's
+  fully keyboard operable), and delete-with-confirmation (a
+  `window.confirm()`, matching how this app does every other destructive
+  click) for both modules and lessons. Reordering swaps `sortOrder` with
+  the adjacent sibling in a transaction rather than renumbering the whole
+  list.
+- **Each lesson's editor** covers type, a Markdown body, transcript,
+  `isFreePreview`, its video (the same `VideoUploadPanel` from the
+  Cloudflare Stream phase), and its `LessonResource` files (the
+  professor route's `AddResourceForm`/`DeleteResourceButton`, reused
+  as-is — `canManageCourse` already allows ADMIN, so no new action was
+  needed). A lesson's `body` is authored as Markdown and rendered as such
+  everywhere a learner sees it — `LessonBody`
+  (`src/components/course/LessonBody.tsx`), a thin `react-markdown`
+  wrapper — rather than as an inert wall of asterisks and hash marks.
+  `react-markdown` parses straight to React elements (no `rehype-raw`,
+  no `dangerouslySetInnerHTML`), so raw HTML in a lesson body is never
+  rendered — safe by construction, not by sanitizing.
+- **Publishing is blocked with a specific reason** — `updateCourseStatusAction`
+  refuses a `DRAFT` → `PUBLISHED` transition and says exactly which of "no
+  lessons", "no price", or "no free-preview lesson" is missing, checking
+  all three rather than stopping at the first.
+- **Preview** is a plain `target="_blank"` link to the real sales page —
+  worth knowing that an admin visiting their own course's sales page
+  always sees the "Go to course" CTA a real visitor would not, since
+  `hasAccess` is unconditionally true for an admin; everything else on
+  the page (title, description, curriculum, the free preview) is
+  identical to what a visitor sees.
+- **Duplicate** deep-clones a course's modules and lessons (including
+  each lesson's `videoUid`, so the copy plays right away) as a new
+  `DRAFT` — never auto-published — under a `-copy`/`-copy-2`/… slug.
+  Enrollments, purchases, and progress belong to the original, not the
+  copy.
+- **`/admin/learners`** searches by name or email;
+  `/admin/learners/[id]` shows one learner's enrollments and a form to
+  grant comp access — the same `Enrollment` a course page's "Enroll a
+  learner" form creates, reached from the learner's side instead of the
+  course's.
+- **`/admin/purchases`** lists every transaction (whatever it settled
+  as, not just `PAID`) and totals `PAID` amounts by month.
 
 ## Authorization
 

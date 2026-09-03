@@ -1,16 +1,18 @@
 import Link from "next/link";
-import { Role } from "@prisma/client";
+import { PurchaseStatus, Role } from "@prisma/client";
 import { requireRole } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { formatMinutes, formatPrice, trackLabel } from "@/lib/format";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { CreateCourseForm } from "./CreateCourseForm";
+import { DuplicateCourseButton } from "./DuplicateCourseButton";
+import { ArchiveCourseButton } from "./ArchiveCourseButton";
 
 export default async function AdminCoursesPage() {
   await requireRole(Role.ADMIN);
 
-  const [courses, instructors] = await Promise.all([
+  const [courses, instructors, revenueByCourse] = await Promise.all([
     prisma.course.findMany({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       include: {
@@ -23,7 +25,23 @@ export default async function AdminCoursesPage() {
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
+    prisma.purchase.groupBy({
+      by: ["courseId"],
+      where: { status: PurchaseStatus.PAID },
+      _sum: { amountCents: true },
+    }),
   ]);
+
+  const revenueCentsByCourseId = new Map(
+    revenueByCourse.map((row) => [row.courseId, row._sum.amountCents ?? 0]),
+  );
+
+  // formatPrice reads a zero amount as "Free" — right for a course price,
+  // wrong for a revenue total, which should read as $0.00.
+  const formatRevenue = (cents: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+      cents / 100,
+    );
 
   return (
     <AppShell>
@@ -57,6 +75,7 @@ export default async function AdminCoursesPage() {
                     <th className="py-2 pr-4">Modules</th>
                     <th className="py-2 pr-4">Instructor</th>
                     <th className="py-2 pr-4">Enrolled</th>
+                    <th className="py-2 pr-4">Revenue</th>
                     <th className="py-2" />
                   </tr>
                 </thead>
@@ -78,13 +97,22 @@ export default async function AdminCoursesPage() {
                       <td className="py-3 pr-4">{course._count.modules}</td>
                       <td className="py-3 pr-4">{course.instructor.name}</td>
                       <td className="py-3 pr-4">{course._count.enrollments}</td>
+                      <td className="py-3 pr-4">
+                        {formatRevenue(revenueCentsByCourseId.get(course.id) ?? 0)}
+                      </td>
                       <td className="py-3">
-                        <Link
-                          href={`/admin/courses/${course.id}`}
-                          className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2"
-                        >
-                          Manage →
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Link
+                            href={`/admin/courses/${course.id}`}
+                            className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2"
+                          >
+                            Manage →
+                          </Link>
+                          <DuplicateCourseButton courseId={course.id} />
+                          {course.status !== "ARCHIVED" ? (
+                            <ArchiveCourseButton courseId={course.id} />
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CourseStatus } from "@prisma/client";
@@ -7,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { canPurchase, canViewLesson } from "@/lib/entitlements";
 import { formatDuration, formatMinutes, formatPrice, trackLabel } from "@/lib/format";
 import { absoluteUrl, SITE_NAME } from "@/lib/site";
+import { withBasePath } from "@/lib/basePath";
 import { PublicShell } from "@/components/shell/PublicShell";
 import { Badge } from "@/components/ui/Badge";
 import { LessonPreview } from "@/components/storefront/LessonPreview";
@@ -54,6 +56,7 @@ export async function generateMetadata({
       subtitle: true,
       description: true,
       track: true,
+      coverImageKey: true,
       instructor: { select: { name: true } },
     },
   });
@@ -68,6 +71,9 @@ export async function generateMetadata({
   const description =
     course.description || course.subtitle || `${course.title} — a self-paced course from ${SITE_NAME}.`;
   const url = absoluteUrl(`/courses/${slug}`);
+  const coverImageUrl = course.coverImageKey
+    ? absoluteUrl(`/api/course-covers/${course.coverImageKey}`)
+    : undefined;
 
   return {
     title: course.title,
@@ -80,6 +86,7 @@ export async function generateMetadata({
       description,
       url,
       authors: [course.instructor.name],
+      images: coverImageUrl ? [{ url: coverImageUrl }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -146,6 +153,23 @@ export default async function CourseSalesPage({
           </p>
         </div>
       </section>
+
+      {course.coverImageKey ? (
+        <div className="mx-auto max-w-7xl px-6 pt-10 md:px-10">
+          <div
+            className="relative w-full overflow-hidden rounded-xl"
+            style={{ aspectRatio: "16 / 7" }}
+          >
+            <Image
+              src={withBasePath(`/api/course-covers/${course.coverImageKey}`)}
+              alt=""
+              fill
+              sizes="(min-width: 1280px) 1280px, 100vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      ) : null}
 
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:px-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex flex-col gap-10">

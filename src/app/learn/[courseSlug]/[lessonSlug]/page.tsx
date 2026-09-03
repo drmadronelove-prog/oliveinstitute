@@ -9,6 +9,7 @@ import { formatDuration } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ResourceList } from "@/components/course/ResourceList";
+import { LessonBody } from "@/components/course/LessonBody";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { MarkCompleteButton } from "@/components/learn/MarkCompleteButton";
 
@@ -112,9 +113,7 @@ export default async function LessonPage({
           )
         ) : lesson.type === LessonType.TEXT ? (
           lesson.body ? (
-            <p className="whitespace-pre-wrap font-body text-sm text-[var(--color-ink)]">
-              {lesson.body}
-            </p>
+            <LessonBody body={lesson.body} />
           ) : (
             <p className="font-body text-sm text-[var(--color-ink-muted)]">
               This lesson has no content yet.
