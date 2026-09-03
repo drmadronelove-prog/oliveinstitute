@@ -12,6 +12,7 @@ import { ResourceList } from "@/components/course/ResourceList";
 import { LessonBody } from "@/components/course/LessonBody";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { MarkCompleteButton } from "@/components/learn/MarkCompleteButton";
+import { QuizPlayer } from "@/components/learn/QuizPlayer";
 
 async function loadLesson(courseSlug: string, lessonSlug: string) {
   // Lesson slugs are only unique within a module, not a course — scoping the
@@ -27,6 +28,9 @@ async function loadLesson(courseSlug: string, lessonSlug: string) {
           id: true,
           title: true,
           course: { select: { id: true, slug: true, title: true } },
+          quiz: {
+            include: { questions: { orderBy: { sortOrder: "asc" } } },
+          },
         },
       },
     },
@@ -126,9 +130,21 @@ export default async function LessonPage({
             </p>
             <ResourceList resources={lesson.resources} />
           </div>
+        ) : lesson.module.quiz ? (
+          <QuizPlayer
+            questions={lesson.module.quiz.questions.map((question) => ({
+              id: question.id,
+              prompt: question.prompt,
+              // Stored as Prisma Json; every writer (addQuizQuestionAction)
+              // always puts a string[] there, so this cast is safe.
+              options: question.options as string[],
+              correctIndex: question.correctIndex,
+              explanation: question.explanation,
+            }))}
+          />
         ) : (
           <p className="font-body text-sm text-[var(--color-ink-muted)]">
-            Quizzes aren&apos;t available in this course yet.
+            This module has no knowledge check yet.
           </p>
         )}
       </Card>

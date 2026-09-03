@@ -35,6 +35,9 @@ export default async function AdminCourseDetailPage({
               resources: { orderBy: { uploadedAt: "desc" } },
             },
           },
+          quiz: {
+            include: { questions: { orderBy: { sortOrder: "asc" } } },
+          },
         },
       },
       enrollments: {
@@ -154,7 +157,18 @@ export default async function AdminCourseDetailPage({
             </h2>
             <CourseBuilder
               courseId={course.id}
-              modules={course.modules}
+              modules={course.modules.map((courseModule) => ({
+                ...courseModule,
+                quiz: courseModule.quiz && {
+                  ...courseModule.quiz,
+                  questions: courseModule.quiz.questions.map((question) => ({
+                    ...question,
+                    // Stored as Prisma Json; every writer (addQuizQuestionAction)
+                    // always puts a string[] there, so this cast is safe.
+                    options: question.options as string[],
+                  })),
+                },
+              }))}
               streamConfigured={streamConfigured}
             />
           </Card>

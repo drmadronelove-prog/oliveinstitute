@@ -185,7 +185,10 @@ export async function duplicateCourseAction(
     include: {
       modules: {
         orderBy: { sortOrder: "asc" },
-        include: { lessons: { orderBy: { sortOrder: "asc" } } },
+        include: {
+          lessons: { orderBy: { sortOrder: "asc" } },
+          quiz: { include: { questions: { orderBy: { sortOrder: "asc" } } } },
+        },
       },
     },
   });
@@ -242,6 +245,24 @@ export async function duplicateCourseAction(
             isFreePreview: lesson.isFreePreview,
           },
         });
+      }
+
+      if (courseModule.quiz) {
+        const newQuiz = await tx.quiz.create({
+          data: { moduleId: newModule.id, title: courseModule.quiz.title },
+        });
+        for (const question of courseModule.quiz.questions) {
+          await tx.quizQuestion.create({
+            data: {
+              quizId: newQuiz.id,
+              sortOrder: question.sortOrder,
+              prompt: question.prompt,
+              options: question.options as string[],
+              correctIndex: question.correctIndex,
+              explanation: question.explanation,
+            },
+          });
+        }
       }
     }
 

@@ -16,6 +16,18 @@ export interface StorageService {
    * entitlement to check.
    */
   saveCoverImage(courseId: string, file: File): Promise<{ storageKey: string }>;
+  /**
+   * Saves a server-generated file (not a browser upload) under its own
+   * "generated" prefix — currently just certificate PDFs. No public URL is
+   * returned: unlike a cover image, a certificate is personal, so it's
+   * served through its own owner-checked route rather than a bare
+   * storage key anyone could guess.
+   */
+  saveGeneratedFile(
+    ownerId: string,
+    filename: string,
+    data: Buffer,
+  ): Promise<{ storageKey: string }>;
 }
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? "./uploads";
@@ -36,13 +48,13 @@ export function hasDangerousExtension(filename: string): boolean {
   return !!ext && DANGEROUS_EXTENSIONS.has(ext);
 }
 
-async function writeUnderPrefix(
+async function writeBufferUnderPrefix(
   prefix: string,
   ownerId: string,
-  file: File,
+  filename: string,
+  bytes: Buffer,
 ): Promise<string> {
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const key = `${ownerId}/${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
+  const key = `${ownerId}/${crypto.randomUUID()}-${sanitizeFilename(filename)}`;
   const fullPath = path.join(
     /*turbopackIgnore: true*/ UPLOADS_DIR,
     prefix,
@@ -55,14 +67,28 @@ async function writeUnderPrefix(
   return key;
 }
 
+async function writeFileUnderPrefix(
+  prefix: string,
+  ownerId: string,
+  file: File,
+): Promise<string> {
+  const bytes = Buffer.from(await file.arrayBuffer());
+  return writeBufferUnderPrefix(prefix, ownerId, file.name, bytes);
+}
+
 class LocalDiskStorage implements StorageService {
   async saveFile(ownerId: string, file: File) {
-    const key = await writeUnderPrefix("", ownerId, file);
+    const key = await writeFileUnderPrefix("", ownerId, file);
     return { url: `/api/files/${key}`, storageKey: key };
   }
 
   async saveCoverImage(courseId: string, file: File) {
-    const key = await writeUnderPrefix("course-covers", courseId, file);
+    const key = await writeFileUnderPrefix("course-covers", courseId, file);
+    return { storageKey: key };
+  }
+
+  async saveGeneratedFile(ownerId: string, filename: string, data: Buffer) {
+    const key = await writeBufferUnderPrefix("generated", ownerId, filename, data);
     return { storageKey: key };
   }
 }

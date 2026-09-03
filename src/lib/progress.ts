@@ -1,5 +1,10 @@
 import type { LessonType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { issueCertificate } from "@/lib/certificate";
+import {
+  findRecommendedNextCourse,
+  sendCourseCompletionEmail,
+} from "@/lib/completionEmails";
 
 /**
  * Progress tracking: how far a learner has gotten through a course, and
@@ -242,11 +247,45 @@ export async function markLessonComplete(
     create: { userId, lessonId, completedAt: new Date() },
   });
 
-  if (await isCourseFullyCompleted(userId, courseId)) {
-    await prisma.enrollment.updateMany({
-      where: { userId, courseId, completedAt: null },
-      data: { completedAt: new Date() },
+  if (!(await isCourseFullyCompleted(userId, courseId))) return;
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { userId_courseId: { userId, courseId } },
+    select: {
+      id: true,
+      completedAt: true,
+      user: { select: { name: true, email: true } },
+      course: { select: { title: true, track: true } },
+    },
+  });
+  // Already completed (a second lesson finishing after the course was
+  // already done, e.g. re-marking one) — nothing new to do.
+  if (!enrollment || enrollment.completedAt) return;
+
+  await prisma.enrollment.update({
+    where: { id: enrollment.id },
+    data: { completedAt: new Date() },
+  });
+
+  // Best-effort: a certificate or email hiccup should never turn the
+  // learner's own "Mark complete" click into a failure. The enrollment is
+  // already completed above, regardless of what happens here.
+  try {
+    await issueCertificate(enrollment.id);
+    const nextCourse = await findRecommendedNextCourse(
+      userId,
+      enrollment.course.track,
+      courseId,
+    );
+    await sendCourseCompletionEmail({
+      to: enrollment.user.email,
+      name: enrollment.user.name,
+      courseTitle: enrollment.course.title,
+      enrollmentId: enrollment.id,
+      nextCourse,
     });
+  } catch (error) {
+    console.error("Course completion side effects failed", error);
   }
 }
 

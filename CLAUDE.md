@@ -274,6 +274,35 @@ video (`VideoUploadPanel`, reused from phase 8), and resources (`AddResourceForm
   by construction; every builder control got a real `htmlFor`-linked
   label as part of this (several had none before).
 
+## Certificates and quizzes (phase 10)
+
+Completing a course's last lesson (`markLessonComplete`,
+`src/lib/progress.ts`) now stamps `Enrollment.completedAt`, issues a
+certificate, and emails it — the certificate/email step is wrapped in
+try/catch so it can never turn "Mark complete" into a visible error; the
+enrollment is completed regardless of what happens after.
+
+- `src/lib/certificate.ts` is the one place certificate data/rendering
+  live — mirrors `entitlements.ts`/`video.ts`'s "one place, everything
+  else defers to it" shape. `issueCertificate` is idempotent
+  (`Enrollment.certificateStorageKey`, added alongside the pre-existing
+  but previously-unused `certificateIssuedAt`, is the record of an
+  already-issued one). PDF rendering is `pdfkit`, drawing the same data
+  the HTML page shows — not a headless-browser screenshot of the page,
+  which would need a dependency (Playwright/Puppeteer + bundled
+  Chromium) this app doesn't otherwise carry.
+- `CERTIFICATE_ISSUER_NAME`/`CERTIFICATE_ISSUER_LICENSE_NUMBER` have no
+  plausible default — left unset, a certificate says so plainly rather
+  than showing invented credentials, the same "don't guess, say so"
+  instinct as `NEXT_PUBLIC_VIDEO_EMBED_BASE` before Stream and
+  `stripeConfigured`/`streamConfigured` before them.
+- `Quiz`/`QuizQuestion` attach to a `Module` (one quiz per module).
+  Untimed, unlimited attempts, never scored, never gates progress or the
+  certificate — `QuizPlayer.tsx` holds nothing but local `useState`, no
+  network calls at all. A quiz is only reachable through a `QUIZ`-type
+  lesson in the same module — the pre-existing lesson-type slot this
+  phase filled in, not a new display surface.
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
@@ -284,15 +313,8 @@ video (`VideoUploadPanel`, reused from phase 8), and resources (`AddResourceForm
   (`/professor/courses/[id]`, `/student/courses/[id]`), even though the
   roles and `Course.instructorId` were renamed. Changing the URLs is a
   separate, breaking change.
-- There is no UI for creating modules or lessons — the seed is the only
-  thing that writes them. Instructors can attach resources to an existing
-  lesson, and admins can create, publish, and archive courses.
 - `EnrollmentSource.BUNDLE` is still unused; only `PURCHASE` (checkout) and
   `COMP` (an admin granting access by hand) create enrollments so far.
-- `Course.coverImageKey` is still unused, and there is no public route that
-  serves an image by key, so pages set no `og:image`. Serving cover images
-  needs a public asset route — `/api/files` is entitlement-gated by design
-  and an Open Graph crawler is anonymous.
 - `Enrollment` carries both `createdAt` and `grantedAt`, which are
   redundant today. `grantedAt` was specified; `createdAt` predates it.
 

@@ -317,3 +317,128 @@ export async function reorderLessonAction(
   revalidateCourse(current.module.courseId, current.module.course.slug);
   return { ok: true };
 }
+
+// ---- Knowledge checks (Quiz / QuizQuestion) --------------------------------
+//
+// Optional, one per module. Untimed, unlimited attempts, never scored, and
+// never gate lesson progress or the certificate — see QuizPlayer.tsx for
+// the learner-facing side of that rule.
+
+export async function addQuizAction(moduleId: string): Promise<BuilderResult> {
+  await requireRole(Role.ADMIN);
+
+  const courseModule = await prisma.module.findUnique({
+    where: { id: moduleId },
+    select: {
+      courseId: true,
+      course: { select: { slug: true } },
+      quiz: { select: { id: true } },
+    },
+  });
+  if (!courseModule) return { ok: false, error: "Module not found." };
+  if (courseModule.quiz) {
+    return { ok: false, error: "This module already has a knowledge check." };
+  }
+
+  await prisma.quiz.create({ data: { moduleId, title: "Knowledge check" } });
+
+  revalidateCourse(courseModule.courseId, courseModule.course.slug);
+  return { ok: true };
+}
+
+export async function deleteQuizAction(quizId: string): Promise<BuilderResult> {
+  await requireRole(Role.ADMIN);
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    select: {
+      module: { select: { courseId: true, course: { select: { slug: true } } } },
+    },
+  });
+  if (!quiz) return { ok: false, error: "Knowledge check not found." };
+
+  // Cascades to its questions.
+  await prisma.quiz.delete({ where: { id: quizId } });
+
+  revalidateCourse(quiz.module.courseId, quiz.module.course.slug);
+  return { ok: true };
+}
+
+export type AddQuizQuestionInput = {
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+};
+
+export async function addQuizQuestionAction(
+  quizId: string,
+  input: AddQuizQuestionInput,
+): Promise<BuilderResult> {
+  await requireRole(Role.ADMIN);
+
+  const prompt = input.prompt.trim();
+  if (!prompt) return { ok: false, error: "A prompt is required." };
+
+  const options = input.options.map((option) => option.trim()).filter(Boolean);
+  if (options.length < 2) {
+    return { ok: false, error: "At least two answer options are required." };
+  }
+  if (input.correctIndex < 0 || input.correctIndex >= options.length) {
+    return { ok: false, error: "Choose which option is correct." };
+  }
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    select: {
+      module: { select: { courseId: true, course: { select: { slug: true } } } },
+    },
+  });
+  if (!quiz) return { ok: false, error: "Knowledge check not found." };
+
+  const last = await prisma.quizQuestion.findFirst({
+    where: { quizId },
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
+
+  await prisma.quizQuestion.create({
+    data: {
+      quizId,
+      sortOrder: (last?.sortOrder ?? 0) + 1,
+      prompt,
+      options,
+      correctIndex: input.correctIndex,
+      explanation: input.explanation.trim() || null,
+    },
+  });
+
+  revalidateCourse(quiz.module.courseId, quiz.module.course.slug);
+  return { ok: true };
+}
+
+export async function deleteQuizQuestionAction(
+  questionId: string,
+): Promise<BuilderResult> {
+  await requireRole(Role.ADMIN);
+
+  const question = await prisma.quizQuestion.findUnique({
+    where: { id: questionId },
+    select: {
+      quiz: {
+        select: {
+          module: { select: { courseId: true, course: { select: { slug: true } } } },
+        },
+      },
+    },
+  });
+  if (!question) return { ok: false, error: "Question not found." };
+
+  await prisma.quizQuestion.delete({ where: { id: questionId } });
+
+  revalidateCourse(
+    question.quiz.module.courseId,
+    question.quiz.module.course.slug,
+  );
+  return { ok: true };
+}

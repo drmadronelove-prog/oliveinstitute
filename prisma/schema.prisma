@@ -161,9 +161,45 @@ model Module {
   updatedAt DateTime @updatedAt
 
   lessons Lesson[]
+  quiz    Quiz?
 
   @@index([courseId, sortOrder])
   @@map("modules")
+}
+
+/// An optional knowledge check for a module. Untimed, unlimited attempts,
+/// never scored, and never gates lesson progress or certificate
+/// eligibility — see src/components/learn/QuizPlayer.tsx.
+model Quiz {
+  id        String   @id @default(cuid())
+  moduleId  String   @unique
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions QuizQuestion[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sortOrder Int
+  prompt    String
+  /// JSON array of option strings, e.g. ["Option A", "Option B", ...].
+  options   Json
+  /// Index into `options` of the correct answer.
+  correctIndex Int
+  /// Shown after the learner picks an answer, right or wrong.
+  explanation  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([quizId, sortOrder])
+  @@map("quiz_questions")
 }
 
 model Lesson {
@@ -220,6 +256,10 @@ model Enrollment {
   grantedAt           DateTime         @default(now())
   completedAt         DateTime?
   certificateIssuedAt DateTime?
+  /// StorageService key for the generated certificate PDF — set alongside
+  /// certificateIssuedAt so re-requesting the certificate serves the same
+  /// stored file rather than generating (and storing) a new one each time.
+  certificateStorageKey String?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 

@@ -12,8 +12,12 @@ import { VideoUploadPanel } from "./VideoUploadPanel";
 import {
   addLessonAction,
   addModuleAction,
+  addQuizAction,
+  addQuizQuestionAction,
   deleteLessonAction,
   deleteModuleAction,
+  deleteQuizAction,
+  deleteQuizQuestionAction,
   renameModuleAction,
   reorderLessonAction,
   reorderModuleAction,
@@ -33,11 +37,26 @@ export type BuilderLesson = {
   resources: ResourceItem[];
 };
 
+export type BuilderQuizQuestion = {
+  id: string;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string | null;
+};
+
+export type BuilderQuiz = {
+  id: string;
+  title: string;
+  questions: BuilderQuizQuestion[];
+};
+
 export type BuilderModule = {
   id: string;
   title: string;
   sortOrder: number;
   lessons: BuilderLesson[];
+  quiz: BuilderQuiz | null;
 };
 
 const fieldClassName =
@@ -280,7 +299,188 @@ function ModuleSection({
           Add lesson
         </button>
       </div>
+
+      <QuizSection moduleId={courseModule.id} quiz={courseModule.quiz} run={run} />
     </section>
+  );
+}
+
+function QuizSection({
+  moduleId,
+  quiz,
+  run,
+}: {
+  moduleId: string;
+  quiz: BuilderQuiz | null;
+  run: (action: () => Promise<{ ok: boolean; error?: string }>) => void;
+}) {
+  if (!quiz) {
+    return (
+      <div className="mt-4 border-t border-black/10 pt-3">
+        <button
+          type="button"
+          onClick={() => run(() => addQuizAction(moduleId))}
+          className={smallButtonClassName}
+        >
+          Add knowledge check
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 border-t border-black/10 pt-3">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="font-body text-sm font-medium text-[var(--color-ink)]">
+          {quiz.title}
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            if (
+              window.confirm(
+                `Delete the knowledge check and all ${quiz.questions.length} of its questions?`,
+              )
+            ) {
+              run(() => deleteQuizAction(quiz.id));
+            }
+          }}
+          className={`${smallButtonClassName} text-red-700`}
+        >
+          Delete knowledge check
+        </button>
+      </div>
+
+      {quiz.questions.length === 0 ? (
+        <p className="mb-3 font-body text-xs text-[var(--color-ink-muted)]">
+          No questions yet.
+        </p>
+      ) : (
+        <ul className="mb-3 flex flex-col gap-3">
+          {quiz.questions.map((question) => (
+            <li
+              key={question.id}
+              className="rounded-lg bg-[var(--color-sage-pale)] p-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-body text-sm font-medium text-[var(--color-ink)]">
+                  {question.prompt}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm("Delete this question?")) {
+                      run(() => deleteQuizQuestionAction(question.id));
+                    }
+                  }}
+                  className={`${smallButtonClassName} shrink-0 text-red-700`}
+                >
+                  Delete
+                </button>
+              </div>
+              <ul className="mt-2 flex flex-col gap-1">
+                {question.options.map((option, index) => (
+                  <li
+                    key={index}
+                    className={`font-body text-xs ${
+                      index === question.correctIndex
+                        ? "font-medium text-[var(--color-olive)]"
+                        : "text-[var(--color-ink-muted)]"
+                    }`}
+                  >
+                    {index === question.correctIndex ? "✓ " : "· "}
+                    {option}
+                  </li>
+                ))}
+              </ul>
+              {question.explanation ? (
+                <p className="mt-2 font-body text-xs italic text-[var(--color-ink-muted)]">
+                  {question.explanation}
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <AddQuizQuestionForm quizId={quiz.id} run={run} />
+    </div>
+  );
+}
+
+function AddQuizQuestionForm({
+  quizId,
+  run,
+}: {
+  quizId: string;
+  run: (action: () => Promise<{ ok: boolean; error?: string }>) => void;
+}) {
+  const [prompt, setPrompt] = useState("");
+  const [options, setOptions] = useState(["", "", "", ""]);
+  const [correctIndex, setCorrectIndex] = useState(0);
+  const [explanation, setExplanation] = useState("");
+
+  function reset() {
+    setPrompt("");
+    setOptions(["", "", "", ""]);
+    setCorrectIndex(0);
+    setExplanation("");
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-dashed border-black/15 p-3">
+      <label className="font-body text-xs font-medium text-[var(--color-ink)]">
+        New question
+      </label>
+      <textarea
+        value={prompt}
+        onChange={(event) => setPrompt(event.target.value)}
+        placeholder="Question prompt"
+        rows={2}
+        className={fieldClassName}
+      />
+      {options.map((option, index) => (
+        <div key={index} className="flex items-center gap-2">
+          <input
+            type="radio"
+            name={`correct-${quizId}`}
+            checked={correctIndex === index}
+            onChange={() => setCorrectIndex(index)}
+            aria-label={`Option ${index + 1} is correct`}
+          />
+          <input
+            type="text"
+            value={option}
+            onChange={(event) => {
+              const next = [...options];
+              next[index] = event.target.value;
+              setOptions(next);
+            }}
+            placeholder={`Option ${index + 1}`}
+            className={fieldClassName}
+          />
+        </div>
+      ))}
+      <textarea
+        value={explanation}
+        onChange={(event) => setExplanation(event.target.value)}
+        placeholder="Explanation, shown after the learner answers (optional)"
+        rows={2}
+        className={fieldClassName}
+      />
+      <button
+        type="button"
+        disabled={!prompt.trim() || options.filter((o) => o.trim()).length < 2}
+        onClick={() => {
+          const input = { prompt, options, correctIndex, explanation };
+          reset();
+          run(() => addQuizQuestionAction(quizId, input));
+        }}
+        className="self-start rounded-md bg-[var(--color-olive)] px-3 py-1.5 font-body text-xs font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+      >
+        Add question
+      </button>
+    </div>
   );
 }
 
