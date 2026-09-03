@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette matched to the real Sati Center reference site (satistudies.org) */
+  --color-forest: #17332c;
+  --color-forest-dark: #0f2420;
+  --color-forest-light: #2c4a41;
+
+  --color-sage: #71917c;
+  --color-sage-dark: #64826e;
+
+  --color-cream: #efefec;
+  --color-cream-warm: #ebe8dd;
+  --color-cream-warm-top: #f6f4eb;
+  --color-cream-deep: #e2decc;
+  --color-logo-top: #fffdf7;
+
+  --color-gold: #c9a24b;
+  --color-gold-light: #d9b567;
+  --color-gold-dark: #8a6a22;
+
+  /* Muted slate blue-gray — a cool complement to the forest/sage/gold
+     palette, used for the admin tool tiles and shared form focus rings. */
+  --color-slate-blue: #5b6472;
+  --color-slate-blue-light: #757e8c;
+  --color-slate-blue-dark: #434b57;
+
+  --color-card: #ffffff;
+  --color-ink: #2e4f49;
+  --color-ink-muted: #3e5550;
+
+  --background: var(--color-cream);
+  --foreground: var(--color-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-forest: var(--color-forest);
+  --color-forest-dark: var(--color-forest-dark);
+  --color-forest-light: var(--color-forest-light);
+  --color-sage: var(--color-sage);
+  --color-sage-dark: var(--color-sage-dark);
+  --color-cream: var(--color-cream);
+  --color-cream-warm: var(--color-cream-warm);
+  --color-cream-warm-top: var(--color-cream-warm-top);
+  --color-cream-deep: var(--color-cream-deep);
+  --color-logo-top: var(--color-logo-top);
+  --color-gold: var(--color-gold);
+  --color-gold-dark: var(--color-gold-dark);
+  --color-gold-light: var(--color-gold-light);
+  --color-slate-blue: var(--color-slate-blue);
+  --color-slate-blue-light: var(--color-slate-blue-light);
+  --color-slate-blue-dark: var(--color-slate-blue-dark);
+  --color-card: var(--color-card);
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+
+  /* Karla for body/nav/UI text, EB Garamond for headings and prominent
+     button labels — matches the updated dashboard design. */
+  --font-serif: var(--font-karla), system-ui, sans-serif;
+  --font-heading: var(--font-eb-garamond), Georgia, "Times New Roman", serif;
+}
+
+body {
+  background-color: var(--background);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(46, 79, 73, 0.06) 0px,
+    rgba(46, 79, 73, 0.06) 1px,
+    transparent 1px,
+    transparent 9px
+  );
+  color: var(--foreground);
+  font-family: var(--font-serif);
+}
+
+/* Neumorphic surface: soft raised look on a monochromatic cream surface.
+   Dual shadow — a warm dark shadow down-right, a light highlight up-left. */
+.shadow-neumorphic {
+  box-shadow:
+    6px 6px 14px rgba(23, 51, 44, 0.16),
+    -6px -6px 14px rgba(255, 255, 255, 0.85);
+}
+
+.shadow-neumorphic-sm {
+  box-shadow:
+    3px 3px 7px rgba(23, 51, 44, 0.14),
+    -3px -3px 7px rgba(255, 255, 255, 0.8);
+}
+
+.shadow-neumorphic-inset {
+  box-shadow:
+    inset 3px 3px 7px rgba(23, 51, 44, 0.16),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.7);
+}
+
+/* Bevelled tile look — matches the reference site's quicklink buttons
+   exactly (single top-left light source, not the symmetric neumorphic
+   shadow above). */
+.shadow-tile {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(23, 51, 44, 0.08),
+    0 1px 1px rgba(23, 51, 44, 0.1),
+    0 6px 12px rgba(23, 51, 44, 0.14);
+}
+
+.shadow-tile-hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(23, 51, 44, 0.08),
+    0 2px 2px rgba(23, 51, 44, 0.1),
+    0 10px 18px rgba(23, 51, 44, 0.2);
+}
+
+.shadow-tile-active {
+  box-shadow:
+    inset 0 1px 2px rgba(23, 51, 44, 0.18),
+    0 1px 1px rgba(23, 51, 44, 0.08);
+}

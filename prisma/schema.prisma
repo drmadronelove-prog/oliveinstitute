@@ -1,0 +1,211 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PROFESSOR
+  STUDENT
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  DROPPED
+  COMPLETED
+}
+
+enum CreditStatus {
+  IN_PROGRESS
+  CREDIT
+  NO_CREDIT
+  INCOMPLETE
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  LATE
+  REVIEWED
+}
+
+enum SubmissionGrade {
+  PASS
+  NO_PASS
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+}
+
+enum MaterialType {
+  PDF
+  LINK
+  VIDEO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  coursesTaught         Course[]           @relation("ProfessorCourses")
+  coTaughtCourses       CourseProfessor[]
+  enrollments           Enrollment[]
+  submissions           Submission[]
+  feedback              Feedback[]
+  attendanceRecords     AttendanceRecord[]
+  uploadedMaterials     CourseMaterial[]
+  emailsSent            DirectEmail[]      @relation("EmailsSent")
+  emailsReceived        DirectEmail[]      @relation("EmailsReceived")
+
+  @@map("users")
+}
+
+model Course {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @default("")
+  term         String
+  credits      Int      @default(0)
+  meetingTimes String   @default("")
+  professorId  String
+  professor   User     @relation("ProfessorCourses", fields: [professorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  coProfessors      CourseProfessor[]
+  enrollments       Enrollment[]
+  assignments       Assignment[]
+  materials         CourseMaterial[]
+  attendanceRecords AttendanceRecord[]
+
+  @@map("courses")
+}
+
+model Enrollment {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id])
+  courseId     String
+  course       Course           @relation(fields: [courseId], references: [id])
+  status       EnrollmentStatus @default(ACTIVE)
+  creditStatus CreditStatus     @default(IN_PROGRESS)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model CourseProfessor {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+  professorId String
+  professor   User     @relation(fields: [professorId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@unique([courseId, professorId])
+  @@map("course_professors")
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+  title       String
+  description String   @default("")
+  dueAt       DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  submissions Submission[]
+
+  @@map("assignments")
+}
+
+model Submission {
+  id           String           @id @default(cuid())
+  assignmentId String
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  studentId    String
+  student      User             @relation(fields: [studentId], references: [id])
+  fileUrl      String?
+  text         String?
+  submittedAt  DateTime         @default(now())
+  status       SubmissionStatus @default(SUBMITTED)
+  grade        SubmissionGrade?
+  reviewedAt   DateTime?
+  createdAt    DateTime         @default(now())
+
+  feedback Feedback[]
+
+  @@map("submissions")
+}
+
+model Feedback {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  authorId     String
+  author       User       @relation(fields: [authorId], references: [id])
+  body         String
+  createdAt    DateTime   @default(now())
+
+  @@map("feedback")
+}
+
+model AttendanceRecord {
+  id          String           @id @default(cuid())
+  courseId    String
+  course      Course           @relation(fields: [courseId], references: [id])
+  studentId   String
+  student     User             @relation(fields: [studentId], references: [id])
+  sessionDate DateTime
+  status      AttendanceStatus
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([courseId, studentId, sessionDate])
+  @@map("attendance_records")
+}
+
+model CourseMaterial {
+  id           String       @id @default(cuid())
+  courseId     String
+  course       Course       @relation(fields: [courseId], references: [id])
+  type         MaterialType
+  title        String
+  url          String
+  uploadedById String
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+  uploadedAt   DateTime     @default(now())
+
+  @@map("course_materials")
+}
+
+model DirectEmail {
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("EmailsSent", fields: [senderId], references: [id])
+  recipientId String
+  recipient   User     @relation("EmailsReceived", fields: [recipientId], references: [id])
+  subject     String
+  body        String
+  sentAt      DateTime @default(now())
+
+  @@map("direct_emails")
+}

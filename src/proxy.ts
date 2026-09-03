@@ -1,0 +1,30 @@
+import { NextResponse, type NextRequest } from "next/server";
+
+const SESSION_COOKIE_NAMES = [
+  "authjs.session-token",
+  "__Secure-authjs.session-token",
+];
+
+export function proxy(request: NextRequest) {
+  const hasSession = SESSION_COOKIE_NAMES.some((name) =>
+    request.cookies.has(name),
+  );
+
+  if (!hasSession) {
+    const loginUrl = new URL("/login", request.nextUrl.origin);
+    return NextResponse.redirect(loginUrl);
+  }
+}
+
+export const config = {
+  matcher: [
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/professor/:path*",
+    "/student/:path*",
+    "/settings/:path*",
+    "/calendar/:path*",
+    "/schedule/:path*",
+    "/registration/:path*",
+  ],
+};
