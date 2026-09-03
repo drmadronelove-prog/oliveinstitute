@@ -20,8 +20,12 @@ import { prisma } from "@/lib/prisma";
  *   visible without an entitlement — it is the course's sample, and the one
  *   case that resolves for a logged-out visitor.
  *
- * Both functions deny by default: an unknown user, course, or lesson is
- * false, never an error.
+ * `canPurchase` answers the neighbouring question — may they *buy* this? —
+ * and lives here for the same reason: one place to audit, one place to
+ * change.
+ *
+ * All three deny by default: an unknown user, course, or lesson is false,
+ * never an error.
  */
 
 /** Course statuses whose content an enrolled learner may open. */
@@ -99,4 +103,58 @@ export async function canViewLesson(
   if (!userId) return false;
 
   return hasAccess(userId, course.id);
+}
+
+/** Why a purchase is not available. */
+export type PurchaseBlockedReason =
+  | "NO_ACCOUNT"
+  | "ALREADY_ENROLLED"
+  | "NOT_PURCHASABLE"
+  | "EMAIL_UNVERIFIED";
+
+export type PurchaseEligibility =
+  | { allowed: true }
+  | { allowed: false; reason: PurchaseBlockedReason };
+
+/**
+ * Whether `userId` may buy `courseId`.
+ *
+ * An unverified account may sign in and browse — including free previews —
+ * but may not complete a purchase, so a mistyped address cannot end up
+ * owning a course nobody can reach. The reason comes back with the answer so
+ * callers can explain themselves without re-deriving the rule.
+ */
+export async function canPurchase(
+  userId: string | null,
+  courseId: string,
+): Promise<PurchaseEligibility> {
+  if (!userId) return { allowed: false, reason: "NO_ACCOUNT" };
+
+  const [user, course] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, emailVerifiedAt: true },
+    }),
+    prisma.course.findUnique({
+      where: { id: courseId },
+      select: { id: true, status: true },
+    }),
+  ]);
+
+  if (!user) return { allowed: false, reason: "NO_ACCOUNT" };
+  if (!course) return { allowed: false, reason: "NOT_PURCHASABLE" };
+
+  if (await hasAccess(user.id, course.id)) {
+    return { allowed: false, reason: "ALREADY_ENROLLED" };
+  }
+
+  if (course.status !== CourseStatus.PUBLISHED) {
+    return { allowed: false, reason: "NOT_PURCHASABLE" };
+  }
+
+  if (user.emailVerifiedAt === null) {
+    return { allowed: false, reason: "EMAIL_UNVERIFIED" };
+  }
+
+  return { allowed: true };
 }

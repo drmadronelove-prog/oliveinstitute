@@ -65,10 +65,10 @@ function AccountBar({
       </p>
       <div className="flex items-center gap-4">
         <Link
-          href="/settings/password"
+          href="/settings"
           className="font-body text-sm text-[var(--color-olive)] underline underline-offset-2 hover:text-[var(--color-olive-dark)]"
         >
-          Change password
+          Settings
         </Link>
         <form
           action={async () => {

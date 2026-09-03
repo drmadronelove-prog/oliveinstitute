@@ -5,9 +5,10 @@ data model; this file covers intent and the decisions already made.
 
 ## What this is
 
-A storefront for **self-paced** courses. Admins create accounts and
-courses; instructors attach materials; learners enroll and work through
-them whenever they like.
+A storefront for **self-paced** courses. Anyone can create their own
+account; admins create courses and can also create or comp accounts by
+hand; instructors attach materials; learners enroll and work through them
+whenever they like.
 
 This repository began as a fork of SatiLMS, a cohort-based LMS, and was
 converted by stripping out everything specific to running a live class.
@@ -86,6 +87,41 @@ surface, wrapped in `PublicShell` rather than `AppShell`.
   marked — a dynamic param route is already on demand, and the flag is not
   what makes its 404 work.
 
+## Self-service accounts (phase 5)
+
+Reversed the original admin-invite model: people register themselves at
+`/register` rather than an admin creating every account.
+
+- `/register` always creates a `LEARNER` and always sends a verification
+  email — there is no way to self-register as anything more privileged.
+  An admin can still create an account directly from `/admin/users`, but
+  that path changed too: it now emails an invite link instead of
+  generating a temporary password, so a password is never something an
+  admin holds or transmits. `sendPasswordResetForUserAction` is the same
+  idea for getting an existing user back in.
+- **Verification gates purchasing, not signing in.** An unverified account
+  can sign in, browse, and watch free previews — only `canPurchase` in
+  `src/lib/entitlements.ts` checks `emailVerifiedAt`. Keep that the one
+  place the rule lives; don't re-check verification anywhere else.
+- Password reset and email verification share `src/lib/tokens.ts`: a
+  random token is emailed, only its SHA-256 hash is stored, and redeeming
+  one retires every other outstanding token for that user. Reset tokens
+  are one hour; verification tokens are one day.
+- Rate limiting (`src/lib/rateLimit.ts`) is rows in `rate_limit_hits`
+  counted in an hourly window, keyed by both IP and the target email, so
+  it survives a restart. Applies to `/register` and `/forgot-password`
+  (and settings' resend-verification, which shares the register budget).
+- `EMAIL_CAPTURE_DIR` (dev/test only — never set in production) makes
+  `src/lib/email.ts` also write every sent message to disk as JSON, which
+  is how `tests/accounts.spec.ts` follows real links instead of reaching
+  into the database for a token it could not unhash anyway.
+- `/settings` replaced `/settings/password`: it is now three panels
+  (profile, change password, purchase history) and is where an unverified
+  user resends their confirmation email.
+- `assessPasswordStrength` / `validatePassword` in `src/lib/password.ts`
+  are the one strength definition, used by registration, reset, and
+  change-password alike — don't add a second rule.
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
@@ -100,11 +136,13 @@ surface, wrapped in `PublicShell` rather than `AppShell`.
   thing that writes them. Instructors can attach resources to an existing
   lesson, and admins can create, publish, and archive courses.
 - Nothing writes `Purchase` or `LessonProgress` yet. The Buy button is
-  therefore a stub: it sends a logged-out visitor to `/login`, and for a
-  signed-in visitor who does not own the course it renders disabled with a
-  note. Wiring Stripe checkout is what makes it real.
+  therefore a stub: it sends a logged-out visitor to `/register`, and for a
+  signed-in, verified visitor who does not own the course it renders
+  disabled with a note. Wiring Stripe checkout is what makes it real.
   `EnrollmentSource.PURCHASE` and `BUNDLE` are unused so far — every
-  enrollment the UI creates is a `COMP`.
+  enrollment the UI creates is a `COMP`. `/settings`' purchase-history panel
+  already reads `Purchase`, so it will show real rows the moment checkout
+  writes them.
 - `Course.coverImageKey` is still unused, and there is no public route that
   serves an image by key, so pages set no `og:image`. Serving cover images
   needs a public asset route — `/api/files` is entitlement-gated by design
@@ -134,9 +172,11 @@ The Sati palette and typography were replaced wholesale:
 - Prioritize RBAC correctness: every page and Server Action calls
   `requireRole`/`requireSession` first, and `/api/files` authorizes
   independently. Keep it that way.
-- There is no public sign-up and no demo account. The seed provisions one
-  ADMIN from the environment and fails loudly if it is unset — don't add
-  fallback credentials.
+- There is no demo account and no fallback credentials. The seed
+  provisions exactly one ADMIN from the environment and fails loudly if it
+  is unset. Everyone else signs up at `/register`, or an admin invites them
+  from `/admin/users` — either way the account holder is the only one who
+  ever sets their password.
 - Ask before choosing between ambiguous options rather than guessing
   silently. If no one is available to answer, take the safer default,
   document it here, and flag it as open.

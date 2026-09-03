@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { createUserAction, type CreateUserState } from "./actions";
+import { changePasswordAction, type ChangePasswordState } from "./changePasswordAction";
 
-const initialState: CreateUserState = { status: "idle" };
+const initialState: ChangePasswordState = { status: "idle" };
 
-export function CreateUserForm() {
+export function ChangePasswordForm() {
   const [state, formAction, pending] = useActionState(
-    createUserAction,
+    changePasswordAction,
     initialState,
   );
 
@@ -15,11 +15,11 @@ export function CreateUserForm() {
     <form action={formAction} className="flex flex-col gap-4">
       <div>
         <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
-          Name
+          Current password
         </label>
         <input
-          name="name"
-          type="text"
+          name="currentPassword"
+          type="password"
           required
           className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
@@ -27,29 +27,17 @@ export function CreateUserForm() {
 
       <div>
         <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
-          Email
+          New password
         </label>
         <input
-          name="email"
-          type="email"
+          name="newPassword"
+          type="password"
           required
           className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
-      </div>
-
-      <div>
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
-          Role
-        </label>
-        <select
-          name="role"
-          defaultValue="LEARNER"
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
-        >
-          <option value="LEARNER">Learner</option>
-          <option value="INSTRUCTOR">Instructor</option>
-          <option value="ADMIN">Admin</option>
-        </select>
+        <p className="mt-1 font-body text-xs text-[var(--color-ink-muted)]">
+          At least 10 characters, with a mix of character types.
+        </p>
       </div>
 
       <button
@@ -57,7 +45,7 @@ export function CreateUserForm() {
         disabled={pending}
         className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
       >
-        {pending ? "Sending invitation…" : "Create user"}
+        {pending ? "Updating…" : "Update password"}
       </button>
 
       {state.status === "error" ? (
@@ -67,7 +55,7 @@ export function CreateUserForm() {
       ) : null}
 
       {state.status === "success" ? (
-        <p className="rounded-md bg-[var(--color-sage)]/10 p-3 font-body text-sm text-[var(--color-ink)]">
+        <p className="font-body text-sm text-[var(--color-olive)]">
           {state.message}
         </p>
       ) : null}

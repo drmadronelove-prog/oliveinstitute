@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { CourseStatus } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canViewLesson, hasAccess } from "@/lib/entitlements";
+import { canPurchase, canViewLesson } from "@/lib/entitlements";
 import { formatDuration, formatMinutes, formatPrice, trackLabel } from "@/lib/format";
 import { absoluteUrl, SITE_NAME } from "@/lib/site";
 import { PublicShell } from "@/components/shell/PublicShell";
@@ -106,7 +106,12 @@ export default async function CourseSalesPage({
   const session = await auth();
   const userId = session?.user.id ?? null;
 
-  const enrolled = userId ? await hasAccess(userId, course.id) : false;
+  // One question, one answer: may they buy, and if not, why not. The page
+  // never re-derives "enrolled" or "verified" for itself.
+  const purchase = await canPurchase(userId, course.id);
+  const enrolled = !purchase.allowed && purchase.reason === "ALREADY_ENROLLED";
+  const unverified =
+    !purchase.allowed && purchase.reason === "EMAIL_UNVERIFIED";
 
   const lessons = course.modules.flatMap((m) => m.lessons);
   const totalLessons = lessons.length;
@@ -224,7 +229,7 @@ export default async function CourseSalesPage({
                 </button>
               ) : (
                 <Link
-                  href="/login"
+                  href="/register"
                   className="block rounded-md bg-[var(--color-olive)] px-4 py-3 text-center font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
                 >
                   Buy — {formatPrice(course.priceCents)}
@@ -233,11 +238,40 @@ export default async function CourseSalesPage({
             </div>
 
             <p className="mt-3 font-body text-xs text-[var(--color-ink-muted)]">
-              {enrolled
-                ? "You already have access to this course."
-                : session
-                  ? "Checkout isn't connected yet — an admin can grant access in the meantime."
-                  : "Sign in to buy. The free preview above needs no account."}
+              {enrolled ? (
+                "You already have access to this course."
+              ) : unverified ? (
+                <>
+                  Confirm your email address before buying — check your inbox,
+                  or{" "}
+                  <Link
+                    href="/settings"
+                    className="text-[var(--color-olive)] underline underline-offset-2"
+                  >
+                    send a new link
+                  </Link>
+                  .
+                </>
+              ) : session ? (
+                "Checkout isn't connected yet — an admin can grant access in the meantime."
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    className="text-[var(--color-olive)] underline underline-offset-2"
+                  >
+                    Create an account
+                  </Link>{" "}
+                  or{" "}
+                  <Link
+                    href="/login"
+                    className="text-[var(--color-olive)] underline underline-offset-2"
+                  >
+                    sign in
+                  </Link>{" "}
+                  to buy. The free preview above needs no account.
+                </>
+              )}
             </p>
           </div>
         </aside>

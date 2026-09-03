@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { Wordmark } from "@/components/shell/Wordmark";
 import { loginAction, type LoginState } from "./actions";
@@ -62,6 +63,24 @@ export default function LoginPage() {
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>
+
+        <div className="mt-5 flex flex-col gap-2 border-t border-black/10 pt-4">
+          <Link
+            href="/forgot-password"
+            className="font-body text-sm text-[var(--color-olive)] underline underline-offset-2"
+          >
+            Forgot your password?
+          </Link>
+          <p className="font-body text-sm text-[var(--color-ink-muted)]">
+            New here?{" "}
+            <Link
+              href="/register"
+              className="text-[var(--color-olive)] underline underline-offset-2"
+            >
+              Create an account
+            </Link>
+          </p>
+        </div>
       </form>
     </div>
   );

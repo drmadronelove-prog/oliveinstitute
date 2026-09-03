@@ -116,7 +116,7 @@ test.describe("public routes render logged out", () => {
   });
 
   test("protected routes still redirect to login", async ({ page }) => {
-    for (const path of ["/dashboard", "/admin/courses", "/settings/password"]) {
+    for (const path of ["/dashboard", "/admin/courses", "/settings"]) {
       await page.goto(appPath(path));
       await expect(page).toHaveURL(appUrlPattern("/login"));
     }
@@ -180,12 +180,14 @@ test.describe("the free preview", () => {
 });
 
 test.describe("the buy button", () => {
-  test("sends a logged-out visitor to sign in", async ({ page }) => {
+  test("sends a logged-out visitor to register", async ({ page }) => {
+    // Accounts are self-service now, so a new visitor is routed to sign up
+    // rather than sign in — the sign-in page itself links to /register too.
     await page.goto(appPath(`/courses/${publicCourseSlug}`));
     const buy = page.getByRole("link", { name: /^Buy — / });
     await expect(buy).toBeVisible();
     await buy.click();
-    await expect(page).toHaveURL(appUrlPattern("/login"));
+    await expect(page).toHaveURL(appUrlPattern("/register"));
   });
 
   test("becomes Go to course for an enrolled learner", async ({ page }) => {

@@ -51,8 +51,8 @@ test.describe("base path", () => {
   test("in-app links keep the base path", async ({ page }) => {
     await login(page, SEEDED_ADMIN.email, SEEDED_ADMIN.password);
 
-    await page.click("text=Change password");
-    await expect(page).toHaveURL(new RegExp(`${appPath("/settings/password")}$`));
+    await page.click("text=Settings");
+    await expect(page).toHaveURL(appUrlPattern("/settings"));
 
     await page.goto(appPath("/dashboard"));
     await page.click("text=Manage users");

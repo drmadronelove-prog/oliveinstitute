@@ -1,13 +1,16 @@
 "use client";
 
 import { useActionState } from "react";
-import { resetPasswordAction, type ResetPasswordState } from "./actions";
+import {
+  sendPasswordResetForUserAction,
+  type SendResetState,
+} from "./actions";
 
-const initialState: ResetPasswordState = { status: "idle" };
+const initialState: SendResetState = { status: "idle" };
 
-export function ResetPasswordButton({ userId }: { userId: string }) {
+export function SendResetLinkButton({ userId }: { userId: string }) {
   const [state, formAction, pending] = useActionState(
-    resetPasswordAction,
+    sendPasswordResetForUserAction,
     initialState,
   );
 
@@ -20,19 +23,15 @@ export function ResetPasswordButton({ userId }: { userId: string }) {
           disabled={pending}
           className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2 hover:text-[var(--color-olive-dark)] disabled:opacity-60"
         >
-          {pending ? "Resetting…" : "Reset password"}
+          {pending ? "Sending…" : "Send reset link"}
         </button>
       </form>
 
       {state.status === "success" ? (
         <p className="mt-1 font-body text-xs text-[var(--color-ink-muted)]">
-          New password:{" "}
-          <code className="rounded bg-white px-1 py-0.5">
-            {state.tempPassword}
-          </code>
+          {state.message}
         </p>
       ) : null}
-
       {state.status === "error" ? (
         <p className="mt-1 font-body text-xs text-red-700">{state.message}</p>
       ) : null}

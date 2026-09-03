@@ -184,9 +184,11 @@ from `NEXTAUTH_URL` and ignores the base path.
    ```
 
    Sign in at `/login` with the seeded admin; you land on `/dashboard`.
-   Create further accounts from `/admin/users`, which generates a
-   temporary password to hand over out of band — there is no public
-   sign-up.
+   Anyone can create their own account at `/register` — accounts are
+   self-service, not admin-issued. An admin can still create one directly
+   from `/admin/users`; either way the new user sets their own password by
+   following an emailed link, so no temporary password ever passes through
+   anyone else's hands.
 
 ## Routes
 
@@ -204,14 +206,56 @@ it is added there.
 | `/explore` | anyone — catalogue filtered to PUBLIC |
 | `/courses/[slug]` | anyone — sales page; only PUBLISHED slugs resolve |
 | `/login` | anyone |
+| `/register` | anyone — self-service sign-up, always creates a LEARNER |
+| `/verify-email/[token]` | anyone with the link — confirms the account's email |
+| `/forgot-password`, `/reset-password/[token]` | anyone — request and redeem a reset link |
 | `/dashboard` | any signed-in user; content varies by role |
-| `/admin/users` | ADMIN — create accounts, reset passwords |
+| `/settings` | any signed-in user — profile, password, purchase history |
+| `/admin/users` | ADMIN — create accounts (emails an invite), send reset links |
 | `/admin/courses`, `/admin/courses/[id]` | ADMIN — create courses, assign an instructor, enroll/unenroll |
 | `/professor/courses/[id]` | course's instructor or ADMIN — curriculum, lesson resources, enroll learners |
 | `/student/courses/[id]` | any signed-in user — curriculum, gated per lesson by `canViewLesson` |
-| `/settings/password` | any signed-in user |
 | `/api/files/[...key]` | readers a lesson resource is visible to |
 | `/style-guide` | design-system reference |
+
+## Accounts
+
+Accounts are self-service. `/register` takes a name, email, password, and
+explicit checkboxes for the terms of service and privacy policy; it always
+creates a `LEARNER` — anything more privileged is an admin's decision at
+`/admin/users`, which now emails an invitation link instead of generating a
+temporary password, so an invitee is the only one who ever holds their own
+password.
+
+**Email verification** doesn't gate signing in or browsing — only buying.
+`src/lib/entitlements.ts`'s `canPurchase` is where that rule lives; the
+sales page and (once it exists) checkout both defer to it rather than
+re-checking `emailVerifiedAt` themselves. An unverified account resends its
+confirmation email from `/settings`.
+
+**Password reset and email verification** both use `src/lib/tokens.ts`: a
+random 256-bit token is emailed, and only its SHA-256 hash is stored, so a
+leaked database row can't be replayed as a working link. Reset tokens expire
+in one hour and are single-use — redeeming one also retires every other
+outstanding token for that user, so an older email in an inbox goes dead
+too. `/forgot-password` gives the same response whether or not the address
+has an account, so the form can't be used to enumerate who is registered.
+
+**Password strength** is enforced by `src/lib/password.ts` everywhere a
+password gets set — registration, reset, and change-password all call the
+same `validatePassword`. It rejects anything under 10 characters, a single
+character class, common patterns, and passwords built from the account's own
+name or email; a long passphrase with some variety clears it easily. The
+client-side meter is a preview of the same scoring, not a separate check.
+
+**Rate limiting** (`src/lib/rateLimit.ts`) applies to registration and
+password-reset requests, counted by both the caller's IP and the target
+email against an hourly budget, backed by rows in `rate_limit_hits` rather
+than an in-memory counter so a restart doesn't hand out a fresh one.
+
+In development, set `EMAIL_CAPTURE_DIR` to have every sent email also
+written to disk as JSON — the Playwright suite reads these to follow real
+verification and reset links. Never set it in production.
 
 ## Authorization
 

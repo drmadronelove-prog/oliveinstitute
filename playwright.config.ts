@@ -1,4 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
+import path from "path";
+
+/**
+ * Where the dev server drops a copy of every email it "sends". The account
+ * tests read these to follow real verification and reset links, rather than
+ * reaching into the database for tokens they could not unhash anyway.
+ */
+export const EMAIL_CAPTURE_DIR = path.resolve(__dirname, ".email-capture");
 
 export default defineConfig({
   testDir: "./tests",
@@ -28,6 +36,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run dev",
+    env: { EMAIL_CAPTURE_DIR },
     // The app is mounted under basePath, so "/" is a 404 — poll a real page.
     url: "http://localhost:3000/institute/login",
     reuseExistingServer: true,

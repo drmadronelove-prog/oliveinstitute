@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { CreateUserForm } from "./CreateUserForm";
-import { ResetPasswordButton } from "./ResetPasswordButton";
+import { SendResetLinkButton } from "./SendResetLinkButton";
 
 export default async function AdminUsersPage() {
   await requireRole(Role.ADMIN);
@@ -18,9 +18,10 @@ export default async function AdminUsersPage() {
         Manage users
       </h1>
       <p className="mb-8 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
-        Accounts are admin-created — there is no public sign-up. Set an
-        initial password here and share it with the new user out of band;
-        they can change it from Settings once signed in.
+        People can sign up themselves at <code>/register</code>. Creating an
+        account here emails an invitation instead — the new user sets their
+        own password, so no temporary password is ever handled by anyone
+        else.
       </p>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -35,6 +36,7 @@ export default async function AdminUsersPage() {
                   <th className="py-2 pr-4">Name</th>
                   <th className="py-2 pr-4">Email</th>
                   <th className="py-2 pr-4">Role</th>
+                  <th className="py-2 pr-4">Email</th>
                   <th className="py-2 pr-4">Joined</th>
                   <th className="py-2">Actions</th>
                 </tr>
@@ -45,6 +47,9 @@ export default async function AdminUsersPage() {
                     <td className="py-3 pr-4">{user.name}</td>
                     <td className="py-3 pr-4">{user.email}</td>
                     <td className="py-3 pr-4">{user.role}</td>
+                    <td className="py-3 pr-4 text-[var(--color-ink-muted)]">
+                      {user.emailVerifiedAt ? "Confirmed" : "Unconfirmed"}
+                    </td>
                     <td className="py-3 pr-4">
                       {user.createdAt.toLocaleDateString("en-US", {
                         year: "numeric",
@@ -54,7 +59,7 @@ export default async function AdminUsersPage() {
                     </td>
                     <td className="py-3">
                       <div className="flex items-center gap-3">
-                        <ResetPasswordButton userId={user.id} />
+                        <SendResetLinkButton userId={user.id} />
                         <Link
                           href={`/admin/users/${user.id}/email`}
                           className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2"
