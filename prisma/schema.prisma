@@ -16,6 +16,42 @@ enum Role {
   LEARNER
 }
 
+/// Which audience a course is sold to.
+enum Track {
+  CLINICIAN
+  PUBLIC
+}
+
+/// Storefront visibility. Only PUBLISHED courses are sellable; ARCHIVED
+/// courses stay readable for people who already own them.
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LessonType {
+  VIDEO
+  TEXT
+  PDF
+  QUIZ
+}
+
+/// How an enrollment came to exist.
+enum EnrollmentSource {
+  PURCHASE
+  COMP
+  BUNDLE
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+/// Attachment kind for a lesson resource (handout, external link, extra video).
 enum MaterialType {
   PDF
   LINK
@@ -23,56 +59,96 @@ enum MaterialType {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         Role
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  role            Role
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  coursesTaught     Course[]         @relation("ProfessorCourses")
+  coursesTaught     Course[]         @relation("InstructorCourses")
   enrollments       Enrollment[]
-  uploadedMaterials CourseMaterial[]
+  purchases         Purchase[]
+  lessonProgress    LessonProgress[]
+  uploadedResources LessonResource[]
 
   @@map("users")
 }
 
 model Course {
-  id           String   @id @default(cuid())
-  title        String
-  description  String   @default("")
-  term         String
-  credits      Int      @default(0)
-  meetingTimes String   @default("")
-  professorId  String
-  professor    User     @relation("ProfessorCourses", fields: [professorId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String       @id @default(cuid())
+  slug             String       @unique
+  title            String
+  subtitle         String       @default("")
+  description      String       @default("")
+  track            Track
+  priceCents       Int
+  stripePriceId    String?
+  status           CourseStatus @default(DRAFT)
+  coverImageKey    String?
+  estimatedMinutes Int
+  sortOrder        Int
+  publishedAt      DateTime?
+  instructorId     String
+  instructor       User         @relation("InstructorCourses", fields: [instructorId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
+  modules     Module[]
   enrollments Enrollment[]
-  materials   CourseMaterial[]
+  purchases   Purchase[]
 
   @@map("courses")
 }
 
-model Enrollment {
+model Module {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
   courseId  String
-  course    Course   @relation(fields: [courseId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  sortOrder Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, courseId])
-  @@map("enrollments")
+  lessons Lesson[]
+
+  @@index([courseId, sortOrder])
+  @@map("modules")
 }
 
-model CourseMaterial {
+model Lesson {
+  id              String     @id @default(cuid())
+  moduleId        String
+  module          Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String
+  sortOrder       Int
+  type            LessonType
+  /// Provider-side video identifier; null for non-video lessons.
+  videoUid        String?
+  /// Rendered lesson body, for TEXT lessons.
+  body            String?
+  transcript      String?
+  durationSeconds Int
+  /// Viewable without an entitlement, as the course's sample lesson.
+  isFreePreview   Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  resources LessonResource[]
+  progress  LessonProgress[]
+
+  @@unique([moduleId, slug])
+  @@index([moduleId, sortOrder])
+  @@map("lessons")
+}
+
+model LessonResource {
   id           String       @id @default(cuid())
-  courseId     String
-  course       Course       @relation(fields: [courseId], references: [id])
+  lessonId     String
+  lesson       Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   type         MaterialType
   title        String
   url          String
@@ -80,5 +156,60 @@ model CourseMaterial {
   uploadedBy   User         @relation(fields: [uploadedById], references: [id])
   uploadedAt   DateTime     @default(now())
 
-  @@map("course_materials")
+  @@index([lessonId])
+  @@map("lesson_resources")
+}
+
+model Enrollment {
+  id                  String           @id @default(cuid())
+  userId              String
+  user                User             @relation(fields: [userId], references: [id])
+  courseId            String
+  course              Course           @relation(fields: [courseId], references: [id])
+  source              EnrollmentSource
+  purchaseId          String?
+  purchase            Purchase?        @relation(fields: [purchaseId], references: [id])
+  grantedAt           DateTime         @default(now())
+  completedAt         DateTime?
+  certificateIssuedAt DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model Purchase {
+  id                      String         @id @default(cuid())
+  userId                  String
+  user                    User           @relation(fields: [userId], references: [id])
+  courseId                String
+  course                  Course         @relation(fields: [courseId], references: [id])
+  stripeCheckoutSessionId String         @unique
+  stripePaymentIntentId   String?
+  amountCents             Int
+  currency                String         @default("usd")
+  status                  PurchaseStatus
+  createdAt               DateTime       @default(now())
+  paidAt                  DateTime?
+  refundedAt              DateTime?
+
+  enrollments Enrollment[]
+
+  @@index([userId])
+  @@index([courseId])
+  @@map("purchases")
+}
+
+model LessonProgress {
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  lessonId            String
+  lesson              Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt         DateTime?
+  lastPositionSeconds Int       @default(0)
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
 }

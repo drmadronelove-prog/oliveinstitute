@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { withBasePath } from "@/lib/basePath";
 
-export type MaterialItem = {
+export type ResourceItem = {
   id: string;
   type: "PDF" | "LINK" | "VIDEO";
   title: string;
@@ -25,24 +25,24 @@ function youTubeEmbedUrl(url: string): string | null {
   return null;
 }
 
-export function MaterialsList({
-  materials,
+export function ResourceList({
+  resources,
   renderActions,
 }: {
-  materials: MaterialItem[];
-  renderActions?: (material: MaterialItem) => ReactNode;
+  resources: ResourceItem[];
+  renderActions?: (resource: ResourceItem) => ReactNode;
 }) {
-  if (materials.length === 0) {
+  if (resources.length === 0) {
     return (
       <p className="font-body text-sm text-[var(--color-ink-muted)]">
-        No materials have been added yet.
+        No resources have been added yet.
       </p>
     );
   }
 
   return (
     <ul className="flex flex-col gap-4">
-      {materials.map((material) => {
+      {resources.map((material) => {
         const embedUrl = material.type === "VIDEO" ? youTubeEmbedUrl(material.url) : null;
         // Uploaded files are stored as "/api/files/…"; external links are
         // absolute URLs and must not be prefixed.

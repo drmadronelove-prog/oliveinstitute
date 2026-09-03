@@ -5,8 +5,7 @@ import { CourseTile } from "@/components/dashboard/CourseTile";
 type CourseSummary = {
   id: string;
   title: string;
-  term: string;
-  credits: number;
+  meta: string;
   secondaryLabel?: string;
 };
 
@@ -67,8 +66,7 @@ export function RolePanel(props: RolePanelProps) {
                 key={course.id}
                 href={`/student/courses/${course.id}`}
                 title={course.title}
-                term={course.term}
-                credits={course.credits}
+                meta={course.meta}
                 secondaryLabel={course.secondaryLabel}
               />
             ))}
@@ -101,7 +99,7 @@ export function RolePanel(props: RolePanelProps) {
                     {course.title}
                   </p>
                   <p className="font-body text-xs text-[var(--color-ink-muted)]">
-                    {course.term} &middot; {course.credits} credits
+                    {course.meta}
                   </p>
                 </div>
                 <span className="font-body text-xs text-[var(--color-ink-muted)]">

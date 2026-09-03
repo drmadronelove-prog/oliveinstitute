@@ -14,15 +14,27 @@ export type ActionState = {
 
 const MAX_PDF_BYTES = 15 * 1024 * 1024; // 15 MB
 
-async function requireOwnedCourse(
-  courseId: string,
+/**
+ * Resolves a lesson to the course that owns it, but only if this session may
+ * manage that course. Resources hang off lessons now, so every write has to
+ * walk lesson -> module -> course before it can authorize.
+ */
+async function requireManageableLesson(
+  lessonId: string,
   session: { user: { id: string; role: Role } },
 ) {
-  const course = await prisma.course.findUnique({ where: { id: courseId } });
-  if (!course || !canManageCourse(session, course)) {
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    select: {
+      id: true,
+      module: { select: { course: { select: { id: true, instructorId: true } } } },
+    },
+  });
+
+  if (!lesson || !canManageCourse(session, lesson.module.course)) {
     return null;
   }
-  return course;
+  return { lessonId: lesson.id, courseId: lesson.module.course.id };
 }
 
 const linkVideoSchema = z.object({
@@ -30,18 +42,18 @@ const linkVideoSchema = z.object({
   url: z.string().trim().url("Enter a valid URL"),
 });
 
-export async function addMaterialAction(
+export async function addResourceAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   const session = await requireRole([Role.INSTRUCTOR, Role.ADMIN]);
 
-  const courseId = String(formData.get("courseId") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "");
   const type = formData.get("type");
 
-  const course = await requireOwnedCourse(courseId, session);
-  if (!course) {
-    return { status: "error", message: "Course not found." };
+  const target = await requireManageableLesson(lessonId, session);
+  if (!target) {
+    return { status: "error", message: "Lesson not found." };
   }
 
   if (type === MaterialType.PDF) {
@@ -61,11 +73,11 @@ export async function addMaterialAction(
       return { status: "error", message: "PDF must be under 15 MB." };
     }
 
-    const { url } = await storage.saveFile(courseId, file);
+    const { url } = await storage.saveFile(target.lessonId, file);
 
-    await prisma.courseMaterial.create({
+    await prisma.lessonResource.create({
       data: {
-        courseId,
+        lessonId: target.lessonId,
         type: MaterialType.PDF,
         title,
         url,
@@ -84,9 +96,9 @@ export async function addMaterialAction(
       };
     }
 
-    await prisma.courseMaterial.create({
+    await prisma.lessonResource.create({
       data: {
-        courseId,
+        lessonId: target.lessonId,
         type,
         title: parsed.data.title,
         url: parsed.data.url,
@@ -94,47 +106,47 @@ export async function addMaterialAction(
       },
     });
   } else {
-    return { status: "error", message: "Invalid material type." };
+    return { status: "error", message: "Invalid resource type." };
   }
 
-  revalidatePath(`/professor/courses/${courseId}`);
-  revalidatePath(`/student/courses/${courseId}`);
+  revalidatePath(`/professor/courses/${target.courseId}`);
+  revalidatePath(`/student/courses/${target.courseId}`);
 
-  return { status: "success", message: "Material added." };
+  return { status: "success", message: "Resource added." };
 }
 
 const deleteSchema = z.object({
-  materialId: z.string().trim().min(1),
-  courseId: z.string().trim().min(1),
+  resourceId: z.string().trim().min(1),
+  lessonId: z.string().trim().min(1),
 });
 
-export async function deleteMaterialAction(
+export async function deleteResourceAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   const session = await requireRole([Role.INSTRUCTOR, Role.ADMIN]);
 
   const parsed = deleteSchema.safeParse({
-    materialId: formData.get("materialId"),
-    courseId: formData.get("courseId"),
+    resourceId: formData.get("resourceId"),
+    lessonId: formData.get("lessonId"),
   });
   if (!parsed.success) {
     return { status: "error", message: "Invalid request." };
   }
 
-  const course = await requireOwnedCourse(parsed.data.courseId, session);
-  if (!course) {
-    return { status: "error", message: "Course not found." };
+  const target = await requireManageableLesson(parsed.data.lessonId, session);
+  if (!target) {
+    return { status: "error", message: "Lesson not found." };
   }
 
-  await prisma.courseMaterial.deleteMany({
-    where: { id: parsed.data.materialId, courseId: parsed.data.courseId },
+  await prisma.lessonResource.deleteMany({
+    where: { id: parsed.data.resourceId, lessonId: target.lessonId },
   });
 
-  revalidatePath(`/professor/courses/${parsed.data.courseId}`);
-  revalidatePath(`/student/courses/${parsed.data.courseId}`);
+  revalidatePath(`/professor/courses/${target.courseId}`);
+  revalidatePath(`/student/courses/${target.courseId}`);
 
-  return { status: "success", message: "Material removed." };
+  return { status: "success", message: "Resource removed." };
 }
 
 const enrollSchema = z.object({
@@ -159,15 +171,18 @@ export async function enrollStudentAction(
     };
   }
 
-  const course = await requireOwnedCourse(parsed.data.courseId, session);
-  if (!course) {
+  const course = await prisma.course.findUnique({
+    where: { id: parsed.data.courseId },
+    select: { id: true, instructorId: true },
+  });
+  if (!course || !canManageCourse(session, course)) {
     return { status: "error", message: "Course not found." };
   }
 
-  const student = await prisma.user.findUnique({
+  const learner = await prisma.user.findUnique({
     where: { id: parsed.data.studentId },
   });
-  if (!student || student.role !== Role.LEARNER) {
+  if (!learner || learner.role !== Role.LEARNER) {
     return { status: "error", message: "Selected learner is invalid." };
   }
 
@@ -185,6 +200,8 @@ export async function enrollStudentAction(
       data: {
         userId: parsed.data.studentId,
         courseId: parsed.data.courseId,
+        // Granted by hand rather than bought.
+        source: "COMP",
       },
     });
   }
@@ -192,5 +209,5 @@ export async function enrollStudentAction(
   revalidatePath(`/professor/courses/${parsed.data.courseId}`);
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
 
-  return { status: "success", message: `${student.name} enrolled.` };
+  return { status: "success", message: `${learner.name} enrolled.` };
 }

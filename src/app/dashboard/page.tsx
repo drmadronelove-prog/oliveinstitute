@@ -3,6 +3,7 @@ import { signOut } from "@/lib/auth";
 import { withBasePath } from "@/lib/basePath";
 import { requireSession } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
+import { formatMinutes, trackLabel } from "@/lib/format";
 import { AppShell } from "@/components/shell/AppShell";
 import { HeroCard } from "@/components/dashboard/HeroCard";
 import { RolePanel } from "@/components/dashboard/RolePanel";
@@ -10,8 +11,8 @@ import { RolePanel } from "@/components/dashboard/RolePanel";
 async function loadRolePanelData(userId: string, role: string) {
   if (role === "INSTRUCTOR") {
     const courses = await prisma.course.findMany({
-      where: { professorId: userId },
-      orderBy: { createdAt: "desc" },
+      where: { instructorId: userId },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       include: { _count: { select: { enrollments: true } } },
     });
     return {
@@ -19,8 +20,7 @@ async function loadRolePanelData(userId: string, role: string) {
       courses: courses.map((course) => ({
         id: course.id,
         title: course.title,
-        term: course.term,
-        credits: course.credits,
+        meta: `${trackLabel(course.track)} · ${course.status} · ${formatMinutes(course.estimatedMinutes)}`,
         secondaryLabel: `${course._count.enrollments} enrolled`,
       })),
     };
@@ -29,7 +29,7 @@ async function loadRolePanelData(userId: string, role: string) {
   if (role === "LEARNER") {
     const enrollments = await prisma.enrollment.findMany({
       where: { userId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { grantedAt: "desc" },
       include: { course: true },
     });
     return {
@@ -37,8 +37,8 @@ async function loadRolePanelData(userId: string, role: string) {
       courses: enrollments.map((enrollment) => ({
         id: enrollment.course.id,
         title: enrollment.course.title,
-        term: enrollment.course.term,
-        credits: enrollment.course.credits,
+        meta: `${trackLabel(enrollment.course.track)} · ${formatMinutes(enrollment.course.estimatedMinutes)}`,
+        secondaryLabel: enrollment.completedAt ? "Completed" : undefined,
       })),
     };
   }

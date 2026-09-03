@@ -3,12 +3,13 @@ import Link from "next/link";
 import { Role } from "@prisma/client";
 import { requireRole } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
+import { formatMinutes, formatPrice, trackLabel } from "@/lib/format";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { EnrollStudentForm } from "./EnrollStudentForm";
 import { UnenrollButton } from "./UnenrollButton";
-import { ReassignProfessorForm } from "./ReassignProfessorForm";
-import { MeetingTimesForm } from "./MeetingTimesForm";
+import { ReassignInstructorForm } from "./ReassignInstructorForm";
+import { CourseStatusForm } from "./CourseStatusForm";
 
 export default async function AdminCourseDetailPage({
   params,
@@ -21,10 +22,14 @@ export default async function AdminCourseDetailPage({
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
-      professor: { select: { id: true, name: true } },
+      instructor: { select: { id: true, name: true } },
+      modules: {
+        orderBy: { sortOrder: "asc" },
+        include: { _count: { select: { lessons: true } } },
+      },
       enrollments: {
         include: { user: { select: { id: true, name: true, email: true } } },
-        orderBy: { createdAt: "asc" },
+        orderBy: { grantedAt: "asc" },
       },
     },
   });
@@ -33,7 +38,7 @@ export default async function AdminCourseDetailPage({
     notFound();
   }
 
-  const [professors, enrolledStudents] = await Promise.all([
+  const [instructors, enrollableLearners] = await Promise.all([
     prisma.user.findMany({
       where: { role: Role.INSTRUCTOR },
       orderBy: { name: "asc" },
@@ -49,6 +54,11 @@ export default async function AdminCourseDetailPage({
     }),
   ]);
 
+  const lessonCount = course.modules.reduce(
+    (total, m) => total + m._count.lessons,
+    0,
+  );
+
   return (
     <AppShell>
       <p className="mb-2 font-body text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
@@ -61,27 +71,66 @@ export default async function AdminCourseDetailPage({
         {course.title}
       </h1>
       <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
-        {course.term} &middot; {course.credits} credits
+        /{course.slug} &middot; {trackLabel(course.track)} &middot;{" "}
+        {formatPrice(course.priceCents)} &middot;{" "}
+        {formatMinutes(course.estimatedMinutes)} &middot; {course.modules.length}{" "}
+        modules, {lessonCount} lessons
       </p>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex flex-col gap-8">
           <Card>
             <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
-              Instructor
+              Status
             </h2>
-            <ReassignProfessorForm
+            <CourseStatusForm
               courseId={course.id}
-              currentProfessorId={course.professor.id}
-              professors={professors}
+              currentStatus={course.status}
             />
+            <p className="mt-2 font-body text-xs text-[var(--color-ink-muted)]">
+              {course.publishedAt
+                ? `First published ${course.publishedAt.toLocaleDateString("en-US", { dateStyle: "medium" })}.`
+                : "Not published yet."}
+            </p>
           </Card>
 
           <Card>
             <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
-              Meeting times
+              Instructor
             </h2>
-            <MeetingTimesForm courseId={course.id} currentValue={course.meetingTimes} />
+            <ReassignInstructorForm
+              courseId={course.id}
+              currentInstructorId={course.instructor.id}
+              instructors={instructors}
+            />
+          </Card>
+
+          <Card>
+            <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+              Curriculum
+            </h2>
+            {course.modules.length === 0 ? (
+              <p className="font-body text-sm text-[var(--color-ink-muted)]">
+                No modules yet.
+              </p>
+            ) : (
+              <ol className="flex flex-col gap-2">
+                {course.modules.map((courseModule) => (
+                  <li
+                    key={courseModule.id}
+                    className="flex items-center justify-between rounded-lg bg-[var(--color-sage-pale)] px-4 py-2 font-body text-sm"
+                  >
+                    <span className="text-[var(--color-ink)]">
+                      {courseModule.sortOrder}. {courseModule.title}
+                    </span>
+                    <span className="text-xs text-[var(--color-ink-muted)]">
+                      {courseModule._count.lessons} lesson
+                      {courseModule._count.lessons === 1 ? "" : "s"}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
           </Card>
 
           <Card>
@@ -94,32 +143,34 @@ export default async function AdminCourseDetailPage({
               </p>
             ) : (
               <div className="overflow-x-auto">
-              <table className="w-full text-left font-body text-sm">
-                <thead>
-                  <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
-                    <th className="py-2 pr-4">Name</th>
-                    <th className="py-2 pr-4">Email</th>
-                    <th className="py-2" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {course.enrollments.map((enrollment) => (
-                    <tr
-                      key={enrollment.id}
-                      className="border-b border-black/5 last:border-0"
-                    >
-                      <td className="py-3 pr-4">{enrollment.user.name}</td>
-                      <td className="py-3 pr-4">{enrollment.user.email}</td>
-                      <td className="py-3">
-                        <UnenrollButton
-                          courseId={course.id}
-                          enrollmentId={enrollment.id}
-                        />
-                      </td>
+                <table className="w-full text-left font-body text-sm">
+                  <thead>
+                    <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
+                      <th className="py-2 pr-4">Name</th>
+                      <th className="py-2 pr-4">Email</th>
+                      <th className="py-2 pr-4">Source</th>
+                      <th className="py-2" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {course.enrollments.map((enrollment) => (
+                      <tr
+                        key={enrollment.id}
+                        className="border-b border-black/5 last:border-0"
+                      >
+                        <td className="py-3 pr-4">{enrollment.user.name}</td>
+                        <td className="py-3 pr-4">{enrollment.user.email}</td>
+                        <td className="py-3 pr-4">{enrollment.source}</td>
+                        <td className="py-3">
+                          <UnenrollButton
+                            courseId={course.id}
+                            enrollmentId={enrollment.id}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </Card>
@@ -129,7 +180,7 @@ export default async function AdminCourseDetailPage({
           <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
             Enroll a learner
           </h2>
-          <EnrollStudentForm courseId={course.id} students={enrolledStudents} />
+          <EnrollStudentForm courseId={course.id} students={enrollableLearners} />
         </Card>
       </div>
     </AppShell>

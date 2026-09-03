@@ -3,15 +3,14 @@ import Link from "next/link";
 export function CourseTile({
   href,
   title,
-  term,
-  credits,
+  meta,
   secondaryLabel,
   muted = false,
 }: {
   href: string;
   title: string;
-  term: string;
-  credits: number;
+  /** Short line under the title, e.g. "Clinician · 3h 10m". */
+  meta: string;
   secondaryLabel?: string;
   /** Flattened, low-contrast treatment for past-enrolled tiles. */
   muted?: boolean;
@@ -26,9 +25,7 @@ export function CourseTile({
           {title}
         </h4>
         <div className="my-2 h-[2px] w-10 bg-[var(--color-ink-muted)]/30" />
-        <p className="font-body text-sm text-[var(--color-ink-muted)]">
-          {term} &middot; {credits} credits
-        </p>
+        <p className="font-body text-sm text-[var(--color-ink-muted)]">{meta}</p>
         {secondaryLabel && (
           <span className="mt-3 inline-block rounded-full bg-black/5 px-3 py-0.5 font-body text-xs text-[var(--color-ink-muted)]">
             {secondaryLabel}
@@ -45,9 +42,7 @@ export function CourseTile({
     >
       <h4 className="font-heading text-lg font-semibold text-white">{title}</h4>
       <div className="my-2 h-[2px] w-10 bg-[var(--color-gold-light)]" />
-      <p className="font-body text-sm text-white/85">
-        {term} &middot; {credits} credits
-      </p>
+      <p className="font-body text-sm text-white/85">{meta}</p>
       {secondaryLabel && (
         <span className="mt-3 inline-block rounded-full bg-white/15 px-3 py-0.5 font-body text-xs text-white">
           {secondaryLabel}

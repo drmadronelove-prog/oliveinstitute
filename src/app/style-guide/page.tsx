@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { HeroCard } from "@/components/dashboard/HeroCard";
 import { CourseTile } from "@/components/dashboard/CourseTile";
-import { MaterialsList } from "@/components/course/MaterialsList";
+import { ResourceList } from "@/components/course/ResourceList";
 
 type Swatch = { name: string; token: string; hex: string; note?: string };
 
@@ -34,7 +34,7 @@ const SHADES: Swatch[] = [
   { name: "Ink muted", token: "--color-ink-muted", hex: "#5A6350" },
 ];
 
-const SAMPLE_MATERIALS = [
+const SAMPLE_RESOURCES = [
   {
     id: "m1",
     type: "PDF" as const,
@@ -222,22 +222,19 @@ export default function StyleGuidePage() {
             <CourseTile
               href="/style-guide"
               title="Foundations of Practice"
-              term="Self-paced"
-              credits={3}
+              meta="Clinician · 3h 10m"
               secondaryLabel="12 enrolled"
             />
             <CourseTile
               href="/style-guide"
               title="Readings in Ethics"
-              term="Self-paced"
-              credits={2}
+              meta="Public · 1h 45m"
             />
             <CourseTile
               href="/style-guide"
               title="Archived Seminar"
-              term="Self-paced"
-              credits={1}
-              secondaryLabel="Closed"
+              meta="Public · 55m"
+              secondaryLabel="Archived"
               muted
             />
           </div>
@@ -264,17 +261,17 @@ export default function StyleGuidePage() {
         </Section>
 
         <Section
-          title="Materials list"
-          description="How course materials render for instructors and learners."
+          title="Resource list"
+          description="How lesson resources render for instructors and learners."
         >
           <Card>
-            <MaterialsList materials={SAMPLE_MATERIALS} />
+            <ResourceList resources={SAMPLE_RESOURCES} />
           </Card>
         </Section>
 
         <Section title="Empty state">
           <Card>
-            <MaterialsList materials={[]} />
+            <ResourceList resources={[]} />
           </Card>
         </Section>
       </div>

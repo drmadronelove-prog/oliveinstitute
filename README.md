@@ -35,12 +35,43 @@ scale, so we stay on Prisma 6 and the standard `new PrismaClient()` +
 
 ## Data model
 
-Four tables, in `prisma/schema.prisma`:
+In `prisma/schema.prisma`:
 
-- `User` — name, email, bcrypt password hash, role
-- `Course` — title, description, term, credits, owning instructor
-- `Enrollment` — a user in a course (unique on `userId` + `courseId`)
-- `CourseMaterial` — PDF, link, or video attached to a course
+- `User` — name, email, bcrypt password hash, role, `emailVerifiedAt`
+- `Course` — a sellable product: `slug`, title, subtitle, `track`
+  (CLINICIAN / PUBLIC), `priceCents`, `status` (DRAFT / PUBLISHED /
+  ARCHIVED), `estimatedMinutes`, `sortOrder`, Stripe price id, owning
+  instructor
+- `Module` — an ordered section of a course
+- `Lesson` — an ordered unit inside a module: `type` (VIDEO / TEXT / PDF /
+  QUIZ), `durationSeconds`, `isFreePreview`, plus video uid, body, and
+  transcript. Unique on `moduleId` + `slug`
+- `LessonResource` — a PDF, link, or video attached to a lesson
+- `Enrollment` — the grant of access: `source` (PURCHASE / COMP / BUNDLE),
+  optional `purchaseId`, `grantedAt`, `completedAt`, `certificateIssuedAt`.
+  Unique on `userId` + `courseId`
+- `Purchase` — a Stripe checkout: session id (unique), payment intent,
+  `amountCents`, `currency`, `status` (PENDING / PAID / REFUNDED / FAILED)
+- `LessonProgress` — per learner, per lesson: `completedAt` and
+  `lastPositionSeconds`. Unique on `userId` + `lessonId`
+
+## Access control
+
+`src/lib/entitlements.ts` is the single place any code asks whether someone
+may see something. It exports two functions:
+
+- `hasAccess(userId, courseId)` — an admin sees everything; a course's own
+  instructor sees that course at any status; anyone else needs an
+  enrollment and the course must not be a DRAFT. ARCHIVED still grants
+  access, because archiving retires a course from the storefront rather
+  than revoking what people already own.
+- `canViewLesson(userId, lessonId)` — course access, or a lesson flagged
+  `isFreePreview` on a PUBLISHED course.
+
+Both deny by default: an unknown user, course, or lesson is `false`, never
+an error. Nothing else should reason about enrollments, course status, or
+free previews to make an access decision — `/api/files` and the learner
+course page both call these rather than deciding for themselves.
 
 ## Design system
 
@@ -110,8 +141,10 @@ from `NEXTAUTH_URL` and ignores the base path.
    npm run db:seed
    ```
 
-   The seed is idempotent: re-running it resets the named admin's name,
-   password, and role to whatever the environment currently says.
+   The seed is idempotent. It resets the named admin's name, password, and
+   role to whatever the environment currently says, and rebuilds two
+   published catalogue courses — one CLINICIAN, one PUBLIC — each with two
+   modules and five lessons whose first lesson is the free preview.
 
 5. Run it:
 
@@ -135,10 +168,10 @@ reached at `/institute/dashboard`. The table lists app-relative paths.
 | `/dashboard` | any signed-in user; content varies by role |
 | `/admin/users` | ADMIN — create accounts, reset passwords |
 | `/admin/courses`, `/admin/courses/[id]` | ADMIN — create courses, assign an instructor, enroll/unenroll |
-| `/professor/courses/[id]` | course's instructor or ADMIN — materials, enroll learners |
-| `/student/courses/[id]` | enrolled learner — read-only materials |
+| `/professor/courses/[id]` | course's instructor or ADMIN — curriculum, lesson resources, enroll learners |
+| `/student/courses/[id]` | any signed-in user — curriculum, gated per lesson by `canViewLesson` |
 | `/settings/password` | any signed-in user |
-| `/api/files/[...key]` | authorized readers of a course material |
+| `/api/files/[...key]` | readers a lesson resource is visible to |
 | `/style-guide` | design-system reference |
 
 ## Authorization
@@ -149,17 +182,22 @@ Every protected page and Server Action calls `requireSession` /
 never depends on it alone.
 
 `/api/files/[...key]` re-checks per request: it resolves the key to a
-`CourseMaterial` row and allows an admin, the owning instructor, or an
-enrolled learner. Uploads live outside `public/`, so they are never served
-unauthenticated by the static file server.
+`LessonResource`, then defers to `canViewLesson` — it never decides for
+itself who may read a file. Uploads live outside `public/`, so they are
+never served unauthenticated by the static file server.
 
 ## Testing
 
 ```bash
-npm run test        # unit + e2e
-npm run test:unit   # vitest
-npm run test:e2e    # playwright
+npm run test              # unit + integration + e2e
+npm run test:unit         # vitest, no database needed
+npm run test:integration  # vitest against DATABASE_URL — the entitlement rules
+npm run test:e2e          # playwright
 ```
+
+The integration suite exercises `entitlements.ts` against a real database
+because the rules are all queries — stubbing them would only test the stub.
+It creates and removes its own fixtures.
 
 The Playwright suite reads `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` and
 fails fast if they are unset, so it exercises the account that was actually

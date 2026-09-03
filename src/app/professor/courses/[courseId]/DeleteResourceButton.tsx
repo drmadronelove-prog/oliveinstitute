@@ -1,26 +1,26 @@
 "use client";
 
 import { useActionState } from "react";
-import { deleteMaterialAction, type ActionState } from "./actions";
+import { deleteResourceAction, type ActionState } from "./actions";
 
 const initialState: ActionState = { status: "idle" };
 
-export function DeleteMaterialButton({
-  courseId,
-  materialId,
+export function DeleteResourceButton({
+  lessonId,
+  resourceId,
 }: {
-  courseId: string;
-  materialId: string;
+  lessonId: string;
+  resourceId: string;
 }) {
   const [, formAction, pending] = useActionState(
-    deleteMaterialAction,
+    deleteResourceAction,
     initialState,
   );
 
   return (
     <form action={formAction}>
-      <input type="hidden" name="courseId" value={courseId} />
-      <input type="hidden" name="materialId" value={materialId} />
+      <input type="hidden" name="lessonId" value={lessonId} />
+      <input type="hidden" name="resourceId" value={resourceId} />
       <button
         type="submit"
         disabled={pending}

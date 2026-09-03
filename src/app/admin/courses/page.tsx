@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Role } from "@prisma/client";
 import { requireRole } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
+import { formatMinutes, formatPrice, trackLabel } from "@/lib/format";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { CreateCourseForm } from "./CreateCourseForm";
@@ -9,12 +10,12 @@ import { CreateCourseForm } from "./CreateCourseForm";
 export default async function AdminCoursesPage() {
   await requireRole(Role.ADMIN);
 
-  const [courses, professors] = await Promise.all([
+  const [courses, instructors] = await Promise.all([
     prisma.course.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       include: {
-        professor: { select: { name: true } },
-        _count: { select: { enrollments: true } },
+        instructor: { select: { name: true } },
+        _count: { select: { enrollments: true, modules: true } },
       },
     }),
     prisma.user.findMany({
@@ -49,8 +50,11 @@ export default async function AdminCoursesPage() {
                 <thead>
                   <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
                     <th className="py-2 pr-4">Title</th>
-                    <th className="py-2 pr-4">Term</th>
-                    <th className="py-2 pr-4">Credits</th>
+                    <th className="py-2 pr-4">Track</th>
+                    <th className="py-2 pr-4">Status</th>
+                    <th className="py-2 pr-4">Price</th>
+                    <th className="py-2 pr-4">Length</th>
+                    <th className="py-2 pr-4">Modules</th>
                     <th className="py-2 pr-4">Instructor</th>
                     <th className="py-2 pr-4">Enrolled</th>
                     <th className="py-2" />
@@ -59,10 +63,20 @@ export default async function AdminCoursesPage() {
                 <tbody>
                   {courses.map((course) => (
                     <tr key={course.id} className="border-b border-black/5 last:border-0">
-                      <td className="py-3 pr-4">{course.title}</td>
-                      <td className="py-3 pr-4">{course.term}</td>
-                      <td className="py-3 pr-4">{course.credits}</td>
-                      <td className="py-3 pr-4">{course.professor.name}</td>
+                      <td className="py-3 pr-4">
+                        <span className="font-medium">{course.title}</span>
+                        <span className="block text-xs text-[var(--color-ink-muted)]">
+                          /{course.slug}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4">{trackLabel(course.track)}</td>
+                      <td className="py-3 pr-4">{course.status}</td>
+                      <td className="py-3 pr-4">{formatPrice(course.priceCents)}</td>
+                      <td className="py-3 pr-4">
+                        {formatMinutes(course.estimatedMinutes)}
+                      </td>
+                      <td className="py-3 pr-4">{course._count.modules}</td>
+                      <td className="py-3 pr-4">{course.instructor.name}</td>
                       <td className="py-3 pr-4">{course._count.enrollments}</td>
                       <td className="py-3">
                         <Link
@@ -84,7 +98,7 @@ export default async function AdminCoursesPage() {
           <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
             Add a course
           </h2>
-          <CreateCourseForm professors={professors} />
+          <CreateCourseForm instructors={instructors} />
         </Card>
       </div>
     </AppShell>

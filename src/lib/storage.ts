@@ -2,9 +2,9 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
 export interface StorageService {
-  /** Saves a file under a course-scoped key and returns the URL to fetch it and the storage key. */
+  /** Saves a file under a lesson-scoped key and returns the URL to fetch it and the storage key. */
   saveFile(
-    courseId: string,
+    lessonId: string,
     file: File,
   ): Promise<{ url: string; storageKey: string }>;
 }
@@ -28,9 +28,9 @@ export function hasDangerousExtension(filename: string): boolean {
 }
 
 class LocalDiskStorage implements StorageService {
-  async saveFile(courseId: string, file: File) {
+  async saveFile(lessonId: string, file: File) {
     const bytes = Buffer.from(await file.arrayBuffer());
-    const key = `${courseId}/${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
+    const key = `${lessonId}/${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
     const fullPath = path.join(/*turbopackIgnore: true*/ UPLOADS_DIR, key);
 
     await mkdir(path.dirname(fullPath), { recursive: true });

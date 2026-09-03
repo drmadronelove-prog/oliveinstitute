@@ -19,10 +19,10 @@ export async function requireRole(allowed: Role | Role[]) {
   return session;
 }
 
-/** Admins can manage any course; professors only the one they own. */
+/** Admins can manage any course; instructors only the ones they own. */
 export function canManageCourse(
   session: { user: { id: string; role: Role } },
-  course: { professorId: string },
+  course: { instructorId: string },
 ) {
-  return session.user.role === Role.ADMIN || course.professorId === session.user.id;
+  return session.user.role === Role.ADMIN || course.instructorId === session.user.id;
 }

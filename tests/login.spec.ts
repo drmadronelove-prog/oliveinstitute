@@ -102,7 +102,7 @@ test.describe("base path", () => {
       "Hero card",
       "Course tiles",
       "Cards",
-      "Materials list",
+      "Resource list",
     ]) {
       await expect(
         page.getByRole("heading", { name: section, exact: true }),

@@ -44,20 +44,47 @@ by a single `init` migration matching the current schema.
 `/api/files`. `Role` still has two non-admin values alongside `ADMIN`, and
 `Course` still has one owning instructor.
 
+## Storefront schema (phase 3)
+
+The schema was rebuilt around selling self-paced courses:
+
+- `Course` is a product — `slug`, `track`, `priceCents`, `status`,
+  `estimatedMinutes`, `sortOrder`, Stripe price id. The cohort-era `term`,
+  `credits`, and `meetingTimes` are gone, and `professorId` became
+  `instructorId`.
+- Content is `Course -> Module -> Lesson`, and `CourseMaterial` became
+  `LessonResource` hanging off a lesson. Modules and lessons cascade on
+  delete; resources cascade with their lesson.
+- `Enrollment` is the grant of access and records its `source`. `Purchase`
+  records the Stripe side. `LessonProgress` is per learner, per lesson.
+- **`src/lib/entitlements.ts` is the only place that decides whether
+  someone may see something.** Do not re-derive access from enrollments,
+  course status, or `isFreePreview` anywhere else — call `hasAccess` or
+  `canViewLesson`, and change the rules there. `/api/files` and the learner
+  course page already go through it.
+- The migration is written to be safe on a populated database (new NOT NULL
+  columns are added nullable, backfilled, then constrained). The one
+  unavoidable loss is `course_materials`, which had no lesson to move to.
+
 ## Known loose ends
 
-- `Course.meetingTimes` and its admin form survive the conversion even
-  though `/schedule` is gone. It is unused by any remaining page and is a
-  reasonable next thing to drop.
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
   text wordmark; swap real artwork in there when it exists.
 - `docs/screenshots/` was removed as stale; regenerate if screenshots are
   wanted in the README again.
-- Route segments and Prisma fields still read `professor`/`student`
-  (`/professor/courses/[id]`, `Course.professorId`). Only the `Role` enum
-  values and user-facing wording were renamed — changing URLs and column
-  names is a separate, breaking change.
-- `Course.meetingTimes` and its admin form remain unused by any page.
+- Route segments still read `professor`/`student`
+  (`/professor/courses/[id]`, `/student/courses/[id]`), even though the
+  roles and `Course.instructorId` were renamed. Changing the URLs is a
+  separate, breaking change.
+- There is no UI for creating modules or lessons — the seed is the only
+  thing that writes them. Instructors can attach resources to an existing
+  lesson, and admins can create, publish, and archive courses.
+- Nothing writes `Purchase` or `LessonProgress` yet; checkout and the video
+  player are the obvious next pieces. `EnrollmentSource.PURCHASE` and
+  `BUNDLE` are therefore unused so far — every enrollment the UI creates is
+  a `COMP`.
+- `Enrollment` carries both `createdAt` and `grantedAt`, which are
+  redundant today. `grantedAt` was specified; `createdAt` predates it.
 
 ## Rebrand (phase 2)
 

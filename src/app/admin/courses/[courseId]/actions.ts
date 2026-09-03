@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { Role } from "@prisma/client";
+import { EnrollmentSource, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
@@ -54,6 +54,8 @@ export async function enrollStudentAction(
       data: {
         userId: parsed.data.studentId,
         courseId: parsed.data.courseId,
+        // An admin granting access by hand is a comp, not a purchase.
+        source: EnrollmentSource.COMP,
       },
     });
   }
@@ -93,10 +95,10 @@ export async function unenrollStudentAction(
 
 const reassignSchema = z.object({
   courseId: z.string().trim().min(1),
-  professorId: z.string().trim().min(1, "Choose an instructor"),
+  instructorId: z.string().trim().min(1, "Choose an instructor"),
 });
 
-export async function reassignProfessorAction(
+export async function reassignInstructorAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
@@ -104,7 +106,7 @@ export async function reassignProfessorAction(
 
   const parsed = reassignSchema.safeParse({
     courseId: formData.get("courseId"),
-    professorId: formData.get("professorId"),
+    instructorId: formData.get("instructorId"),
   });
   if (!parsed.success) {
     return {
@@ -113,48 +115,19 @@ export async function reassignProfessorAction(
     };
   }
 
-  const professor = await prisma.user.findUnique({
-    where: { id: parsed.data.professorId },
+  const instructor = await prisma.user.findUnique({
+    where: { id: parsed.data.instructorId },
   });
-  if (!professor || professor.role !== Role.INSTRUCTOR) {
+  if (!instructor || instructor.role !== Role.INSTRUCTOR) {
     return { status: "error", message: "Selected instructor is invalid." };
   }
 
   await prisma.course.update({
     where: { id: parsed.data.courseId },
-    data: { professorId: professor.id },
+    data: { instructorId: instructor.id },
   });
 
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
 
-  return { status: "success", message: `Instructor set to ${professor.name}.` };
-}
-
-const meetingTimesSchema = z.object({
-  courseId: z.string().trim().min(1),
-  meetingTimes: z.string().trim().max(200),
-});
-
-export async function updateMeetingTimesAction(
-  _prevState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  await requireRole(Role.ADMIN);
-
-  const parsed = meetingTimesSchema.safeParse({
-    courseId: formData.get("courseId"),
-    meetingTimes: formData.get("meetingTimes"),
-  });
-  if (!parsed.success) {
-    return { status: "error", message: "Invalid request." };
-  }
-
-  await prisma.course.update({
-    where: { id: parsed.data.courseId },
-    data: { meetingTimes: parsed.data.meetingTimes },
-  });
-
-  revalidatePath(`/admin/courses/${parsed.data.courseId}`);
-
-  return { status: "success", message: "Meeting times updated." };
+  return { status: "success", message: `Instructor set to ${instructor.name}.` };
 }

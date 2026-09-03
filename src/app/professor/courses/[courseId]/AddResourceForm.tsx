@@ -1,13 +1,17 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { addMaterialAction, type ActionState } from "./actions";
+import { addResourceAction, type ActionState } from "./actions";
 
 const initialState: ActionState = { status: "idle" };
 
-export function AddMaterialForm({ courseId }: { courseId: string }) {
+export function AddResourceForm({
+  lessons,
+}: {
+  lessons: Array<{ id: string; label: string }>;
+}) {
   const [state, formAction, pending] = useActionState(
-    addMaterialAction,
+    addResourceAction,
     initialState,
   );
   const [type, setType] = useState<"PDF" | "LINK" | "VIDEO">("PDF");
@@ -25,7 +29,23 @@ export function AddMaterialForm({ courseId }: { courseId: string }) {
 
   return (
     <form action={formAction} ref={formRef} className="flex flex-col gap-4">
-      <input type="hidden" name="courseId" value={courseId} />
+      <div>
+        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+          Lesson
+        </label>
+        <select
+          name="lessonId"
+          required
+          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+        >
+          <option value="">Select a lesson…</option>
+          {lessons.map((lesson) => (
+            <option key={lesson.id} value={lesson.id}>
+              {lesson.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div>
         <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
@@ -88,11 +108,17 @@ export function AddMaterialForm({ courseId }: { courseId: string }) {
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || lessons.length === 0}
         className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
       >
-        {pending ? "Adding…" : "Add material"}
+        {pending ? "Adding…" : "Add resource"}
       </button>
+
+      {lessons.length === 0 ? (
+        <p className="font-body text-xs text-[var(--color-ink-muted)]">
+          This course has no lessons yet — resources attach to a lesson.
+        </p>
+      ) : null}
 
       {state.status === "error" ? (
         <p className="font-body text-sm text-red-700" role="alert">

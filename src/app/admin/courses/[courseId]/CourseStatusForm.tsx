@@ -1,21 +1,22 @@
 "use client";
 
 import { useActionState } from "react";
-import { reassignProfessorAction, type ActionState } from "./actions";
+import {
+  updateCourseStatusAction,
+  type CreateCourseState,
+} from "../actions";
 
-const initialState: ActionState = { status: "idle" };
+const initialState: CreateCourseState = { status: "idle" };
 
-export function ReassignProfessorForm({
+export function CourseStatusForm({
   courseId,
-  currentProfessorId,
-  professors,
+  currentStatus,
 }: {
   courseId: string;
-  currentProfessorId: string;
-  professors: Array<{ id: string; name: string }>;
+  currentStatus: string;
 }) {
   const [state, formAction, pending] = useActionState(
-    reassignProfessorAction,
+    updateCourseStatusAction,
     initialState,
   );
 
@@ -23,15 +24,16 @@ export function ReassignProfessorForm({
     <form action={formAction} className="flex items-center gap-3">
       <input type="hidden" name="courseId" value={courseId} />
       <select
-        name="professorId"
-        defaultValue={currentProfessorId}
+        name="status"
+        // Remount when the saved value changes, so the select shows the
+        // server's value rather than a stale mounted default.
+        key={currentStatus}
+        defaultValue={currentStatus}
         className="rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
       >
-        {professors.map((professor) => (
-          <option key={professor.id} value={professor.id}>
-            {professor.name}
-          </option>
-        ))}
+        <option value="DRAFT">Draft</option>
+        <option value="PUBLISHED">Published</option>
+        <option value="ARCHIVED">Archived</option>
       </select>
       <button
         type="submit"
@@ -44,9 +46,7 @@ export function ReassignProfessorForm({
         <span className="font-body text-xs text-red-700">{state.message}</span>
       ) : null}
       {state.status === "success" ? (
-        <span className="font-body text-xs text-[var(--color-olive)]">
-          Saved.
-        </span>
+        <span className="font-body text-xs text-[var(--color-olive)]">Saved.</span>
       ) : null}
     </form>
   );

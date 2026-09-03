@@ -10,9 +10,10 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run --exclude \"**/*.integration.test.ts\"",
     "test:e2e": "playwright test",
-    "test": "npm run test:unit && npm run test:e2e"
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:integration": "vitest run src/lib/__tests__/entitlements.integration.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
