@@ -1,7 +1,6 @@
 import { signOut } from "@/lib/auth";
 import { requireSession } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
-import { CREDIT_STATUS_LABEL } from "@/lib/labels";
 import { AppShell } from "@/components/shell/AppShell";
 import { HeroCard } from "@/components/dashboard/HeroCard";
 import { RolePanel } from "@/components/dashboard/RolePanel";
@@ -31,20 +30,14 @@ async function loadRolePanelData(userId: string, role: string) {
       orderBy: { createdAt: "desc" },
       include: { course: true },
     });
-    const toSummary = (enrollment: (typeof enrollments)[number]) => ({
-      id: enrollment.course.id,
-      title: enrollment.course.title,
-      term: enrollment.course.term,
-      credits: enrollment.course.credits,
-      secondaryLabel:
-        enrollment.status === "DROPPED"
-          ? "Dropped"
-          : CREDIT_STATUS_LABEL[enrollment.creditStatus],
-    });
     return {
       role: "STUDENT" as const,
-      activeCourses: enrollments.filter((e) => e.status === "ACTIVE").map(toSummary),
-      pastCourses: enrollments.filter((e) => e.status !== "ACTIVE").map(toSummary),
+      courses: enrollments.map((enrollment) => ({
+        id: enrollment.course.id,
+        title: enrollment.course.title,
+        term: enrollment.course.term,
+        credits: enrollment.course.credits,
+      })),
     };
   }
 
@@ -99,7 +92,7 @@ export default async function DashboardPage() {
   if (session.user.role === "STUDENT") {
     const rolePanelData = await loadRolePanelData(session.user.id, session.user.role);
     return (
-      <AppShell activeHref="/dashboard" logoHref="https://satistudies.org">
+      <AppShell>
         <AccountBar name={session.user.name} role={session.user.role} />
         <RolePanel {...rolePanelData} />
       </AppShell>
@@ -109,12 +102,12 @@ export default async function DashboardPage() {
   const rolePanelData = await loadRolePanelData(session.user.id, session.user.role);
 
   return (
-    <AppShell activeHref="/dashboard" logoHref="https://satistudies.org">
+    <AppShell>
       <AccountBar name={session.user.name} role={session.user.role} />
 
       <HeroCard
-        title="Sati Certificate Program"
-        subtext="Access to current and previously enrolled courses"
+        title="Olive Institute"
+        subtext="Self-paced courses, available whenever you are"
         imageSrc="/wilsan-u-aiUIs74ejx8-unsplash.jpg"
         imageAlt="A bronze Buddha statue resting its head on its hand, in front of a sunlit window with greenery"
         imageAspectRatio="3 / 2"

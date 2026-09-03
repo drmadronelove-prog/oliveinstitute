@@ -44,10 +44,10 @@ export default function LoginPage() {
           <Logo size={40} />
           <div className="leading-tight">
             <p className="font-serif text-lg font-semibold text-[var(--color-forest)]">
-              Sati Center
+              Olive Institute
             </p>
             <p className="font-serif text-xs italic text-[var(--color-ink-muted)]">
-              for Buddhist Studies
+              self-paced courses
             </p>
           </div>
         </div>

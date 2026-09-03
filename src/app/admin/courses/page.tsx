@@ -4,7 +4,6 @@ import { requireRole } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
-import { formatCourseProfessors } from "@/lib/labels";
 import { CreateCourseForm } from "./CreateCourseForm";
 
 export default async function AdminCoursesPage() {
@@ -15,7 +14,6 @@ export default async function AdminCoursesPage() {
       orderBy: { createdAt: "desc" },
       include: {
         professor: { select: { name: true } },
-        coProfessors: { include: { professor: { select: { name: true } } } },
         _count: { select: { enrollments: true } },
       },
     }),
@@ -27,7 +25,7 @@ export default async function AdminCoursesPage() {
   ]);
 
   return (
-    <AppShell activeHref="/dashboard">
+    <AppShell>
       <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-forest)]">
         Manage courses
       </h1>
@@ -64,7 +62,7 @@ export default async function AdminCoursesPage() {
                       <td className="py-3 pr-4">{course.title}</td>
                       <td className="py-3 pr-4">{course.term}</td>
                       <td className="py-3 pr-4">{course.credits}</td>
-                      <td className="py-3 pr-4">{formatCourseProfessors(course)}</td>
+                      <td className="py-3 pr-4">{course.professor.name}</td>
                       <td className="py-3 pr-4">{course._count.enrollments}</td>
                       <td className="py-3">
                         <Link

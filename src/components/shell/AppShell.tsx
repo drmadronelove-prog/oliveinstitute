@@ -11,24 +11,15 @@ async function loadStudentCourseLinks(userId: string) {
     orderBy: { createdAt: "desc" },
   });
 
-  return {
-    active: enrollments
-      .filter((e) => e.status === "ACTIVE")
-      .map((e) => ({ id: e.course.id, title: e.course.title })),
-    past: enrollments
-      .filter((e) => e.status !== "ACTIVE")
-      .map((e) => ({ id: e.course.id, title: e.course.title })),
-  };
+  return enrollments.map((e) => ({ id: e.course.id, title: e.course.title }));
 }
 
 export async function AppShell({
   children,
-  activeHref,
   logoHref,
 }: {
   children: ReactNode;
-  activeHref?: string;
-  /** Overrides the default role-based logo destination. */
+  /** Overrides the default logo destination. */
   logoHref?: string;
 }) {
   const session = await auth();
@@ -39,10 +30,7 @@ export async function AppShell({
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <TopNav
-        activeHref={activeHref}
-        logoHref={logoHref ?? (isStudent ? "https://satistudies.org" : "/dashboard")}
-      />
+      <TopNav logoHref={logoHref ?? "/dashboard"} />
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-8 md:flex-row">
         <Sidebar studentCourses={studentCourses} />
         <main className="min-w-0 flex-1">{children}</main>

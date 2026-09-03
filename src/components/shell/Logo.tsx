@@ -7,8 +7,8 @@ export function Logo({ size = 44 }: { size?: number }) {
       style={{ width: size, height: size }}
     >
       <Image
-        src="/brand/sati-logo.png"
-        alt="Sati Center for Buddhist Studies"
+        src="/brand/logo.png"
+        alt="Olive Institute"
         width={size}
         height={size}
         className="h-full w-full object-contain"

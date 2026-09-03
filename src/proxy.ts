@@ -23,8 +23,5 @@ export const config = {
     "/professor/:path*",
     "/student/:path*",
     "/settings/:path*",
-    "/calendar/:path*",
-    "/schedule/:path*",
-    "/registration/:path*",
   ],
 };

@@ -1,5 +1,5 @@
 {
-  "name": "sati-lms",
+  "name": "olive-institute",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,8 +9,6 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "import:students": "tsx scripts/import-certificate-students.ts",
-    "import:courses": "tsx scripts/import-current-courses.ts",
     "db:studio": "prisma studio",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",

@@ -33,43 +33,27 @@ export async function GET(
 
   const url = `/api/files/${key.join("/")}`;
 
-  // A file is either a course material (visible to the whole class) or a
-  // submission attachment (visible only to its author + the course's
-  // professor + admins) — look up which, rather than trusting the path.
-  const [material, submission] = await Promise.all([
-    prisma.courseMaterial.findFirst({ where: { url } }),
-    prisma.submission.findFirst({
-      where: { fileUrl: url },
-      include: { assignment: { select: { courseId: true } } },
-    }),
-  ]);
+  // Every stored file is a course material, visible to the course's
+  // professor, an admin, or an enrolled student — look the key up rather
+  // than trusting the path.
+  const material = await prisma.courseMaterial.findFirst({ where: { url } });
+  if (!material) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
-  let courseId: string | null = null;
   let allowed = role === Role.ADMIN;
 
-  if (material) {
-    courseId = material.courseId;
-    if (!allowed && role === Role.PROFESSOR) {
-      const course = await prisma.course.findUnique({ where: { id: courseId } });
-      allowed = course?.professorId === userId;
-    }
-    if (!allowed && role === Role.STUDENT) {
-      const enrollment = await prisma.enrollment.findUnique({
-        where: { userId_courseId: { userId, courseId } },
-      });
-      allowed = enrollment?.status === "ACTIVE";
-    }
-  } else if (submission) {
-    courseId = submission.assignment.courseId;
-    if (!allowed && role === Role.STUDENT) {
-      allowed = submission.studentId === userId;
-    }
-    if (!allowed && role === Role.PROFESSOR) {
-      const course = await prisma.course.findUnique({ where: { id: courseId } });
-      allowed = course?.professorId === userId;
-    }
-  } else {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!allowed && role === Role.PROFESSOR) {
+    const course = await prisma.course.findUnique({
+      where: { id: material.courseId },
+    });
+    allowed = course?.professorId === userId;
+  }
+  if (!allowed && role === Role.STUDENT) {
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId, courseId: material.courseId } },
+    });
+    allowed = enrollment != null;
   }
 
   if (!allowed) {

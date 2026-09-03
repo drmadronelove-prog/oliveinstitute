@@ -7,13 +7,13 @@ type CourseSummary = {
   title: string;
   term: string;
   credits: number;
-  secondaryLabel: string;
+  secondaryLabel?: string;
 };
 
 type RolePanelProps =
   | { role: "ADMIN" }
-  | { role: "PROFESSOR"; courses: CourseSummary[] }
-  | { role: "STUDENT"; activeCourses: CourseSummary[]; pastCourses: CourseSummary[] };
+  | { role: "PROFESSOR"; courses: (CourseSummary & { secondaryLabel: string })[] }
+  | { role: "STUDENT"; courses: CourseSummary[] };
 
 export function RolePanel(props: RolePanelProps) {
   if (props.role === "ADMIN") {
@@ -39,17 +39,6 @@ export function RolePanel(props: RolePanelProps) {
           <Link href="/admin/users" className={toolButtonClassName}>
             <span className={toolLabelClassName}>Manage users</span>
           </Link>
-          <Link href="/admin/emails" className={toolButtonClassName}>
-            <span className={toolLabelClassName}>Send messages</span>
-          </Link>
-          <a
-            href="https://docs.google.com/spreadsheets/d/1I4ujdxSRtbeTWlO7XL8qupLf9Wrk-Gh6Et-Cow_vyjQ/edit?usp=sharing"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={toolButtonClassName}
-          >
-            <span className={toolLabelClassName}>Admissions</span>
-          </a>
           <div className={toolButtonClassName}>
             <span className={toolLabelClassName}>Enrollment</span>
           </div>
@@ -63,50 +52,26 @@ export function RolePanel(props: RolePanelProps) {
 
   if (props.role === "STUDENT") {
     return (
-      <div className="flex flex-col gap-8">
-        <div>
-          <h3 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
-            Currently enrolled
-          </h3>
-          {props.activeCourses.length === 0 ? (
-            <p className="font-serif text-sm text-[var(--color-ink-muted)]">
-              You aren&apos;t enrolled in any courses yet. Ask an admin to enroll
-              you.
-            </p>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {props.activeCourses.map((course) => (
-                <CourseTile
-                  key={course.id}
-                  href={`/student/courses/${course.id}`}
-                  title={course.title}
-                  term={course.term}
-                  credits={course.credits}
-                  secondaryLabel={course.secondaryLabel}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {props.pastCourses.length > 0 && (
-          <div>
-            <h3 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
-              Previously enrolled
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {props.pastCourses.map((course) => (
-                <CourseTile
-                  key={course.id}
-                  href={`/student/courses/${course.id}`}
-                  title={course.title}
-                  term={course.term}
-                  credits={course.credits}
-                  secondaryLabel={course.secondaryLabel}
-                  muted
-                />
-              ))}
-            </div>
+      <div>
+        <h3 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          Your courses
+        </h3>
+        {props.courses.length === 0 ? (
+          <p className="font-serif text-sm text-[var(--color-ink-muted)]">
+            You aren&apos;t enrolled in any courses yet.
+          </p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {props.courses.map((course) => (
+              <CourseTile
+                key={course.id}
+                href={`/student/courses/${course.id}`}
+                title={course.title}
+                term={course.term}
+                credits={course.credits}
+                secondaryLabel={course.secondaryLabel}
+              />
+            ))}
           </div>
         )}
       </div>

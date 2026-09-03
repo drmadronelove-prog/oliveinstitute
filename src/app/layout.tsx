@@ -16,8 +16,8 @@ const karla = Karla({
 });
 
 export const metadata: Metadata = {
-  title: "Sati Center LMS",
-  description: "Learning management system for the Sati Center for Buddhist Studies",
+  title: "Olive Institute",
+  description: "Self-paced courses from Olive Institute",
 };
 
 export default function RootLayout({

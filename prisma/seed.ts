@@ -3,56 +3,40 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-async function upsertUser(params: {
-  name: string;
-  email: string;
-  password: string;
-  role: Role;
-}) {
-  const passwordHash = await bcrypt.hash(params.password, 10);
-  return prisma.user.upsert({
-    where: { email: params.email },
-    update: {},
-    create: {
-      name: params.name,
-      email: params.email,
-      passwordHash,
-      role: params.role,
-    },
-  });
+/**
+ * Reads a required environment variable, or aborts. There are no demo
+ * accounts and no fallback credentials — an unseeded environment must fail
+ * loudly rather than quietly provisioning a guessable admin login.
+ */
+function requireEnv(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(
+      `${name} is not set. Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD before running the seed.`,
+    );
+  }
+  return value;
 }
 
 async function main() {
-  const admin = await upsertUser({
-    name: "Ana Admin",
-    email: "admin@saticenter.org",
-    password: "password123",
-    role: Role.ADMIN,
+  const email = requireEnv("SEED_ADMIN_EMAIL").toLowerCase();
+  const password = requireEnv("SEED_ADMIN_PASSWORD");
+  const name = process.env.SEED_ADMIN_NAME?.trim() || "Administrator";
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const admin = await prisma.user.upsert({
+    where: { email },
+    update: { name, passwordHash, role: Role.ADMIN },
+    create: { name, email, passwordHash, role: Role.ADMIN },
   });
 
-  const professor = await upsertUser({
-    name: "Prof. Dana Wren",
-    email: "professor@saticenter.org",
-    password: "password123",
-    role: Role.PROFESSOR,
-  });
-
-  const student = await upsertUser({
-    name: "Sam Student",
-    email: "student@saticenter.org",
-    password: "password123",
-    role: Role.STUDENT,
-  });
-
-  console.log("Seeded users:");
-  console.log(`  Admin:     ${admin.email} / password123`);
-  console.log(`  Professor: ${professor.email} / password123`);
-  console.log(`  Student:   ${student.email} / password123`);
+  console.log(`Seeded admin account: ${admin.email}`);
 }
 
 main()
   .catch((error) => {
-    console.error(error);
+    console.error(error instanceof Error ? error.message : error);
     process.exitCode = 1;
   })
   .finally(async () => {

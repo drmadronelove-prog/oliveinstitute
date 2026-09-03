@@ -13,7 +13,7 @@ export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
 
   return (
-    <AppShell activeHref="/dashboard">
+    <AppShell>
       <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-forest)]">
         Manage users
       </h1>

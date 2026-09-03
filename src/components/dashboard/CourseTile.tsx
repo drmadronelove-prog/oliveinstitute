@@ -12,7 +12,7 @@ export function CourseTile({
   title: string;
   term: string;
   credits: number;
-  secondaryLabel: string;
+  secondaryLabel?: string;
   /** Flattened, low-contrast treatment for past-enrolled tiles. */
   muted?: boolean;
 }) {
@@ -29,9 +29,11 @@ export function CourseTile({
         <p className="font-serif text-sm text-[var(--color-ink-muted)]">
           {term} &middot; {credits} credits
         </p>
-        <span className="mt-3 inline-block rounded-full bg-black/5 px-3 py-0.5 font-serif text-xs text-[var(--color-ink-muted)]">
-          {secondaryLabel}
-        </span>
+        {secondaryLabel && (
+          <span className="mt-3 inline-block rounded-full bg-black/5 px-3 py-0.5 font-serif text-xs text-[var(--color-ink-muted)]">
+            {secondaryLabel}
+          </span>
+        )}
       </Link>
     );
   }
@@ -46,9 +48,11 @@ export function CourseTile({
       <p className="font-serif text-sm text-white/85">
         {term} &middot; {credits} credits
       </p>
-      <span className="mt-3 inline-block rounded-full bg-white/15 px-3 py-0.5 font-serif text-xs text-white">
-        {secondaryLabel}
-      </span>
+      {secondaryLabel && (
+        <span className="mt-3 inline-block rounded-full bg-white/15 px-3 py-0.5 font-serif text-xs text-white">
+          {secondaryLabel}
+        </span>
+      )}
     </Link>
   );
 }

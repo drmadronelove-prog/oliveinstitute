@@ -180,14 +180,7 @@ export async function enrollStudentAction(
     },
   });
 
-  if (existing) {
-    if (existing.status !== "ACTIVE") {
-      await prisma.enrollment.update({
-        where: { id: existing.id },
-        data: { status: "ACTIVE" },
-      });
-    }
-  } else {
+  if (!existing) {
     await prisma.enrollment.create({
       data: {
         userId: parsed.data.studentId,

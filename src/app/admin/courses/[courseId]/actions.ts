@@ -49,14 +49,7 @@ export async function enrollStudentAction(
     },
   });
 
-  if (existing) {
-    if (existing.status !== "ACTIVE") {
-      await prisma.enrollment.update({
-        where: { id: existing.id },
-        data: { status: "ACTIVE" },
-      });
-    }
-  } else {
+  if (!existing) {
     await prisma.enrollment.create({
       data: {
         userId: parsed.data.studentId,
@@ -89,9 +82,8 @@ export async function unenrollStudentAction(
     return { status: "error", message: "Invalid request." };
   }
 
-  await prisma.enrollment.update({
+  await prisma.enrollment.delete({
     where: { id: parsed.data.enrollmentId },
-    data: { status: "DROPPED" },
   });
 
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
@@ -163,7 +155,6 @@ export async function updateMeetingTimesAction(
   });
 
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
-  revalidatePath("/schedule");
 
   return { status: "success", message: "Meeting times updated." };
 }

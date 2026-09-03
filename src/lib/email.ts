@@ -39,7 +39,7 @@ class ResendEmailService implements EmailService {
 }
 
 const apiKey = process.env.RESEND_API_KEY;
-const from = process.env.EMAIL_FROM ?? "Sati Center LMS <noreply@saticenter.org>";
+const from = process.env.EMAIL_FROM ?? "Olive Institute <noreply@oliveinstitute.org>";
 
 // Swap in another EmailService implementation (SMTP/nodemailer, etc.) by
 // changing this one line — every call site depends only on the interface.

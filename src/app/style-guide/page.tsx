@@ -38,14 +38,14 @@ function Section({
 export default function StyleGuidePage() {
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <TopNav activeHref="__none__" />
+      <TopNav />
 
       <div className="mx-auto w-full max-w-7xl px-6 py-10">
         <h1 className="mb-2 font-heading text-4xl font-semibold text-[var(--color-forest)]">
           Style Guide
         </h1>
         <p className="mb-12 max-w-prose font-serif text-[var(--color-ink-muted)]">
-          Every shared component in isolation, matching the Sati Center
+          Every shared component in isolation, matching the Olive Institute
           reference dashboard: warm cream backgrounds, forest green and sage
           accents, gold dividers, and serif type throughout.
         </p>
@@ -99,13 +99,13 @@ export default function StyleGuidePage() {
           <div className="flex gap-3">
             <Badge>Registration</Badge>
             <Badge>Course Materials</Badge>
-            <Badge>Attendance</Badge>
+            <Badge>Enrolled</Badge>
           </div>
         </Section>
 
         <Section title="Hero card">
           <HeroCard
-            title="Sati Certificate Program"
+            title="Olive Institute"
             subtext="A structured path of study and practice for students committed to deepening their understanding of the Buddhist tradition."
           />
         </Section>

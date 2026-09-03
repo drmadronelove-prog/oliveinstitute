@@ -22,12 +22,7 @@ export default async function AdminCourseDetailPage({
     where: { id: courseId },
     include: {
       professor: { select: { id: true, name: true } },
-      coProfessors: {
-        include: { professor: { select: { id: true, name: true, email: true } } },
-        orderBy: { createdAt: "asc" },
-      },
       enrollments: {
-        where: { status: "ACTIVE" },
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { createdAt: "asc" },
       },
@@ -55,7 +50,7 @@ export default async function AdminCourseDetailPage({
   ]);
 
   return (
-    <AppShell activeHref="/dashboard">
+    <AppShell>
       <p className="mb-2 font-serif text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
         <Link href="/admin/courses" className="underline underline-offset-2">
           Manage courses
@@ -80,21 +75,6 @@ export default async function AdminCourseDetailPage({
               currentProfessorId={course.professor.id}
               professors={professors}
             />
-            {course.coProfessors.length > 0 && (
-              <div className="mt-4 border-t border-black/10 pt-3">
-                <p className="mb-1 font-serif text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-muted)]">
-                  Also teaching this course
-                </p>
-                <ul className="flex flex-col gap-0.5">
-                  {course.coProfessors.map((cp) => (
-                    <li key={cp.professor.id} className="font-serif text-sm text-[var(--color-ink)]">
-                      {cp.professor.name}{" "}
-                      <span className="text-[var(--color-ink-muted)]">({cp.professor.email})</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </Card>
 
           <Card>
@@ -119,7 +99,6 @@ export default async function AdminCourseDetailPage({
                   <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
                     <th className="py-2 pr-4">Name</th>
                     <th className="py-2 pr-4">Email</th>
-                    <th className="py-2 pr-4">Credit status</th>
                     <th className="py-2" />
                   </tr>
                 </thead>
@@ -131,7 +110,6 @@ export default async function AdminCourseDetailPage({
                     >
                       <td className="py-3 pr-4">{enrollment.user.name}</td>
                       <td className="py-3 pr-4">{enrollment.user.email}</td>
-                      <td className="py-3 pr-4">{enrollment.creditStatus}</td>
                       <td className="py-3">
                         <UnenrollButton
                           courseId={course.id}

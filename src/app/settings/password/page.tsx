@@ -7,7 +7,7 @@ export default async function ChangePasswordPage() {
   await requireSession();
 
   return (
-    <AppShell activeHref="/dashboard">
+    <AppShell>
       <h1 className="mb-6 font-heading text-3xl font-semibold text-[var(--color-forest)]">
         Change password
       </h1>

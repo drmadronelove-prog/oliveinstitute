@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Palette matched to the real Sati Center reference site (satistudies.org) */
+  /* Warm forest/sage/cream palette carried over from the original design system */
   --color-forest: #17332c;
   --color-forest-dark: #0f2420;
   --color-forest-light: #2c4a41;
