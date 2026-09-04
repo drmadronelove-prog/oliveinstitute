@@ -24,6 +24,7 @@ export function ReassignInstructorForm({
       <input type="hidden" name="courseId" value={courseId} />
       <select
         name="instructorId"
+        aria-label="Instructor"
         defaultValue={currentInstructorId}
         className="rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
       >

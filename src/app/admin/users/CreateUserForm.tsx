@@ -14,10 +14,14 @@ export function CreateUserForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div>
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="create-user-name"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           Name
         </label>
         <input
+          id="create-user-name"
           name="name"
           type="text"
           required
@@ -26,10 +30,14 @@ export function CreateUserForm() {
       </div>
 
       <div>
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="create-user-email"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           Email
         </label>
         <input
+          id="create-user-email"
           name="email"
           type="email"
           required
@@ -38,10 +46,14 @@ export function CreateUserForm() {
       </div>
 
       <div>
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="create-user-role"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           Role
         </label>
         <select
+          id="create-user-role"
           name="role"
           defaultValue="LEARNER"
           className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"

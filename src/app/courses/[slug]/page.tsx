@@ -13,6 +13,7 @@ import { PublicShell } from "@/components/shell/PublicShell";
 import { Badge } from "@/components/ui/Badge";
 import { LessonPreview } from "@/components/storefront/LessonPreview";
 import { BuyButton } from "@/components/storefront/BuyButton";
+import { TrackDisclaimer } from "@/components/course/TrackDisclaimer";
 
 /**
  * The sales page only ever serves a PUBLISHED course. A draft — or an
@@ -153,6 +154,10 @@ export default async function CourseSalesPage({
           </p>
         </div>
       </section>
+
+      <div className="mx-auto max-w-7xl px-6 pt-6 md:px-10">
+        <TrackDisclaimer track={course.track} />
+      </div>
 
       {course.coverImageKey ? (
         <div className="mx-auto max-w-7xl px-6 pt-10 md:px-10">
@@ -305,6 +310,26 @@ export default async function CourseSalesPage({
                 </>
               )}
             </p>
+
+            {!enrolled ? (
+              <p className="mt-4 border-t border-black/10 pt-3 font-body text-xs text-[var(--color-ink-muted)]">
+                By purchasing you agree to our{" "}
+                <Link
+                  href="/terms"
+                  className="text-[var(--color-olive)] underline underline-offset-2"
+                >
+                  Terms of Service
+                </Link>
+                . See our{" "}
+                <Link
+                  href="/refunds"
+                  className="text-[var(--color-olive)] underline underline-offset-2"
+                >
+                  Refund Policy
+                </Link>{" "}
+                for the 14-day money-back guarantee.
+              </p>
+            ) : null}
           </div>
         </aside>
       </div>

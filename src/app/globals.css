@@ -85,6 +85,32 @@ body {
   );
   color: var(--foreground);
   font-family: var(--font-body);
+  font-size: 16px;
+}
+
+/* A visible focus ring everywhere, not just on the inputs that opt in with
+   Tailwind's `focus:` utilities — links, buttons, and custom controls (the
+   video player's speed <select>, the Stream play button) all need one for
+   keyboard navigation to be usable. :focus-visible skips it for a mouse
+   click, matching how the platform already behaves elsewhere. */
+:focus-visible {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 2px;
+}
+
+/* Respect the OS-level "reduce motion" setting: cut every animation and
+   transition down to effectively instant rather than turning them off
+   outright, so state changes (a saved form, a status badge) still land
+   correctly without the motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Neumorphic surface: soft raised look on a monochromatic ivory surface.

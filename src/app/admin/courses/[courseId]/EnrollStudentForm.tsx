@@ -22,6 +22,7 @@ export function EnrollStudentForm({
       <input type="hidden" name="courseId" value={courseId} />
       <select
         name="studentId"
+        aria-label="Learner"
         required
         className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
       >

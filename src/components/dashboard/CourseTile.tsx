@@ -21,9 +21,9 @@ export function CourseTile({
         href={href}
         className="block rounded-xl border border-black/10 bg-[var(--color-sage-pale-top)] p-5 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
       >
-        <h4 className="font-heading text-lg font-semibold text-[var(--color-ink-muted)]">
+        <h3 className="font-heading text-lg font-semibold text-[var(--color-ink-muted)]">
           {title}
-        </h4>
+        </h3>
         <div className="my-2 h-[2px] w-10 bg-[var(--color-ink-muted)]/30" />
         <p className="font-body text-sm text-[var(--color-ink-muted)]">{meta}</p>
         {secondaryLabel && (
@@ -38,9 +38,9 @@ export function CourseTile({
   return (
     <Link
       href={href}
-      className="block rounded-xl bg-[var(--color-sage)] p-5 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
+      className="block rounded-xl bg-[var(--color-olive)] p-5 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
     >
-      <h4 className="font-heading text-lg font-semibold text-white">{title}</h4>
+      <h3 className="font-heading text-lg font-semibold text-white">{title}</h3>
       <div className="my-2 h-[2px] w-10 bg-[var(--color-gold-light)]" />
       <p className="font-body text-sm text-white/85">{meta}</p>
       {secondaryLabel && (

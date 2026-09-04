@@ -37,10 +37,14 @@ export function ProfileForm({
       </div>
 
       <div>
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="settings-email"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           Email
         </label>
         <input
+          id="settings-email"
           type="email"
           value={email}
           readOnly

@@ -183,6 +183,7 @@ function ModuleSection({
         </span>
         <input
           type="text"
+          aria-label="Module title"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           className={`${fieldClassName} max-w-xs`}

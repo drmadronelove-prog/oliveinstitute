@@ -76,6 +76,15 @@ The free preview's own video plays through Cloudflare Stream — see
 `CLOUDFLARE_STREAM_TOKEN`; until both are set, the preview says so rather
 than rendering a broken frame.
 
+`src/components/course/TrackDisclaimer.tsx` renders a standing notice keyed
+off `Course.track` — PUBLIC gets "this is education, not therapy or medical
+advice, no clinician-client relationship is created," CLINICIAN gets "not
+APA-approved continuing education." It appears on the sales page, the
+learner's course overview, and every lesson in the `/learn` player shell —
+everywhere someone is actually looking at a specific course. The sales page
+also links `/terms` and `/refunds` directly beside the Buy button, not only
+in the footer.
+
 ### SEO
 
 Every public page sets a title, description, canonical URL, and Open Graph
@@ -212,6 +221,7 @@ it is added there.
 | `/register` | anyone — self-service sign-up, always creates a LEARNER |
 | `/verify-email/[token]` | anyone with the link — confirms the account's email |
 | `/forgot-password`, `/reset-password/[token]` | anyone — request and redeem a reset link |
+| `/terms`, `/privacy`, `/refunds` | anyone — legal pages, linked beside the Buy button and in the footer |
 | `/dashboard` | any signed-in user; content varies by role |
 | `/settings` | any signed-in user — profile, password, purchase history |
 | `/my-courses` | any signed-in user — every enrollment, percent complete, "continue where you left off" |
@@ -619,9 +629,34 @@ fails fast if they are unset, so it exercises the account that was actually
 seeded. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` if Playwright's bundled
 Chromium isn't available in your environment.
 
+`tests/accessibility.spec.ts` runs `@axe-core/playwright` against one
+representative page of every kind — public storefront, the legal pages, the
+learner experience (a text lesson, a quiz lesson, an issued certificate),
+and the admin authoring tool — and asserts zero violations, plus a
+keyboard-only walkthrough (no mouse) of buying a course and marking a
+lesson complete. `tests/checkout.spec.ts` covers the full money-critical
+path end to end: a real signed `checkout.session.completed` webhook granting
+access, and a real signed `charge.refunded` webhook revoking it again, with
+the browser re-checked after each. `tests/learn.spec.ts` covers the free
+preview while logged out and a non-preview lesson being blocked without
+enrollment.
+
 ## Deploying
 
 Auth.js v5 needs explicit host trust outside Vercel; `src/lib/auth.ts` sets
 `trustHost: true`. Without it every request in a production build fails
 with `UntrustedHost`. Set a strong `NEXTAUTH_SECRET` and a correct
 `NEXTAUTH_URL`, and put the app behind a reverse proxy you control.
+
+**Production `NEXTAUTH_URL` is `https://oliveclinical.com/institute`** — not
+`http://localhost:3000/institute`, which is only ever correct for local dev.
+The reverse proxy in front of this app is the `oliveclinical` marketing site
+itself: its `next.config.mjs` rewrites `/institute/:path*` to
+`${INSTITUTE_ORIGIN}/institute/:path*`, where `INSTITUTE_ORIGIN` is this
+app's own deployment origin (e.g. `https://olive-institute.fly.dev`) — set
+in the `oliveclinical` deployment's environment, not this one. Getting the
+two mismatched (an `INSTITUTE_ORIGIN` that doesn't point at the same
+deployment `NEXTAUTH_URL` claims to be) breaks auth redirects and cookies,
+since Auth.js signs the session cookie to the host `NEXTAUTH_URL` names.
+Do not set the production `NEXTAUTH_URL` in this repo's own local `.env` —
+that would break local dev, which needs the localhost value instead.

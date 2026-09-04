@@ -9,7 +9,7 @@ import ReactMarkdown from "react-markdown";
  */
 export function LessonBody({ body }: { body: string }) {
   return (
-    <div className="flex flex-col gap-3 font-body text-sm [&_a]:text-[var(--color-olive)] [&_a]:underline [&_a]:underline-offset-2">
+    <div className="flex flex-col gap-3 font-body text-base [&_a]:text-[var(--color-olive)] [&_a]:underline [&_a]:underline-offset-2">
       <ReactMarkdown
         components={{
           h1: (props) => (

@@ -14,7 +14,7 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
+    <main className="flex flex-1 items-center justify-center px-4">
       <form
         action={formAction}
         className="w-full max-w-sm rounded-2xl bg-[var(--color-card)] p-8 shadow-sm ring-1 ring-black/5"
@@ -30,20 +30,28 @@ export default function LoginPage() {
           Sign in
         </h1>
 
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="login-email"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           Email
         </label>
         <input
+          id="login-email"
           name="email"
           type="email"
           required
           className="mb-4 w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
 
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="login-password"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           Password
         </label>
         <input
+          id="login-password"
           name="password"
           type="password"
           required
@@ -82,6 +90,6 @@ export default function LoginPage() {
           </p>
         </div>
       </form>
-    </div>
+    </main>
   );
 }

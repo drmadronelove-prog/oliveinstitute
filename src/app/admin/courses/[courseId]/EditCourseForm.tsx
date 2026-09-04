@@ -38,8 +38,11 @@ export function EditCourseForm({
       <input type="hidden" name="courseId" value={course.id} />
 
       <div>
-        <label className={labelClassName}>Title</label>
+        <label htmlFor="edit-course-title" className={labelClassName}>
+          Title
+        </label>
         <input
+          id="edit-course-title"
           name="title"
           type="text"
           required
@@ -49,8 +52,11 @@ export function EditCourseForm({
       </div>
 
       <div>
-        <label className={labelClassName}>Slug</label>
+        <label htmlFor="edit-course-slug" className={labelClassName}>
+          Slug
+        </label>
         <input
+          id="edit-course-slug"
           name="slug"
           type="text"
           required
@@ -65,8 +71,11 @@ export function EditCourseForm({
       </div>
 
       <div>
-        <label className={labelClassName}>Subtitle</label>
+        <label htmlFor="edit-course-subtitle" className={labelClassName}>
+          Subtitle
+        </label>
         <input
+          id="edit-course-subtitle"
           name="subtitle"
           type="text"
           defaultValue={course.subtitle}
@@ -75,8 +84,11 @@ export function EditCourseForm({
       </div>
 
       <div>
-        <label className={labelClassName}>Description</label>
+        <label htmlFor="edit-course-description" className={labelClassName}>
+          Description
+        </label>
         <textarea
+          id="edit-course-description"
           name="description"
           rows={3}
           defaultValue={course.description}
@@ -86,8 +98,11 @@ export function EditCourseForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={labelClassName}>Track</label>
+          <label htmlFor="edit-course-track" className={labelClassName}>
+            Track
+          </label>
           <select
+            id="edit-course-track"
             name="track"
             required
             defaultValue={course.track}
@@ -98,8 +113,11 @@ export function EditCourseForm({
           </select>
         </div>
         <div>
-          <label className={labelClassName}>Price (USD)</label>
+          <label htmlFor="edit-course-price" className={labelClassName}>
+            Price (USD)
+          </label>
           <input
+            id="edit-course-price"
             name="priceDollars"
             type="number"
             min={0}
@@ -113,8 +131,11 @@ export function EditCourseForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={labelClassName}>Estimated minutes</label>
+          <label htmlFor="edit-course-minutes" className={labelClassName}>
+            Estimated minutes
+          </label>
           <input
+            id="edit-course-minutes"
             name="estimatedMinutes"
             type="number"
             min={0}
@@ -124,8 +145,11 @@ export function EditCourseForm({
           />
         </div>
         <div>
-          <label className={labelClassName}>Sort order</label>
+          <label htmlFor="edit-course-sort" className={labelClassName}>
+            Sort order
+          </label>
           <input
+            id="edit-course-sort"
             name="sortOrder"
             type="number"
             min={0}
@@ -137,8 +161,11 @@ export function EditCourseForm({
       </div>
 
       <div>
-        <label className={labelClassName}>Stripe price ID</label>
+        <label htmlFor="edit-course-stripe-price" className={labelClassName}>
+          Stripe price ID
+        </label>
         <input
+          id="edit-course-stripe-price"
           name="stripePriceId"
           type="text"
           placeholder="price_… (optional)"
@@ -152,7 +179,9 @@ export function EditCourseForm({
       </div>
 
       <div>
-        <label className={labelClassName}>Cover image</label>
+        <label htmlFor="edit-course-cover" className={labelClassName}>
+          Cover image
+        </label>
         {course.coverImageKey ? (
           // eslint-disable-next-line @next/next/no-img-element -- an admin-only thumbnail preview of an arbitrary uploaded image; not worth next/image's optimization pipeline here.
           <img
@@ -162,6 +191,7 @@ export function EditCourseForm({
           />
         ) : null}
         <input
+          id="edit-course-cover"
           name="coverImage"
           type="file"
           accept="image/png,image/jpeg,image/webp,image/gif"

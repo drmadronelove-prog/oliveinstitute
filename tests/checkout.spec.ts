@@ -377,3 +377,129 @@ test.describe("/checkout/success", () => {
     await logout(page);
   });
 });
+
+test.describe("a refund revokes access", () => {
+  test("charge.refunded removes the Enrollment, and the learner loses the course in the UI", async ({
+    page,
+    request,
+  }) => {
+    // Same purchase-then-webhook loop as above, carried one step further:
+    // buy the course for real (a signed checkout.session.completed), confirm
+    // access, then refund it (a signed charge.refunded) and confirm access
+    // is gone in the browser too — not just in the database, which
+    // checkout-webhook.integration.test.ts already covers.
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { email: VERIFIED.email },
+    });
+    const sessionId = `cs_test_refund_${TAG}`;
+    const paymentIntentId = `pi_refund_${TAG}`;
+
+    await prisma.purchase.create({
+      data: {
+        userId: user.id,
+        courseId,
+        stripeCheckoutSessionId: sessionId,
+        amountCents: priceCents,
+        currency: "usd",
+        status: PurchaseStatus.PENDING,
+      },
+    });
+
+    const completedPayload = JSON.stringify({
+      id: `evt_completed_${TAG}`,
+      object: "event",
+      api_version: "2025-10-29.clover",
+      created: Math.floor(Date.now() / 1000),
+      livemode: false,
+      pending_webhooks: 1,
+      request: { id: null, idempotency_key: null },
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: sessionId,
+          object: "checkout.session",
+          mode: "payment",
+          status: "complete",
+          payment_status: "paid",
+          currency: "usd",
+          amount_total: priceCents,
+          client_reference_id: user.id,
+          customer: null,
+          payment_intent: paymentIntentId,
+          metadata: { userId: user.id, courseId },
+        },
+      },
+    });
+
+    await request.post(appPath("/api/webhooks/stripe"), {
+      headers: {
+        "content-type": "application/json",
+        "stripe-signature": stripe.webhooks.generateTestHeaderString({
+          payload: completedPayload,
+          secret: WEBHOOK_SECRET!,
+        }),
+      },
+      data: completedPayload,
+    });
+
+    await login(page, VERIFIED.email, VERIFIED.password);
+    await page.goto(appPath(`/student/courses/${courseId}`));
+    await expect(page.getByText("aren't enrolled")).toHaveCount(0);
+
+    const refundPayload = JSON.stringify({
+      id: `evt_refunded_${TAG}`,
+      object: "event",
+      api_version: "2025-10-29.clover",
+      created: Math.floor(Date.now() / 1000),
+      livemode: false,
+      pending_webhooks: 1,
+      request: { id: null, idempotency_key: null },
+      type: "charge.refunded",
+      data: {
+        object: {
+          id: `ch_${TAG}`,
+          object: "charge",
+          amount: priceCents,
+          amount_refunded: priceCents,
+          currency: "usd",
+          paid: true,
+          refunded: true,
+          payment_intent: paymentIntentId,
+        },
+      },
+    });
+
+    const refundResponse = await request.post(appPath("/api/webhooks/stripe"), {
+      headers: {
+        "content-type": "application/json",
+        "stripe-signature": stripe.webhooks.generateTestHeaderString({
+          payload: refundPayload,
+          secret: WEBHOOK_SECRET!,
+        }),
+      },
+      data: refundPayload,
+    });
+    expect(refundResponse.status()).toBe(200);
+
+    // Re-visit rather than trust a stale render: the course is still
+    // PUBLISHED, so the page renders (browsable, like any logged-out
+    // visitor), but now with the not-enrolled notice and every lesson
+    // locked instead of the curriculum this learner had a moment ago.
+    await page.goto(appPath(`/student/courses/${courseId}`));
+    await expect(page.getByText("aren't enrolled")).toBeVisible();
+
+    await page.goto(appPath(`/learn/${courseSlug}`));
+    await expect(page).toHaveURL(appUrlPattern(`/courses/${courseSlug}`));
+
+    const purchase = await prisma.purchase.findUniqueOrThrow({
+      where: { stripeCheckoutSessionId: sessionId },
+    });
+    expect(purchase.status).toBe(PurchaseStatus.REFUNDED);
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: user.id, courseId } },
+    });
+    expect(enrollment).toBeNull();
+
+    await logout(page);
+  });
+});

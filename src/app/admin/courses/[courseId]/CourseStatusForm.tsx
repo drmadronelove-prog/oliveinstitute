@@ -25,6 +25,7 @@ export function CourseStatusForm({
       <input type="hidden" name="courseId" value={courseId} />
       <select
         name="status"
+        aria-label="Course status"
         // Remount when the saved value changes, so the select shows the
         // server's value rather than a stale mounted default.
         key={currentStatus}

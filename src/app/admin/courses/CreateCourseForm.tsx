@@ -24,13 +24,24 @@ export function CreateCourseForm({
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div>
-        <label className={labelClassName}>Title</label>
-        <input name="title" type="text" required className={fieldClassName} />
+        <label htmlFor="create-course-title" className={labelClassName}>
+          Title
+        </label>
+        <input
+          id="create-course-title"
+          name="title"
+          type="text"
+          required
+          className={fieldClassName}
+        />
       </div>
 
       <div>
-        <label className={labelClassName}>Slug</label>
+        <label htmlFor="create-course-slug" className={labelClassName}>
+          Slug
+        </label>
         <input
+          id="create-course-slug"
           name="slug"
           type="text"
           required
@@ -44,26 +55,50 @@ export function CreateCourseForm({
       </div>
 
       <div>
-        <label className={labelClassName}>Subtitle</label>
-        <input name="subtitle" type="text" className={fieldClassName} />
+        <label htmlFor="create-course-subtitle" className={labelClassName}>
+          Subtitle
+        </label>
+        <input
+          id="create-course-subtitle"
+          name="subtitle"
+          type="text"
+          className={fieldClassName}
+        />
       </div>
 
       <div>
-        <label className={labelClassName}>Description</label>
-        <textarea name="description" rows={2} className={fieldClassName} />
+        <label htmlFor="create-course-description" className={labelClassName}>
+          Description
+        </label>
+        <textarea
+          id="create-course-description"
+          name="description"
+          rows={2}
+          className={fieldClassName}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={labelClassName}>Track</label>
-          <select name="track" required className={fieldClassName}>
+          <label htmlFor="create-course-track" className={labelClassName}>
+            Track
+          </label>
+          <select
+            id="create-course-track"
+            name="track"
+            required
+            className={fieldClassName}
+          >
             <option value="PUBLIC">Public</option>
             <option value="CLINICIAN">Clinician</option>
           </select>
         </div>
         <div>
-          <label className={labelClassName}>Price (cents)</label>
+          <label htmlFor="create-course-price" className={labelClassName}>
+            Price (cents)
+          </label>
           <input
+            id="create-course-price"
             name="priceCents"
             type="number"
             min={0}
@@ -76,8 +111,11 @@ export function CreateCourseForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={labelClassName}>Estimated minutes</label>
+          <label htmlFor="create-course-minutes" className={labelClassName}>
+            Estimated minutes
+          </label>
           <input
+            id="create-course-minutes"
             name="estimatedMinutes"
             type="number"
             min={0}
@@ -87,8 +125,11 @@ export function CreateCourseForm({
           />
         </div>
         <div>
-          <label className={labelClassName}>Sort order</label>
+          <label htmlFor="create-course-sort" className={labelClassName}>
+            Sort order
+          </label>
           <input
+            id="create-course-sort"
             name="sortOrder"
             type="number"
             min={0}
@@ -100,8 +141,15 @@ export function CreateCourseForm({
       </div>
 
       <div>
-        <label className={labelClassName}>Instructor</label>
-        <select name="instructorId" required className={fieldClassName}>
+        <label htmlFor="create-course-instructor" className={labelClassName}>
+          Instructor
+        </label>
+        <select
+          id="create-course-instructor"
+          name="instructorId"
+          required
+          className={fieldClassName}
+        >
           <option value="">Select an instructor…</option>
           {instructors.map((instructor) => (
             <option key={instructor.id} value={instructor.id}>

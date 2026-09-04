@@ -52,9 +52,9 @@ export function RolePanel(props: RolePanelProps) {
   if (props.role === "LEARNER") {
     return (
       <div>
-        <h3 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+        <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
           Your courses
-        </h3>
+        </h2>
         {props.courses.length === 0 ? (
           <p className="font-body text-sm text-[var(--color-ink-muted)]">
             You aren&apos;t enrolled in any courses yet.

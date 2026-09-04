@@ -9,6 +9,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ResourceList } from "@/components/course/ResourceList";
+import { TrackDisclaimer } from "@/components/course/TrackDisclaimer";
 
 export default async function LearnerCourseDetailPage({
   params,
@@ -76,11 +77,15 @@ export default async function LearnerCourseDetailPage({
           {course.subtitle}
         </p>
       ) : null}
-      <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
+      <p className="mb-4 font-body text-sm text-[var(--color-ink-muted)]">
         {trackLabel(course.track)} &middot;{" "}
         {formatMinutes(course.estimatedMinutes)} &middot; Taught by{" "}
         {course.instructor.name}
       </p>
+
+      <div className="mb-8">
+        <TrackDisclaimer track={course.track} />
+      </div>
 
       {!enrolled ? (
         <Card accentColor="var(--color-terracotta)" className="mb-8">

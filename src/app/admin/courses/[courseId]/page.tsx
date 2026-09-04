@@ -189,7 +189,9 @@ export default async function AdminCourseDetailPage({
                       <th className="py-2 pr-4">Name</th>
                       <th className="py-2 pr-4">Email</th>
                       <th className="py-2 pr-4">Source</th>
-                      <th className="py-2" />
+                      <th className="py-2">
+                        <span className="sr-only">Actions</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>

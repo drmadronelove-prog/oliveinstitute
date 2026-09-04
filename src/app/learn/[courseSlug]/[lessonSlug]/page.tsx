@@ -154,7 +154,7 @@ export default async function LessonPage({
           <h2 className="mb-2 font-heading text-lg font-semibold text-[var(--color-ink)]">
             Transcript
           </h2>
-          <p className="whitespace-pre-wrap font-body text-sm text-[var(--color-ink-muted)]">
+          <p className="whitespace-pre-wrap font-body text-base text-[var(--color-ink-muted)]">
             {lesson.transcript}
           </p>
         </Card>

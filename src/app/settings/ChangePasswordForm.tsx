@@ -14,10 +14,14 @@ export function ChangePasswordForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div>
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="current-password"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           Current password
         </label>
         <input
+          id="current-password"
           name="currentPassword"
           type="password"
           required
@@ -26,10 +30,14 @@ export function ChangePasswordForm() {
       </div>
 
       <div>
-        <label className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]">
+        <label
+          htmlFor="new-password"
+          className="mb-1 block font-body text-sm font-medium text-[var(--color-ink)]"
+        >
           New password
         </label>
         <input
+          id="new-password"
           name="newPassword"
           type="password"
           required

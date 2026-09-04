@@ -11,11 +11,12 @@ import {
   LessonSidebar,
   type SidebarModule,
 } from "@/components/learn/LessonSidebar";
+import { TrackDisclaimer } from "@/components/course/TrackDisclaimer";
 
 async function loadCourse(slug: string) {
   return prisma.course.findUnique({
     where: { slug },
-    select: { id: true, slug: true, title: true, status: true },
+    select: { id: true, slug: true, title: true, status: true, track: true },
   });
 }
 
@@ -107,10 +108,13 @@ export default async function LearnLayout({
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-8 md:flex-row">
-        <LessonSidebar courseSlug={course.slug} modules={modules} />
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-8 md:px-10">
+        <TrackDisclaimer track={course.track} />
+        <div className="flex flex-1 flex-col gap-8 md:flex-row">
+          <LessonSidebar courseSlug={course.slug} modules={modules} />
+          <div className="min-w-0 flex-1">{children}</div>
+        </div>
+      </main>
     </div>
   );
 }

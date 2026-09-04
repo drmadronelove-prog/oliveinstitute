@@ -95,6 +95,7 @@ export default async function DashboardPage() {
     const rolePanelData = await loadRolePanelData(session.user.id, session.user.role);
     return (
       <AppShell>
+        <h1 className="sr-only">Dashboard</h1>
         <AccountBar name={session.user.name} role={session.user.role} />
         <RolePanel {...rolePanelData} />
       </AppShell>

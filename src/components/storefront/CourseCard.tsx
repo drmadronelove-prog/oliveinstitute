@@ -22,9 +22,9 @@ export function CourseCard({ course }: { course: CatalogCourse }) {
       <span className="self-start">
         <Badge>{trackLabel(course.track)}</Badge>
       </span>
-      <h3 className="font-heading text-xl font-semibold text-[var(--color-olive)]">
+      <h2 className="font-heading text-xl font-semibold text-[var(--color-olive)]">
         {course.title}
-      </h3>
+      </h2>
       {course.subtitle ? (
         <p className="font-body text-sm text-[var(--color-ink-muted)]">
           {course.subtitle}

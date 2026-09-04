@@ -36,7 +36,7 @@ export default async function CertificatePage({
   }
 
   return (
-    <div className="flex min-h-full flex-col items-center bg-[var(--color-ivory)] px-6 py-12 print:bg-white print:py-0">
+    <main className="flex min-h-full flex-col items-center bg-[var(--color-ivory)] px-6 py-12 print:bg-white print:py-0">
       <div className="mb-6 flex gap-3 print:hidden">
         <PrintButton />
         <a
@@ -91,6 +91,6 @@ export default async function CertificatePage({
           Verification code: {data.verificationCode}
         </p>
       </div>
-    </div>
+    </main>
   );
 }

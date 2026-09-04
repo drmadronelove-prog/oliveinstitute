@@ -303,6 +303,107 @@ enrollment is completed regardless of what happens after.
   lesson in the same module — the pre-existing lesson-type slot this
   phase filled in, not a new display surface.
 
+## Legal, disclaimers, and accessibility (phase 11)
+
+Preparation for taking real payments in earnest — everything short of the
+live Stripe cutover itself, which is deliberately not done here (see
+"Going live" below).
+
+- `/terms`, `/privacy`, and `/refunds` (new) replaced the old placeholder
+  pages with real text tailored to this business: a self-paced course
+  platform, Stripe payments, Cloudflare Stream video, a 14-day money-back
+  guarantee, and — because a refund revokes access immediately by
+  construction (see "Payments" above) — an explicit warning that refunding
+  removes access and invalidates any certificate already issued. Each page
+  carries an honest banner that the text was AI-drafted and needs a
+  lawyer's review before go-live, the same "don't guess, say so" instinct
+  as the certificate issuer fields. `/terms` and `/refunds` are linked
+  directly beside the Buy button on the sales page, not only in the
+  footer.
+- `src/components/course/TrackDisclaimer.tsx` renders the standing,
+  non-dismissible notice this phase's request called for: PUBLIC courses
+  get "this is education, not therapy or medical advice, no
+  clinician-client relationship is created"; CLINICIAN courses get "not
+  APA-approved continuing education" instead — a course is exactly one
+  track, so exactly one notice ever shows. It appears on the sales page,
+  the learner's course overview (`/student/courses/[id]`), and the
+  `/learn` player shell (all lesson pages for that course), covering every
+  page where someone is actually looking at a specific course.
+- Accessibility: `tests/accessibility.spec.ts` runs `@axe-core/playwright`
+  against one representative page of every kind the app serves and asserts
+  zero violations, plus two keyboard-only tests (no mouse) covering buying
+  a course and marking a lesson complete. Fixing what it found touched
+  several shared components: `Badge`'s text color and `CourseTile`'s
+  background didn't meet contrast against their own pill/tile backgrounds;
+  several admin forms and the login/settings pages had `<label>`s with no
+  `htmlFor`/`id` (the same class of gap `CourseBuilder.tsx` hit in phase
+  9); a few compact inline `<select>`s (course status, reassign
+  instructor, enroll learner) had no accessible name at all, fixed with
+  `aria-label` since there's no room for a visible label next to them;
+  `CourseCard`'s and `CourseTile`'s heading levels skipped a level under
+  the page's `h1`; and `/login` and `/certificates/[id]`, both rendered
+  outside any shell, had no `<main>` landmark. `globals.css` gained a
+  global `:focus-visible` outline (every interactive element gets one now,
+  not just the inputs that opted in with `focus:` utilities already) and a
+  `prefers-reduced-motion` block that collapses every transition/animation
+  to near-instant rather than turning them off outright. Body copy that is
+  actually read at length — lesson bodies and transcripts, the legal
+  pages, the track disclaimer — was audited against a 16px floor; compact
+  UI text (badges, timestamps, table cells) was deliberately left alone,
+  since a blanket 16px minimum there would be a chrome redesign the
+  request wasn't asking for.
+- `tests/checkout.spec.ts` gained a full refund-revokes-access test: a real
+  signed `checkout.session.completed` grants access, a real signed
+  `charge.refunded` revokes it, and the browser is re-checked after each
+  (the DB-level idempotency behavior was already covered by
+  `checkout-webhook.integration.test.ts`; this is the same thing proven
+  through the actual pages a learner would see). `tests/learn.spec.ts`
+  already covered the free preview while logged out and a non-preview
+  lesson being blocked without enrollment, so those weren't duplicated.
+- The `oliveclinical` repo (the marketing site at oliveclinical.com, a
+  separate repo and deployment) got a `rewrites()` entry in
+  `next.config.mjs` sending `/institute/:path*` to
+  `${INSTITUTE_ORIGIN}/institute/:path*` — `INSTITUTE_ORIGIN` is this
+  app's own deployment origin, set as an env var over there, with no
+  plausible default (a missing value fails that build loudly rather than
+  proxying nowhere). Pushed to a branch (`claude/institute-proxy-rewrite`),
+  not `main`, since that repo's `main` is a live production site — the PR
+  is the account holder's to open when ready. Production `NEXTAUTH_URL`
+  for this app must be `https://oliveclinical.com/institute`, documented
+  in this repo's README rather than written into this repo's own `.env`
+  (which needs the localhost value for local dev to keep working).
+
+### Going live
+
+The remaining step — switching Stripe from test to live keys, registering
+the production webhook endpoint, and making one real purchase and one real
+refund — is the account holder's own action, not something done
+autonomously here: it moves real money and needs a human's Stripe
+dashboard access. Checklist, in order:
+
+1. Deploy this app; confirm `NEXTAUTH_URL`, `NEXTAUTH_SECRET`,
+   `DATABASE_URL`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_STREAM_TOKEN`, and
+   `CERTIFICATE_ISSUER_NAME`/`CERTIFICATE_ISSUER_LICENSE_NUMBER` are all
+   set for real (see "Working notes" — there is no demo/fallback config).
+2. Deploy `oliveclinical` with `INSTITUTE_ORIGIN` pointed at that
+   deployment; confirm `https://oliveclinical.com/institute/login` actually
+   reaches this app before touching Stripe at all.
+3. In the Stripe dashboard, switch to live mode and set live
+   `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` (if used) in this app's
+   deployment environment — never in a file committed to the repo.
+4. Register a live webhook endpoint at
+   `https://oliveclinical.com/institute/api/webhooks/stripe` for
+   `checkout.session.completed` and `charge.refunded`, and set the live
+   `STRIPE_WEBHOOK_SECRET` it gives you.
+5. Have a lawyer review `/terms`, `/privacy`, and `/refunds` — they're
+   real, tailored text, but AI-drafted, and this business takes real
+   payments and involves a licensed clinician.
+6. Make one real purchase of a real (cheap) published course with a real
+   card, confirm the receipt email and course access, then refund it from
+   the Stripe dashboard and confirm access is revoked and the certificate
+   (if one was issued) is no longer reachable. Only announce the store is
+   open after this round trip works.
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
