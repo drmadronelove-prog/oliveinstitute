@@ -111,9 +111,10 @@ export default async function DashboardPage() {
       <HeroCard
         title="Olive Institute"
         subtext="Self-paced courses, available whenever you are"
-        imageSrc="/wilsan-u-aiUIs74ejx8-unsplash.jpg"
-        imageAlt="A bronze Buddha statue resting its head on its hand, in front of a sunlit window with greenery"
-        imageAspectRatio="3 / 2"
+        imageSrc="/olive-blobs.png"
+        imageAlt=""
+        imageClassName="object-contain"
+        imageAspectRatio="1 / 1"
       />
 
       <div className="mt-10">

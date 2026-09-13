@@ -488,18 +488,28 @@ new value, this app's tokens should keep tracking it):
   directly (`#0B2545`) — the same value `--color-olive` now uses, since
   oliveclinical's own system already uses `ink` for both roles
 
-Two lower-priority assets still carry the old identity and were left
-alone rather than guessed at: `src/components/shell/Wordmark.tsx` (a text
-wordmark, olive-colored via the token so it re-themed automatically) is
-fine as-is, but the dashboard `HeroCard`'s photo
-(`wilsan-u-aiUIs74ejx8-unsplash.jpg`, a stock Buddha-statue image, a
-SatiLMS leftover) has nothing to do with either brand's actual palette —
-worth a real decision, not a recolor.
-
 `favicon.ico`/`icon.png` were regenerated from oliveclinical's
 `public/olive-logo.svg` (an olive-fruit silhouette) at its native navy
 (`#0B2545`) — no recoloring needed once `--color-olive`/`--color-ink`
 became that same navy.
+
+The dashboard `HeroCard`'s image is now `public/olive-blobs.png`, copied
+from oliveclinical's own `public/blobs1.png` (the static six-circle
+cluster their homepage hero animates) — replacing
+`wilsan-u-aiUIs74ejx8-unsplash.jpg`, a stock Buddha-statue photo left
+over from the SatiLMS fork with nothing to do with either brand. Rendered
+`object-contain` at `1 / 1` (its native ratio, roughly) rather than the
+default `object-cover`, so the whole cluster stays visible instead of
+being cropped; `alt=""` since it's decorative, not informational.
+oliveclinical's own hero uses a physics-based version of this
+(`components/hero-drifting-blobs.tsx`) that continuously drifts and
+bounces the six shapes apart — porting that interactive behavior here,
+rather than just its static art, wasn't asked for and would need this
+app's own hero section built around it (obstacle elements, a "home"
+layout box) to make sense; flag if that's wanted.
+`src/components/shell/Wordmark.tsx` (a text wordmark, olive-colored via
+the token so it re-themed automatically with the rest of the palette)
+needed no change.
 
 ## Working notes
 
