@@ -404,6 +404,27 @@ dashboard access. Checklist, in order:
    (if one was issued) is no longer reachable. Only announce the store is
    open after this round trip works.
 
+**Two real deployment gotchas hit while first wiring step 2 above, worth
+knowing before repeating this setup:**
+
+- `next.config.ts` needs `experimental.serverActions.allowedOrigins` to
+  include `oliveclinical.com` and `www.oliveclinical.com`. Vercel's
+  `rewrites()` proxy in the `oliveclinical` repo forwards a request to
+  this app's own deployment origin, not the public-facing one — so this
+  app's `host`/`x-forwarded-host` headers show its own domain (e.g. the
+  Railway address), while the browser's `Origin` header still says
+  `oliveclinical.com`. Next.js's built-in CSRF check for Server Actions
+  rejects that mismatch by default (error code `E80`, "Invalid Server
+  Actions request") on every form submission — login included — unless
+  the proxying domain is explicitly allow-listed here.
+- On Railway specifically: a service can exist and show "Active" without
+  ever being connected to a GitHub branch. If so, every push and every
+  manual "Redeploy" just re-runs the one build it already has — nothing
+  new ever ships, silently. Confirm the service's Settings → Source shows
+  the right repo *and branch* (this repo has no `main`; deploy from
+  `claude/satilms-to-olive-conversion-u9hxe3`) before trusting that a
+  fix has actually gone out.
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
