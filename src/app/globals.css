@@ -2,40 +2,49 @@
 
 :root {
   /* ── Olive Institute brand palette ──────────────────────────────────
-     Six brand colors, plus a light/dark step on each where the UI needs
-     a hover, gradient, or divider shade. Nothing outside this set. */
+     Matched to oliveclinical.com's own palette (app/globals.css there),
+     so the two sites read as one brand across the /institute proxy —
+     same six roles this file always had, just re-mapped onto
+     oliveclinical's actual colors (ink/glass/linen-soft/paper/rose/gold)
+     instead of the earlier standalone olive-green identity. */
 
-  /* Deep olive — top nav, headings, primary surfaces */
-  --color-olive: #3f4f33;
-  --color-olive-dark: #32402a;
-  --color-olive-light: #55684a;
+  /* Ink (navy) — top nav, headings, primary surfaces */
+  --color-olive: #0b2545;
+  --color-olive-dark: #091e37;
+  --color-olive-light: #485c74;
 
-  /* Sage — secondary surfaces, badges, hero gradient */
-  --color-sage: #7e9068;
-  --color-sage-dark: #667554;
-  --color-sage-light: #98a886;
+  /* Glass — secondary surfaces, badges, hero gradient */
+  --color-sage: #9fb3b0;
+  --color-sage-dark: #7f8f8d;
+  --color-sage-light: #b7c6c4;
 
-  /* Pale sage — inset rows and raised tiles on the ivory ground */
-  --color-sage-pale: #edf0e8;
-  --color-sage-pale-top: #f5f7f1;
-  --color-sage-pale-deep: #e0e5d8;
+  /* Linen / soft — inset rows and raised tiles on the paper ground */
+  --color-sage-pale: #e9e9e9;
+  --color-sage-pale-top: #f3f3f3;
+  --color-sage-pale-deep: #e1e1e1;
 
-  /* Warm ivory — page ground, and light type on olive/sage */
-  --color-ivory: #faf8f2;
+  /* Paper — page ground, and light type on ink/glass */
+  --color-ivory: #f3f3f3;
 
-  /* Terracotta — the one warm accent, for emphasis and active state */
-  --color-terracotta: #a0553a;
-  --color-terracotta-dark: #83432d;
-  --color-terracotta-light: #b96b4f;
+  /* Rose — the one warm accent, for emphasis and active state. Darkened
+     from oliveclinical's own --rose (#c4877e), which reads fine as a
+     background/border tint but is only 2.95:1 on white as text — this app
+     uses it as link/button text too, so it has to clear 4.5:1 there. */
+  --color-terracotta: #895f58;
+  --color-terracotta-dark: #6e4c46;
+  --color-terracotta-light: #a78782;
 
-  /* Muted gold — dividers and fine rules */
-  --color-gold: #a98b4f;
-  --color-gold-dark: #856c3b;
-  --color-gold-light: #c0a369;
+  /* Gold — dividers and fine rules */
+  --color-gold: #c5a572;
+  --color-gold-dark: #9e845b;
+  --color-gold-light: #d4bc95;
 
   --color-card: #ffffff;
-  --color-ink: #2b3323;
-  --color-ink-muted: #5a6350;
+  --color-ink: #0b2545;
+  /* Darkened from oliveclinical's own --slate (#5b6e88): that value only
+     hits 4.29:1 on the linen/soft backgrounds this app puts muted text on
+     (a course card's inset rows, timestamps), short of WCAG AA's 4.5:1. */
+  --color-ink-muted: #4d5e74;
 
   --background: var(--color-ivory);
   --foreground: var(--color-ink);
@@ -78,8 +87,8 @@ body {
   background-color: var(--background);
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(63, 79, 51, 0.05) 0px,
-    rgba(63, 79, 51, 0.05) 1px,
+    rgba(11, 37, 69, 0.05) 0px,
+    rgba(11, 37, 69, 0.05) 1px,
     transparent 1px,
     transparent 9px
   );
@@ -118,19 +127,19 @@ body {
    up-left. */
 .shadow-neumorphic {
   box-shadow:
-    6px 6px 14px rgba(63, 79, 51, 0.16),
+    6px 6px 14px rgba(11, 37, 69, 0.16),
     -6px -6px 14px rgba(255, 255, 255, 0.85);
 }
 
 .shadow-neumorphic-sm {
   box-shadow:
-    3px 3px 7px rgba(63, 79, 51, 0.14),
+    3px 3px 7px rgba(11, 37, 69, 0.14),
     -3px -3px 7px rgba(255, 255, 255, 0.8);
 }
 
 .shadow-neumorphic-inset {
   box-shadow:
-    inset 3px 3px 7px rgba(63, 79, 51, 0.16),
+    inset 3px 3px 7px rgba(11, 37, 69, 0.16),
     inset -3px -3px 7px rgba(255, 255, 255, 0.7);
 }
 
@@ -139,21 +148,21 @@ body {
 .shadow-tile {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -1px 0 rgba(63, 79, 51, 0.08),
-    0 1px 1px rgba(63, 79, 51, 0.1),
-    0 6px 12px rgba(63, 79, 51, 0.14);
+    inset 0 -1px 0 rgba(11, 37, 69, 0.08),
+    0 1px 1px rgba(11, 37, 69, 0.1),
+    0 6px 12px rgba(11, 37, 69, 0.14);
 }
 
 .shadow-tile-hover {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 0 rgba(63, 79, 51, 0.08),
-    0 2px 2px rgba(63, 79, 51, 0.1),
-    0 10px 18px rgba(63, 79, 51, 0.2);
+    inset 0 -1px 0 rgba(11, 37, 69, 0.08),
+    0 2px 2px rgba(11, 37, 69, 0.1),
+    0 10px 18px rgba(11, 37, 69, 0.2);
 }
 
 .shadow-tile-active {
   box-shadow:
-    inset 0 1px 2px rgba(63, 79, 51, 0.18),
-    0 1px 1px rgba(63, 79, 51, 0.08);
+    inset 0 1px 2px rgba(11, 37, 69, 0.18),
+    0 1px 1px rgba(11, 37, 69, 0.08);
 }

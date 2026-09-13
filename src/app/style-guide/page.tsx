@@ -10,28 +10,28 @@ import { ResourceList } from "@/components/course/ResourceList";
 type Swatch = { name: string; token: string; hex: string; note?: string };
 
 const BRAND: Swatch[] = [
-  { name: "Deep olive", token: "--color-olive", hex: "#3F4F33", note: "Nav, headings" },
-  { name: "Sage", token: "--color-sage", hex: "#7E9068", note: "Badges, hero" },
-  { name: "Pale sage", token: "--color-sage-pale", hex: "#EDF0E8", note: "Inset rows" },
-  { name: "Warm ivory", token: "--color-ivory", hex: "#FAF8F2", note: "Page ground" },
-  { name: "Terracotta", token: "--color-terracotta", hex: "#A0553A", note: "Accent" },
-  { name: "Muted gold", token: "--color-gold", hex: "#A98B4F", note: "Dividers" },
+  { name: "Ink", token: "--color-olive", hex: "#0B2545", note: "Nav, headings" },
+  { name: "Glass", token: "--color-sage", hex: "#9FB3B0", note: "Badges, hero" },
+  { name: "Linen", token: "--color-sage-pale", hex: "#E9E9E9", note: "Inset rows" },
+  { name: "Paper", token: "--color-ivory", hex: "#F3F3F3", note: "Page ground" },
+  { name: "Rose", token: "--color-terracotta", hex: "#895F58", note: "Accent" },
+  { name: "Gold", token: "--color-gold", hex: "#C5A572", note: "Dividers" },
 ];
 
 const SHADES: Swatch[] = [
-  { name: "Olive dark", token: "--color-olive-dark", hex: "#32402A" },
-  { name: "Olive light", token: "--color-olive-light", hex: "#55684A" },
-  { name: "Sage dark", token: "--color-sage-dark", hex: "#667554" },
-  { name: "Sage light", token: "--color-sage-light", hex: "#98A886" },
-  { name: "Pale sage top", token: "--color-sage-pale-top", hex: "#F5F7F1" },
-  { name: "Pale sage deep", token: "--color-sage-pale-deep", hex: "#E0E5D8" },
-  { name: "Terracotta dark", token: "--color-terracotta-dark", hex: "#83432D" },
-  { name: "Terracotta light", token: "--color-terracotta-light", hex: "#B96B4F" },
-  { name: "Gold dark", token: "--color-gold-dark", hex: "#856C3B" },
-  { name: "Gold light", token: "--color-gold-light", hex: "#C0A369" },
+  { name: "Ink dark", token: "--color-olive-dark", hex: "#091E37" },
+  { name: "Ink light", token: "--color-olive-light", hex: "#485C74" },
+  { name: "Glass dark", token: "--color-sage-dark", hex: "#7F8F8D" },
+  { name: "Glass light", token: "--color-sage-light", hex: "#B7C6C4" },
+  { name: "Paper (top)", token: "--color-sage-pale-top", hex: "#F3F3F3" },
+  { name: "Soft", token: "--color-sage-pale-deep", hex: "#E1E1E1" },
+  { name: "Rose dark", token: "--color-terracotta-dark", hex: "#6E4C46" },
+  { name: "Rose light", token: "--color-terracotta-light", hex: "#A78782" },
+  { name: "Gold dark", token: "--color-gold-dark", hex: "#9E845B" },
+  { name: "Gold light", token: "--color-gold-light", hex: "#D4BC95" },
   { name: "Card", token: "--color-card", hex: "#FFFFFF" },
-  { name: "Ink", token: "--color-ink", hex: "#2B3323" },
-  { name: "Ink muted", token: "--color-ink-muted", hex: "#5A6350" },
+  { name: "Ink (text)", token: "--color-ink", hex: "#0B2545" },
+  { name: "Slate (muted text)", token: "--color-ink-muted", hex: "#4D5E74" },
 ];
 
 const SAMPLE_RESOURCES = [
@@ -117,10 +117,10 @@ export default function StyleGuidePage() {
           Style Guide
         </h1>
         <p className="mb-12 max-w-prose font-body text-[var(--color-ink-muted)]">
-          Every design token and shared component in isolation. The palette is
-          deep olive and sage on warm ivory, with terracotta as the single
-          accent and muted gold for fine rules. Headings are Cormorant
-          Garamond; body and UI text are DM Sans.
+          Every design token and shared component in isolation. The palette
+          matches oliveclinical.com&apos;s own — ink and glass on paper, with
+          rose as the single accent and muted gold for fine rules. Headings
+          are Cormorant Garamond; body and UI text are DM Sans.
         </p>
 
         <Section

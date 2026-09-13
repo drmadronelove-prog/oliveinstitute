@@ -105,35 +105,35 @@ export function renderCertificatePdf(data: CertificateData): Promise<Buffer> {
 
     doc
       .fontSize(10)
-      .fillColor("#5a6350")
+      .fillColor("#4d5e74")
       .text(SITE_NAME.toUpperCase(), { align: "center" });
     doc.moveDown(1.5);
     doc
       .fontSize(28)
-      .fillColor("#2b3323")
+      .fillColor("#0b2545")
       .text("Certificate of Completion", { align: "center" });
     doc.moveDown(1.5);
-    doc.fontSize(14).fillColor("#2b3323").text("This certifies that", {
+    doc.fontSize(14).fillColor("#0b2545").text("This certifies that", {
       align: "center",
     });
     doc.moveDown(0.5);
     doc
       .fontSize(22)
-      .fillColor("#3f4f33")
+      .fillColor("#0b2545")
       .text(data.learnerName, { align: "center" });
     doc.moveDown(0.5);
-    doc.fontSize(14).fillColor("#2b3323").text("has completed", {
+    doc.fontSize(14).fillColor("#0b2545").text("has completed", {
       align: "center",
     });
     doc.moveDown(0.5);
     doc
       .fontSize(18)
-      .fillColor("#3f4f33")
+      .fillColor("#0b2545")
       .text(data.courseTitle, { align: "center" });
     doc.moveDown(1);
     doc
       .fontSize(12)
-      .fillColor("#5a6350")
+      .fillColor("#4d5e74")
       .text(
         `${data.hours} hour${data.hours === "1.0" ? "" : "s"} · Completed ${data.completedAt.toLocaleDateString(
           "en-US",
@@ -146,24 +146,24 @@ export function renderCertificatePdf(data: CertificateData): Promise<Buffer> {
       doc.moveDown(1);
       doc
         .fontSize(9)
-        .fillColor("#5a6350")
+        .fillColor("#4d5e74")
         .text(CLINICIAN_DISCLAIMER, { align: "center" });
     }
 
     doc.moveDown(3);
     doc
       .fontSize(11)
-      .fillColor("#2b3323")
+      .fillColor("#0b2545")
       .text(data.issuerName, { align: "center" });
     doc
       .fontSize(9)
-      .fillColor("#5a6350")
+      .fillColor("#4d5e74")
       .text(`License #${data.issuerLicenseNumber}`, { align: "center" });
 
     doc.moveDown(2);
     doc
       .fontSize(9)
-      .fillColor("#5a6350")
+      .fillColor("#4d5e74")
       .text(`Verification code: ${data.verificationCode}`, {
         align: "center",
       });

@@ -444,11 +444,8 @@ knowing before repeating this setup:**
 
 The Sati palette and typography were replaced wholesale:
 
-- **Palette** (`src/app/globals.css`): deep olive `#3F4F33`, sage
-  `#7E9068`, pale sage `#EDF0E8`, warm ivory `#FAF8F2`, terracotta
-  `#A0553A`, muted gold `#A98B4F`, plus derived shades. The old
-  forest/cream/slate-blue tokens are gone — don't reintroduce a cool
-  accent, terracotta is the one warm accent.
+- **Palette** (`src/app/globals.css`), superseded by phase 12 below — see
+  there for the current colors.
 - **Type**: Cormorant Garamond (`font-heading`) and DM Sans (`font-body`),
   both via `next/font`. The `font-serif` utility was removed rather than
   left pointing at a sans face.
@@ -456,6 +453,53 @@ The Sati palette and typography were replaced wholesale:
   with `ALTER TYPE ... RENAME VALUE` so existing rows keep their role.
 - **Base path**: the app is mounted at `/institute`; see README for the
   three places that need `withBasePath()`.
+
+## Palette match with oliveclinical.com (phase 12)
+
+The standalone olive-green identity from phase 2 (`#3F4F33` olive, `#7E9068`
+sage, `#A0553A` terracotta) was replaced with oliveclinical.com's own
+palette, so the two sites read as one brand across the `/institute` proxy.
+The six token *roles* in `src/app/globals.css` didn't change — only their
+values, re-mapped by function onto oliveclinical's named colors (its own
+`app/globals.css`, not duplicated here — check there before hand-picking a
+new value, this app's tokens should keep tracking it):
+
+- `--color-olive` (nav, headings, primary surfaces) → oliveclinical's `ink`
+  (`#0B2545`, navy — not green anymore, despite the token name staying
+  `olive`; renaming every call site was judged not worth the churn)
+- `--color-sage` (secondary surfaces, badges, hero gradient) → `glass`
+  (`#9FB3B0`)
+- `--color-sage-pale` (inset rows) → `linen` (`#E9E9E9`)
+- `--color-ivory` (page ground) → `paper` (`#F3F3F3`)
+- `--color-terracotta` (the one warm accent) → oliveclinical's `rose`
+  (`#C4877E`), **darkened to `#895F58`** — rose reads fine as a background
+  tint but is only 2.95:1 against white as text, and this app uses it for
+  link/button text (an eyebrow label, an Archive action), which needs
+  4.5:1. Its derived light/dark shades were recomputed from that darker
+  base, not from oliveclinical's own.
+- `--color-gold` (dividers, fine rules) → oliveclinical's `gold`
+  (`#C5A572`) directly, no adjustment needed
+- `--color-ink-muted` (muted body text) → oliveclinical's `slate`
+  (`#5B6E88`), **also darkened, to `#4D5E74`** — same shape of problem:
+  4.29:1 against this app's linen/soft backgrounds (course-card inset
+  rows, timestamps), short of the 4.5:1 this app's own
+  `tests/accessibility.spec.ts` enforces
+- `--color-ink` (body text, headings-on-light) → oliveclinical's `ink`
+  directly (`#0B2545`) — the same value `--color-olive` now uses, since
+  oliveclinical's own system already uses `ink` for both roles
+
+Two lower-priority assets still carry the old identity and were left
+alone rather than guessed at: `src/components/shell/Wordmark.tsx` (a text
+wordmark, olive-colored via the token so it re-themed automatically) is
+fine as-is, but the dashboard `HeroCard`'s photo
+(`wilsan-u-aiUIs74ejx8-unsplash.jpg`, a stock Buddha-statue image, a
+SatiLMS leftover) has nothing to do with either brand's actual palette —
+worth a real decision, not a recolor.
+
+`favicon.ico`/`icon.png` were regenerated from oliveclinical's
+`public/olive-logo.svg` (an olive-fruit silhouette) at its native navy
+(`#0B2545`) — no recoloring needed once `--color-olive`/`--color-ink`
+became that same navy.
 
 ## Working notes
 
