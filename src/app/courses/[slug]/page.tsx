@@ -205,8 +205,20 @@ export default async function CourseSalesPage({
             <div className="flex flex-col gap-6">
               {course.modules.map((courseModule) => (
                 <div key={courseModule.id}>
-                  <h3 className="mb-2 font-heading text-lg font-semibold text-[var(--color-ink)]">
-                    {courseModule.sortOrder}. {courseModule.title}
+                  <h3 className="mb-2 flex flex-wrap items-baseline gap-x-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+                    <span>
+                      {courseModule.sortOrder}. {courseModule.title}
+                    </span>
+                    <span className="font-body text-xs font-normal text-[var(--color-ink-muted)]">
+                      {formatMinutes(
+                        Math.round(
+                          courseModule.lessons.reduce(
+                            (sum, lesson) => sum + lesson.durationSeconds,
+                            0,
+                          ) / 60,
+                        ),
+                      )}
+                    </span>
                   </h3>
                   <ul className="flex flex-col gap-2">
                     {courseModule.lessons.map((lesson) => (

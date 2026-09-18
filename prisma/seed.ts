@@ -6,6 +6,8 @@ import {
   Track,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import type { CourseSeed } from "./curriculum/types";
+import { neuroAffirmingTherapyCertificate } from "./curriculum/neuro-affirming-therapy";
 
 const prisma = new PrismaClient();
 
@@ -24,34 +26,14 @@ function requireEnv(name: string): string {
   return value;
 }
 
-type LessonSeed = {
-  title: string;
-  slug: string;
-  type: LessonType;
-  durationSeconds: number;
-  isFreePreview?: boolean;
-  body?: string;
-};
-
-type ModuleSeed = { title: string; lessons: LessonSeed[] };
-
-type CourseSeed = {
-  slug: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  track: Track;
-  priceCents: number;
-  estimatedMinutes: number;
-  sortOrder: number;
-  modules: ModuleSeed[];
-};
-
 /**
- * Two catalogue courses, one per track. Each has two modules and five
- * lessons in total, and its first lesson is the free preview.
+ * Two sample catalogue courses, one per track. Each has two modules and five
+ * lessons in total, and its first lesson is the free preview. They are
+ * PUBLISHED with placeholder video ids so the storefront and the e2e suite
+ * have something to show; archive them from /admin/courses before selling
+ * for real.
  */
-const COURSES: CourseSeed[] = [
+const SAMPLE_COURSES: CourseSeed[] = [
   {
     slug: "trauma-informed-care-foundations",
     title: "Trauma-Informed Care: Foundations",
@@ -62,6 +44,9 @@ const COURSES: CourseSeed[] = [
     priceCents: 24900,
     estimatedMinutes: 190,
     sortOrder: 1,
+    status: CourseStatus.PUBLISHED,
+    placeholderVideos: true,
+    rebuild: "always",
     modules: [
       {
         title: "Orientation",
@@ -118,6 +103,9 @@ const COURSES: CourseSeed[] = [
     priceCents: 7900,
     estimatedMinutes: 105,
     sortOrder: 2,
+    status: CourseStatus.PUBLISHED,
+    placeholderVideos: true,
+    rebuild: "always",
     modules: [
       {
         title: "Starting where you are",
@@ -166,42 +154,17 @@ const COURSES: CourseSeed[] = [
   },
 ];
 
-async function seedCourse(seed: CourseSeed, instructorId: string) {
-  const course = await prisma.course.upsert({
-    where: { slug: seed.slug },
-    update: {
-      title: seed.title,
-      subtitle: seed.subtitle,
-      description: seed.description,
-      track: seed.track,
-      priceCents: seed.priceCents,
-      estimatedMinutes: seed.estimatedMinutes,
-      sortOrder: seed.sortOrder,
-      instructorId,
-    },
-    create: {
-      slug: seed.slug,
-      title: seed.title,
-      subtitle: seed.subtitle,
-      description: seed.description,
-      track: seed.track,
-      priceCents: seed.priceCents,
-      estimatedMinutes: seed.estimatedMinutes,
-      sortOrder: seed.sortOrder,
-      status: CourseStatus.PUBLISHED,
-      publishedAt: new Date(),
-      instructorId,
-    },
-  });
+const COURSES: CourseSeed[] = [
+  ...SAMPLE_COURSES,
+  neuroAffirmingTherapyCertificate,
+];
 
-  // Rebuild the tree each run so re-seeding is idempotent. Modules cascade
-  // to lessons, so removing them clears the lessons too.
-  await prisma.module.deleteMany({ where: { courseId: course.id } });
-
+/** Builds a course's module/lesson/quiz tree from its seed, assuming it has none. */
+async function buildCurriculum(courseId: string, seed: CourseSeed) {
   for (const [moduleIndex, moduleSeed] of seed.modules.entries()) {
     const courseModule = await prisma.module.create({
       data: {
-        courseId: course.id,
+        courseId,
         title: moduleSeed.title,
         sortOrder: moduleIndex + 1,
       },
@@ -219,20 +182,86 @@ async function seedCourse(seed: CourseSeed, instructorId: string) {
           isFreePreview: lesson.isFreePreview ?? false,
           body: lesson.body ?? null,
           videoUid:
-            lesson.type === LessonType.VIDEO
+            lesson.type === LessonType.VIDEO && seed.placeholderVideos
               ? `seed-${seed.slug}-${lesson.slug}`
               : null,
         },
       });
     }
+
+    if (moduleSeed.quiz) {
+      await prisma.quiz.create({
+        data: {
+          moduleId: courseModule.id,
+          title: moduleSeed.quiz.title,
+          questions: {
+            create: moduleSeed.quiz.questions.map((question, index) => ({
+              sortOrder: index + 1,
+              prompt: question.prompt,
+              options: question.options,
+              correctIndex: question.correctIndex,
+              explanation: question.explanation,
+            })),
+          },
+        },
+      });
+    }
+  }
+}
+
+async function seedCourse(seed: CourseSeed, instructorId: string) {
+  const course = await prisma.course.upsert({
+    where: { slug: seed.slug },
+    // Re-seeding refreshes the catalogue fields but never touches status,
+    // price, or publishedAt: those are the admin's to change in the editor.
+    update: {
+      title: seed.title,
+      subtitle: seed.subtitle,
+      description: seed.description,
+      track: seed.track,
+      estimatedMinutes: seed.estimatedMinutes,
+      sortOrder: seed.sortOrder,
+      instructorId,
+    },
+    create: {
+      slug: seed.slug,
+      title: seed.title,
+      subtitle: seed.subtitle,
+      description: seed.description,
+      track: seed.track,
+      priceCents: seed.priceCents,
+      estimatedMinutes: seed.estimatedMinutes,
+      sortOrder: seed.sortOrder,
+      status: seed.status,
+      publishedAt: seed.status === CourseStatus.PUBLISHED ? new Date() : null,
+      instructorId,
+    },
+  });
+
+  const existingModules = await prisma.module.count({
+    where: { courseId: course.id },
+  });
+  const forceRebuild = process.env.SEED_REBUILD_CURRICULUM === "1";
+  const rebuild =
+    seed.rebuild === "always" || forceRebuild || existingModules === 0;
+
+  if (rebuild) {
+    // Modules cascade to lessons, quizzes, resources, and learner progress,
+    // so this is only ever done for the sample courses, an empty course, or
+    // on an explicit SEED_REBUILD_CURRICULUM=1.
+    await prisma.module.deleteMany({ where: { courseId: course.id } });
+    await buildCurriculum(course.id, seed);
   }
 
   const lessonCount = seed.modules.reduce(
     (total, m) => total + m.lessons.length,
     0,
   );
+  const quizCount = seed.modules.filter((m) => m.quiz).length;
   console.log(
-    `  ${course.slug} — ${seed.track}, ${seed.modules.length} modules, ${lessonCount} lessons`,
+    `  ${course.slug} — ${seed.track}, ${course.status}, ${seed.modules.length} modules, ${lessonCount} lessons, ${quizCount} quizzes${
+      rebuild ? "" : " (curriculum kept — set SEED_REBUILD_CURRICULUM=1 to rebuild)"
+    }`,
   );
 
   return course;

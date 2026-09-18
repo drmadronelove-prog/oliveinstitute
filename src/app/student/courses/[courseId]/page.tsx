@@ -126,15 +126,18 @@ export default async function LearnerCourseDetailPage({
                       >
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge>{lesson.type}</Badge>
-                          <span
-                            className={`font-body text-sm font-medium ${
-                              canView
-                                ? "text-[var(--color-ink)]"
-                                : "text-[var(--color-ink-muted)]"
-                            }`}
-                          >
-                            {lesson.title}
-                          </span>
+                          {canView ? (
+                            <Link
+                              href={`/learn/${course.slug}/${lesson.slug}`}
+                              className="font-body text-sm font-medium text-[var(--color-olive)] underline underline-offset-2 hover:text-[var(--color-olive-dark)]"
+                            >
+                              {lesson.title}
+                            </Link>
+                          ) : (
+                            <span className="font-body text-sm font-medium text-[var(--color-ink-muted)]">
+                              {lesson.title}
+                            </span>
+                          )}
                           <span className="font-body text-xs text-[var(--color-ink-muted)]">
                             {formatDuration(lesson.durationSeconds)}
                           </span>
@@ -148,19 +151,10 @@ export default async function LearnerCourseDetailPage({
                           ) : null}
                         </div>
 
-                        {canView ? (
-                          <>
-                            {lesson.body ? (
-                              <p className="mt-2 whitespace-pre-wrap font-body text-sm text-[var(--color-ink-muted)]">
-                                {lesson.body}
-                              </p>
-                            ) : null}
-                            {lesson.resources.length > 0 ? (
-                              <div className="mt-3">
-                                <ResourceList resources={lesson.resources} />
-                              </div>
-                            ) : null}
-                          </>
+                        {canView && lesson.resources.length > 0 ? (
+                          <div className="mt-3">
+                            <ResourceList resources={lesson.resources} />
+                          </div>
                         ) : null}
                       </li>
                     );

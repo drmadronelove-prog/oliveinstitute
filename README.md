@@ -185,9 +185,17 @@ from `NEXTAUTH_URL` and ignores the base path.
    ```
 
    The seed is idempotent. It resets the named admin's name, password, and
-   role to whatever the environment currently says, and rebuilds two
-   published catalogue courses — one CLINICIAN, one PUBLIC — each with two
-   modules and five lessons whose first lesson is the free preview.
+   role to whatever the environment currently says, rebuilds two sample
+   published courses — one CLINICIAN, one PUBLIC — each with two modules
+   and five lessons whose first lesson is the free preview, and creates the
+   **Certificate in Neuro-Affirming Therapy** (`prisma/curriculum/`) as an
+   unpriced DRAFT: fifteen three-hour modules, each an hour-long lecture,
+   two videos to watch, a cited Markdown handout, and a five-question
+   knowledge check. Unlike the samples, the certificate's module tree is
+   built only when the course has no modules yet, so re-seeding never wipes
+   videos uploaded or edits made in the admin editor; set
+   `SEED_REBUILD_CURRICULUM=1` to force a rebuild from the source files
+   (this also deletes learner progress on that course).
 
 5. Run it:
 

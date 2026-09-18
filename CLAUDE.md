@@ -425,6 +425,76 @@ knowing before repeating this setup:**
   `claude/satilms-to-olive-conversion-u9hxe3`) before trusting that a
   fix has actually gone out.
 
+## Certificate curriculum (phase 13)
+
+`prisma/curriculum/neuro-affirming-therapy/` holds Olive Clinical's
+**Certificate in Neuro-Affirming Therapy** as data: one file per module,
+assembled by `defineModule()` in `module.ts` into the fixed shape the brief
+asked for — an hour-long lecture (VIDEO), two videos to watch (VIDEO), a
+handout to read (TEXT, Markdown), and a knowledge check (QUIZ lesson plus
+a `Quiz` on the module), totalling exactly 180 minutes per module and 45
+hours in all. `prisma/curriculum/types.ts` is the seed's input shape, and
+`src/lib/__tests__/curriculum.test.ts` pins the shape (15 modules × 180
+min, one free-preview handout, unique slugs, ≥12 citations and a
+References list per handout, well-formed quizzes, DRAFT/unpriced).
+
+- **Every fact and inference in a handout is cited** to a real,
+  peer-reviewed article or book, with in-text `(Author, Year)` citations
+  and a full References list per handout — the account holder asked for
+  this explicitly. Each source was checked against the live literature
+  before being cited; do not add an uncited claim, and do not add a
+  citation you have not verified exists. One candidate source (a 2018
+  survey linking ABA exposure to PTSD symptoms) was deliberately left out
+  because its journal has issued an Expression of Concern.
+- **The handouts integrate oliveclinical.com**, also at the account
+  holder's request: each has a "From oliveclinical.com" section linking
+  the practice's blog posts (`app/blog/posts.ts` in the `oliveclinical`
+  repo), brain games (`/brain-games`), therapeutic tools (`/tools`),
+  assessments (`/tests`), and skills pages, and cites the posts as
+  `(Love, 2025/2026)`. Links are absolute (`https://www.oliveclinical.com/…`,
+  the `OC` constant in `module.ts`). If a post is renamed over there, the
+  link here breaks silently — grep for its slug.
+- **Two modules were added to reach fifteen.** The brief listed thirteen
+  topics ("basics of ADHD" and "basics of autism" count as two). Module 1,
+  *Foundations of neuro-affirming practice*, and Module 15, *Integration
+  and capstone*, were added as the safest bookends; the brief's own topics
+  are modules 2–14. **Open for the account holder to confirm or replace.**
+- **Seeded as an unpriced DRAFT.** No price was given, and a guessed price
+  on a 45-hour certificate could sell it at the wrong number, so
+  `priceCents` is 0 and `status` is DRAFT. The publish gate refuses to
+  publish until a price is set, which forces exactly that human decision.
+  The admin sets the price and publishes from `/admin/courses/[id]`.
+  **Open: price.**
+- **No videos exist yet.** VIDEO lessons are created with `videoUid: null`
+  (`placeholderVideos: false`), so the player says "This video hasn't been
+  uploaded yet" until the lectures and supplementary videos are uploaded
+  through `VideoUploadPanel` (needs Cloudflare Stream configured). The
+  "Watch:" lesson titles and each handout's "Videos to watch in this
+  module" paragraph describe what each video should contain, so they
+  double as a recording brief. **Open: record/upload 45 videos.**
+- **The seed protects an existing curriculum.** `CourseSeed.rebuild` is
+  `"if-empty"` for the certificate (vs `"always"` for the two samples), so
+  re-running the seed on production never deletes uploaded videos, admin
+  edits, or learner progress. `SEED_REBUILD_CURRICULUM=1` forces a rebuild
+  from the source files; it cascades through lessons, quizzes, resources,
+  and `lesson_progress`, so never set it on production once anyone is
+  enrolled. Re-seeding also never changes `status`, `priceCents`, or
+  `publishedAt` — those are the admin's.
+- **The two sample courses are still PUBLISHED on production** (they were
+  seeded there with fake `seed-…` video ids before this phase). Archive
+  them from `/admin/courses` before Stripe goes live, or they can be
+  bought.
+- Module 14 covers support outside the clinic including animal-assisted
+  therapy (equine and canine, with the randomised trials and the systematic
+  review), occupational therapy (Ayres Sensory Integration evidence),
+  exercise and green time, mindfulness, ADHD coaching, and music therapy —
+  added at the account holder's request mid-build.
+- Two small UI changes shipped with the data: `/student/courses/[id]` now
+  links each viewable lesson into `/learn/…` instead of printing its raw
+  Markdown body inline (a 4,000-word handout rendered as plain text was
+  unreadable), and the sales page shows each module's total running time
+  next to its title.
+
 ## Known loose ends
 
 - There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
