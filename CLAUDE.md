@@ -417,6 +417,20 @@ knowing before repeating this setup:**
   rejects that mismatch by default (error code `E80`, "Invalid Server
   Actions request") on every form submission — login included — unless
   the proxying domain is explicitly allow-listed here.
+- **Client-side navigation 404s through the proxy while a reload of the
+  same URL works.** Clicking a link makes the App Router fetch a React
+  Server Component payload for the URL; a reload fetches the same URL as
+  HTML. They differ only in request headers, so an intermediary that
+  caches one and replays it for the other hands the router a body it
+  cannot parse, and the router renders `not-found.tsx` — an in-app 404,
+  which makes it look like the page or the record is missing. Vercel's
+  `rewrites()` proxy honours upstream cache headers and caches proxied
+  responses on its own CDN, so `next.config.ts` now sends
+  `Cache-Control: private, no-store` on everything except
+  `_next/static`/`_next/image` (content-addressed build assets, which
+  must stay immutable). Symptom to recognise next time: the Railway
+  origin behaves perfectly and only the oliveclinical.com address fails,
+  page-by-page, with the app's own 404.
 - On Railway specifically: a service can exist and show "Active" without
   ever being connected to a GitHub branch. If so, every push and every
   manual "Redeploy" just re-runs the one build it already has — nothing
