@@ -49,6 +49,13 @@ const nextConfig: NextConfig = {
             key: "Cache-Control",
             value: "private, no-store, max-age=0, must-revalidate",
           },
+          // Next already sends a no-store `Cache-Control` of its own for
+          // dynamic pages, so the line above mostly restates it. These two
+          // do not restate anything: Vercel's CDN reads them in preference
+          // to `Cache-Control`, and they are the only way to tell it not to
+          // store a proxied response.
+          { key: "CDN-Cache-Control", value: "no-store" },
+          { key: "Vercel-CDN-Cache-Control", value: "no-store" },
         ],
       },
     ];
