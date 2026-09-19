@@ -17,14 +17,14 @@ export default function RefundsPage() {
   return (
     <PublicShell>
       <div className="mx-auto max-w-3xl px-6 py-12 md:px-10">
-        <h1 className="mb-2 font-heading text-4xl font-semibold text-[var(--color-olive)]">
+        <h1 className="mb-2 font-heading text-4xl font-medium text-[var(--color-olive)]">
           {TITLE}
         </h1>
         <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
           Last updated {LAST_UPDATED}
         </p>
 
-        <div className="mb-8 rounded-xl border-l-4 border-[var(--color-gold)] bg-[var(--color-card)] p-5 shadow-sm ring-1 ring-black/5">
+        <div className="mb-8 rounded-xl border-l-4 border-[var(--color-gold)] bg-[var(--color-card)] p-5">
           <p className="font-body text-sm text-[var(--color-ink)]">
             This document was drafted with AI assistance and reviewed for
             plain-language accuracy, but it is not a substitute for advice
@@ -34,7 +34,7 @@ export default function RefundsPage() {
 
         <div className="flex flex-col gap-8 font-body text-base leading-relaxed text-[var(--color-ink)]">
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               14-day money-back guarantee
             </h2>
             <p>
@@ -54,7 +54,7 @@ export default function RefundsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               How a refund is processed
             </h2>
             <p>
@@ -67,7 +67,7 @@ export default function RefundsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               Refunding a course removes your access
             </h2>
             <p>
@@ -83,7 +83,7 @@ export default function RefundsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               After 14 days
             </h2>
             <p>
@@ -96,7 +96,7 @@ export default function RefundsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               Related
             </h2>
             <p>
@@ -119,7 +119,7 @@ export default function RefundsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               Contact
             </h2>
             <p>

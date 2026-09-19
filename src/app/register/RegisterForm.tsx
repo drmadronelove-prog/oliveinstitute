@@ -12,7 +12,7 @@ import { registerAction, type RegisterState } from "./actions";
 const initialState: RegisterState = { status: "idle" };
 
 const fieldClassName =
-  "w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]";
+  "w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]";
 const labelClassName =
   "mb-1 block font-body text-sm font-medium text-[var(--color-ink)]";
 
@@ -74,7 +74,7 @@ export function RegisterForm() {
   if (state.status === "success") {
     return (
       <div className="flex flex-col gap-3">
-        <h1 className="font-heading text-2xl font-semibold text-[var(--color-olive)]">
+        <h1 className="font-heading text-2xl font-medium text-[var(--color-olive)]">
           Almost there
         </h1>
         <p className="font-body text-sm text-[var(--color-ink-muted)]">
@@ -92,7 +92,7 @@ export function RegisterForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <h1 className="font-heading text-2xl font-semibold text-[var(--color-olive)]">
+      <h1 className="font-heading text-2xl font-medium text-[var(--color-olive)]">
         Create your account
       </h1>
 
@@ -194,7 +194,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-[var(--color-olive)] px-4 py-2.5 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+        className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2.5 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         {pending ? "Creating account…" : "Create account"}
       </button>

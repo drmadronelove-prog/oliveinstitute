@@ -41,7 +41,7 @@ export default async function CertificatePage({
         <PrintButton />
         <a
           href={withBasePath(`/api/certificates/${data.enrollmentId}/pdf`)}
-          className="rounded-md border border-[var(--color-olive)] px-4 py-2 font-body text-sm text-[var(--color-olive)] transition-colors hover:bg-[var(--color-olive)] hover:text-white"
+          className="btn-pop rounded-xl border-2 border-[var(--ink)] bg-[var(--paper)] px-4 py-2 font-body text-sm text-[var(--ink)] hover:bg-white"
         >
           Download PDF
         </a>
@@ -51,19 +51,19 @@ export default async function CertificatePage({
         <p className="mb-6 font-body text-xs uppercase tracking-[0.2em] text-[var(--color-ink-muted)]">
           {SITE_NAME}
         </p>
-        <h1 className="mb-6 font-heading text-4xl font-semibold text-[var(--color-ink)]">
+        <h1 className="mb-6 font-heading text-4xl font-medium text-[var(--color-ink)]">
           Certificate of Completion
         </h1>
         <p className="mb-2 font-body text-base text-[var(--color-ink)]">
           This certifies that
         </p>
-        <p className="mb-4 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+        <p className="mb-4 font-heading text-2xl font-medium text-[var(--color-olive)]">
           {data.learnerName}
         </p>
         <p className="mb-2 font-body text-base text-[var(--color-ink)]">
           has completed
         </p>
-        <p className="mb-6 font-heading text-xl font-semibold text-[var(--color-olive)]">
+        <p className="mb-6 font-heading text-xl font-medium text-[var(--color-olive)]">
           {data.courseTitle}
         </p>
         <p className="mb-2 font-body text-sm text-[var(--color-ink-muted)]">

@@ -28,7 +28,7 @@ export default async function CheckoutSuccessPage({
       <PublicShell>
         <div className="mx-auto max-w-lg px-6 py-16">
           <Card>
-            <h1 className="mb-2 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+            <h1 className="mb-2 font-heading text-2xl font-medium text-[var(--color-olive)]">
               Missing order
             </h1>
             <p className="font-body text-sm text-[var(--color-ink-muted)]">
@@ -60,7 +60,7 @@ export default async function CheckoutSuccessPage({
       <PublicShell>
         <div className="mx-auto max-w-lg px-6 py-16">
           <Card>
-            <h1 className="mb-2 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+            <h1 className="mb-2 font-heading text-2xl font-medium text-[var(--color-olive)]">
               We couldn&apos;t find that order
             </h1>
             <p className="font-body text-sm text-[var(--color-ink-muted)]">
@@ -101,7 +101,7 @@ export default async function CheckoutSuccessPage({
         <Card>
           {paid ? (
             <>
-              <h1 className="mb-2 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+              <h1 className="mb-2 font-heading text-2xl font-medium text-[var(--color-olive)]">
                 Payment received
               </h1>
               <p className="mb-6 font-body text-sm text-[var(--color-ink-muted)]">
@@ -138,14 +138,14 @@ export default async function CheckoutSuccessPage({
 
               <Link
                 href={`/student/courses/${purchase.course.id}`}
-                className="block rounded-md bg-[var(--color-olive)] px-4 py-2.5 text-center font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+                className="block btn-pop rounded-xl bg-[var(--plum)] px-4 py-2.5 text-center font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
               >
                 Go to course
               </Link>
             </>
           ) : (
             <>
-              <h1 className="mb-2 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+              <h1 className="mb-2 font-heading text-2xl font-medium text-[var(--color-olive)]">
                 Finishing up
               </h1>
               <p className="mb-6 font-body text-sm text-[var(--color-ink-muted)]">
@@ -155,7 +155,7 @@ export default async function CheckoutSuccessPage({
               </p>
               <Link
                 href={`/courses/${purchase.course.slug}`}
-                className="block rounded-md border border-[var(--color-olive)] px-4 py-2.5 text-center font-body text-sm font-medium text-[var(--color-olive)] transition-colors hover:bg-[var(--color-olive)] hover:text-white"
+                className="block btn-pop rounded-xl border-2 border-[var(--ink)] bg-[var(--paper)] px-4 py-2.5 text-center font-body text-sm font-medium text-[var(--ink)] hover:bg-white"
               >
                 Back to the course page
               </Link>

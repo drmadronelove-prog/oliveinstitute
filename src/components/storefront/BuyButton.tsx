@@ -56,7 +56,7 @@ export function BuyButton({
         type="button"
         onClick={handleClick}
         disabled={pending}
-        className="w-full rounded-md bg-[var(--color-olive)] px-4 py-3 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+        className="w-full btn-pop rounded-xl bg-[var(--plum)] px-4 py-3 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         {pending ? "Redirecting…" : `Buy — ${priceLabel}`}
       </button>

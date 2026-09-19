@@ -26,7 +26,7 @@ export default async function MyCoursesPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+      <h1 className="mb-2 font-heading text-3xl font-medium text-[var(--color-olive)]">
         My courses
       </h1>
       <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
@@ -64,7 +64,7 @@ export default async function MyCoursesPage() {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <h2 className="font-heading text-lg font-semibold text-[var(--color-ink)]">
+                      <h2 className="font-heading text-lg font-medium text-[var(--color-ink)]">
                         {summary.courseTitle}
                       </h2>
                       {summary.completedAt ? <Badge>Completed</Badge> : null}
@@ -79,7 +79,7 @@ export default async function MyCoursesPage() {
                   {continueHref ? (
                     <Link
                       href={continueHref}
-                      className="shrink-0 rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+                      className="shrink-0 btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
                     >
                       {continueLabel}
                     </Link>

@@ -45,7 +45,7 @@ export default async function AdminCoursesPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+      <h1 className="mb-2 font-heading text-3xl font-medium text-[var(--color-olive)]">
         Manage courses
       </h1>
       <p className="mb-8 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
@@ -55,7 +55,7 @@ export default async function AdminCoursesPage() {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
-          <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
             All courses
           </h2>
           {courses.length === 0 ? (
@@ -125,7 +125,7 @@ export default async function AdminCoursesPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
             Add a course
           </h2>
           <CreateCourseForm instructors={instructors} />

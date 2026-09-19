@@ -22,7 +22,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   if (state.status === "success") {
     return (
       <div className="flex flex-col gap-3">
-        <h1 className="font-heading text-2xl font-semibold text-[var(--color-olive)]">
+        <h1 className="font-heading text-2xl font-medium text-[var(--color-olive)]">
           Password updated
         </h1>
         <p className="font-body text-sm text-[var(--color-ink-muted)]">
@@ -30,7 +30,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </p>
         <Link
           href="/login"
-          className="inline-block rounded-md bg-[var(--color-olive)] px-4 py-2.5 text-center font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+          className="inline-block btn-pop rounded-xl bg-[var(--plum)] px-4 py-2.5 text-center font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
         >
           Sign in
         </Link>
@@ -42,7 +42,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="token" value={token} />
 
-      <h1 className="font-heading text-2xl font-semibold text-[var(--color-olive)]">
+      <h1 className="font-heading text-2xl font-medium text-[var(--color-olive)]">
         Choose a new password
       </h1>
 
@@ -61,7 +61,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           autoComplete="new-password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
         <p
           className={`mt-1 font-body text-xs ${
@@ -81,7 +81,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-[var(--color-olive)] px-4 py-2.5 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+        className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2.5 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         {pending ? "Saving…" : "Set new password"}
       </button>

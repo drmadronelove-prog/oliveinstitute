@@ -17,14 +17,14 @@ export default function TermsPage() {
   return (
     <PublicShell>
       <div className="mx-auto max-w-3xl px-6 py-12 md:px-10">
-        <h1 className="mb-2 font-heading text-4xl font-semibold text-[var(--color-olive)]">
+        <h1 className="mb-2 font-heading text-4xl font-medium text-[var(--color-olive)]">
           {TITLE}
         </h1>
         <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
           Last updated {LAST_UPDATED}
         </p>
 
-        <div className="mb-8 rounded-xl border-l-4 border-[var(--color-gold)] bg-[var(--color-card)] p-5 shadow-sm ring-1 ring-black/5">
+        <div className="mb-8 rounded-xl border-l-4 border-[var(--color-gold)] bg-[var(--color-card)] p-5">
           <p className="font-body text-sm text-[var(--color-ink)]">
             This document was drafted with AI assistance and reviewed for
             plain-language accuracy, but it is not a substitute for advice
@@ -36,7 +36,7 @@ export default function TermsPage() {
 
         <div className="flex flex-col gap-8 font-body text-base leading-relaxed text-[var(--color-ink)]">
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               1. What {SITE_NAME} is
             </h2>
             <p>
@@ -49,7 +49,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               2. Your account
             </h2>
             <p>
@@ -68,7 +68,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               3. Purchases and access
             </h2>
             <p>
@@ -83,7 +83,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               4. Refunds
             </h2>
             <p>
@@ -99,7 +99,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               5. Course content isn&apos;t professional advice
             </h2>
             <p>
@@ -116,7 +116,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               6. Acceptable use
             </h2>
             <p>
@@ -130,7 +130,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               7. Intellectual property
             </h2>
             <p>
@@ -143,7 +143,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               8. Disclaimers and limitation of liability
             </h2>
             <p>
@@ -157,7 +157,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               9. Changes to these terms
             </h2>
             <p>
@@ -169,7 +169,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               10. Governing law
             </h2>
             <p>
@@ -180,7 +180,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               11. Contact
             </h2>
             <p>

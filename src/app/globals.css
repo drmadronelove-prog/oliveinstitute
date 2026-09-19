@@ -1,58 +1,102 @@
 @import "tailwindcss";
 
 :root {
-  /* ── Olive Institute brand palette ──────────────────────────────────
-     Matched to oliveclinical.com's own palette (app/globals.css there),
-     so the two sites read as one brand across the /institute proxy —
-     same six roles this file always had, just re-mapped onto
-     oliveclinical's actual colors (ink/glass/linen-soft/paper/rose/gold)
-     instead of the earlier standalone olive-green identity. */
+  /* ── Olive Institute palette ─────────────────────────────────────────
+     oliveclinical.com's own named colours (its app/globals.css), used
+     here under the same names so the two sites can be compared line by
+     line. `plum` is this site's accent: it replaced the earlier
+     terracotta, and the terracotta token is kept below as an alias so
+     older call sites keep working. */
+  --ink: #0b2545;
+  --paper: #f3f3f3;
+  --linen: #e9e9e9;
+  --soft: #e1e1e1;
+  --glass: #9fb3b0;
+  --mist: #8c9bb0;
+  --slate: #5b6e88;
+  --plum: #7a4f6e;
+  --rose: #c4877e;
+  --dusk: #b88894;
+  --gold: #c5a572;
+  --rule: #cba558;
+  --muted: #4d5e74;
 
-  /* Ink (navy) — top nav, headings, primary surfaces */
-  --color-olive: #0b2545;
+  /* Type on a coloured card. Every one of these clears 4.5:1 on the
+     surface it is named for — checked, not assumed. Two differ from the
+     design mockup for exactly that reason: the eyebrow on a plum card
+     (the mockup's #e7c9a0 reaches only 4.18) and the role chip on paper
+     (the mockup's #8a6f45 reaches only 4.26). */
+  --on-ink: #c9d2de;
+  --on-plum: #efe4ec;
+  --eyebrow-on-plum: #e3d8c6;
+  --role-chip: #716b5e;
+
+  /* The two colours the design emphasises a word in: gold inside a plum
+     heading, plum inside a gold one. Neither brand value clears 3:1 against
+     the other (both land at 2.83), so each gets a shifted shade used only
+     for type on that surface — gold lightened, plum darkened. */
+  --gold-on-plum: #d4bc95;
+  --plum-on-gold: #63405a;
+
+  /* ── The outline treatment ───────────────────────────────────────────
+     Every raised surface is a 2px ink outline plus a hard, un-blurred
+     shadow offset down and right, and lifts toward the top-left on
+     hover. Buttons also press: the shadow collapses and the button moves
+     into where it sat. Blur is deliberately absent — the whole style
+     depends on the shadow reading as a second, solid shape. */
+  --line: 2px solid var(--ink);
+  --pop: 4px 4px 0 var(--ink);
+  --pop-lg: 6px 6px 0 var(--ink);
+  --pop-xl: 9px 9px 0 var(--ink);
+
+  /* Aliases for the token names the app used before this design. Keeping
+     them means pages that were not part of the redesign still render in
+     the right colours rather than falling back to unstyled. */
+  --color-olive: var(--ink);
   --color-olive-dark: #091e37;
   --color-olive-light: #485c74;
-
-  /* Glass — secondary surfaces, badges, hero gradient */
-  --color-sage: #9fb3b0;
+  --color-sage: var(--glass);
   --color-sage-dark: #7f8f8d;
   --color-sage-light: #b7c6c4;
-
-  /* Linen / soft — inset rows and raised tiles on the paper ground */
-  --color-sage-pale: #e9e9e9;
-  --color-sage-pale-top: #f3f3f3;
-  --color-sage-pale-deep: #e1e1e1;
-
-  /* Paper — page ground, and light type on ink/glass */
-  --color-ivory: #f3f3f3;
-
-  /* Rose — the one warm accent, for emphasis and active state. Darkened
-     from oliveclinical's own --rose (#c4877e), which reads fine as a
-     background/border tint but is only 2.95:1 on white as text — this app
-     uses it as link/button text too, so it has to clear 4.5:1 there. */
-  --color-terracotta: #895f58;
-  --color-terracotta-dark: #6e4c46;
-  --color-terracotta-light: #a78782;
-
-  /* Gold — dividers and fine rules */
-  --color-gold: #c5a572;
-  --color-gold-dark: #9e845b;
+  --color-sage-pale: var(--linen);
+  --color-sage-pale-top: var(--paper);
+  --color-sage-pale-deep: var(--soft);
+  --color-ivory: var(--paper);
+  --color-terracotta: var(--plum);
+  --color-terracotta-dark: #63405a;
+  --color-terracotta-light: #9b7490;
+  --color-gold: var(--gold);
+  --color-gold-dark: #8a6f45;
   --color-gold-light: #d4bc95;
-
   --color-card: #ffffff;
-  --color-ink: #0b2545;
-  /* Darkened from oliveclinical's own --slate (#5b6e88): that value only
-     hits 4.29:1 on the linen/soft backgrounds this app puts muted text on
-     (a course card's inset rows, timestamps), short of WCAG AA's 4.5:1. */
-  --color-ink-muted: #4d5e74;
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--muted);
 
-  --background: var(--color-ivory);
-  --foreground: var(--color-ink);
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-linen: var(--linen);
+  --color-soft: var(--soft);
+  --color-glass: var(--glass);
+  --color-mist: var(--mist);
+  --color-slate: var(--slate);
+  --color-plum: var(--plum);
+  --color-rose: var(--rose);
+  --color-dusk: var(--dusk);
+  --color-gold: var(--gold);
+  --color-rule: var(--rule);
+  --color-muted: var(--muted);
+  --color-on-ink: var(--on-ink);
+  --color-on-plum: var(--on-plum);
+  --color-gold-on-plum: var(--gold-on-plum);
+  --color-plum-on-gold: var(--plum-on-gold);
 
   --color-olive: var(--color-olive);
   --color-olive-dark: var(--color-olive-dark);
@@ -67,34 +111,50 @@
   --color-terracotta: var(--color-terracotta);
   --color-terracotta-dark: var(--color-terracotta-dark);
   --color-terracotta-light: var(--color-terracotta-light);
-  --color-gold: var(--color-gold);
   --color-gold-dark: var(--color-gold-dark);
   --color-gold-light: var(--color-gold-light);
   --color-card: var(--color-card);
-  --color-ink: var(--color-ink);
   --color-ink-muted: var(--color-ink-muted);
 
-  /* Cormorant Garamond for headings and prominent labels, DM Sans for
-     body/nav/UI text. `font-body` is the body utility — there is no
-     `font-body` utility, deliberately, so the class name can't drift
-     from the face it actually renders. */
-  --font-body: var(--font-dm-sans), system-ui, sans-serif;
-  --font-heading: var(--font-cormorant-garamond), Georgia, "Times New Roman",
-    serif;
+  /* Fraunces for display type, Geist for body and UI, Geist Mono for the
+     small numeric labels (module numbers, counts). `font-heading` and
+     `font-body` keep their names from the previous design so every
+     existing class keeps working. */
+  --font-body: var(--font-geist), system-ui, sans-serif;
+  --font-heading: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
   background-color: var(--background);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(11, 37, 69, 0.05) 0px,
-    rgba(11, 37, 69, 0.05) 1px,
-    transparent 1px,
-    transparent 9px
-  );
   color: var(--foreground);
   font-family: var(--font-body);
   font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Display type. Fraunces is a variable font with a SOFT axis; dialing it
+   to 50 rounds the terminals just enough to keep large headings from
+   reading as severe, which matters when they sit inside hard outlines. */
+.font-heading,
+h1,
+h2,
+h3,
+h4 {
+  font-variation-settings: "SOFT" 50;
+  letter-spacing: -0.025em;
+}
+
+/* The page ground: a fine dot grid rather than a flat fill, so the
+   outlined cards have something to sit on. 24px pitch, ink at 12%. */
+.dot-grid {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(11, 37, 69, 0.13) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+  background-position: 0 0;
 }
 
 /* A visible focus ring everywhere, not just on the inputs that opt in with
@@ -103,14 +163,167 @@ body {
    keyboard navigation to be usable. :focus-visible skips it for a mouse
    click, matching how the platform already behaves elsewhere. */
 :focus-visible {
-  outline: 2px solid var(--color-terracotta);
-  outline-offset: 2px;
+  outline: 2px solid var(--plum);
+  outline-offset: 3px;
+}
+
+/* ── Raised surfaces ────────────────────────────────────────────────── */
+
+/* The base card: outline plus hard shadow. `pop-hover` adds the lift. */
+.pop {
+  border: var(--line);
+  box-shadow: var(--pop);
+}
+.pop-lg {
+  border: var(--line);
+  box-shadow: var(--pop-lg);
+}
+.pop-hover {
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.pop-hover:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--pop-xl);
+}
+.pop-hover-sm {
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.pop-hover-sm:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--pop-lg);
+}
+
+/* Buttons press: the shadow collapses to nothing and the button travels
+   into the space it occupied, so a click reads as physical. */
+.btn-pop {
+  border: var(--line);
+  box-shadow: var(--pop);
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s,
+    background-color 0.12s;
+}
+.btn-pop:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--pop-lg);
+}
+.btn-pop:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+/* The shadow utilities the previous (soft, neumorphic) design used.
+   Redefined rather than deleted so any surface still asking for them
+   picks up the new treatment instead of keeping the old one. */
+.shadow-neumorphic,
+.shadow-tile {
+  border: var(--line);
+  box-shadow: var(--pop-lg);
+}
+.shadow-neumorphic-sm {
+  border: var(--line);
+  box-shadow: var(--pop);
+}
+.shadow-neumorphic-inset,
+.shadow-tile-active {
+  border: var(--line);
+  box-shadow: inset 2px 2px 0 rgba(11, 37, 69, 0.18);
+}
+.shadow-tile-hover {
+  border: var(--line);
+  box-shadow: var(--pop-xl);
+}
+
+/* ── The olive mark, adrift ─────────────────────────────────────────────
+   The hero and the dashboard band both carry loose olives that wander
+   their container on a long, linear loop. Linear rather than eased so
+   they never appear to pause at a waypoint, and long enough that the
+   motion reads as drift rather than animation. Every one of these is
+   decorative and switched off entirely under prefers-reduced-motion. */
+@keyframes olive-drift-1 {
+  0% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(-110px, 60px) rotate(-14deg); }
+  50% { transform: translate(-40px, 150px) rotate(8deg); }
+  75% { transform: translate(70px, 70px) rotate(18deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+@keyframes olive-drift-2 {
+  0% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(90px, -80px) rotate(16deg); }
+  50% { transform: translate(20px, -150px) rotate(-6deg); }
+  75% { transform: translate(-80px, -60px) rotate(-18deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+@keyframes olive-drift-3 {
+  0% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(-90px, -70px) rotate(20deg); }
+  50% { transform: translate(-160px, 10px) rotate(-10deg); }
+  75% { transform: translate(-60px, 80px) rotate(12deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+@keyframes olive-drift-4 {
+  0% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(-140px, 40px) rotate(-25deg); }
+  50% { transform: translate(-220px, 120px) rotate(10deg); }
+  75% { transform: translate(-90px, 160px) rotate(30deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+@keyframes olive-drift-5 {
+  0% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(60px, -120px) rotate(20deg); }
+  50% { transform: translate(-80px, -200px) rotate(-12deg); }
+  75% { transform: translate(-120px, -60px) rotate(-24deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+
+.olive-float {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.olive-float-1 { animation-name: olive-drift-1; animation-duration: 20s; }
+.olive-float-2 { animation-name: olive-drift-2; animation-duration: 24s; }
+.olive-float-3 { animation-name: olive-drift-3; animation-duration: 17s; }
+.olive-float-4 { animation-name: olive-drift-4; animation-duration: 14s; }
+.olive-float-5 { animation-name: olive-drift-5; animation-duration: 18s; }
+
+/* Inside the smaller dashboard band the olives have less room, so they
+   travel a shorter loop at a quicker tempo. */
+@media (max-width: 999px) {
+  .olive-float-1 { animation-name: olive-drift-3; }
+  .olive-float-4 { animation-name: olive-drift-2; }
+}
+.olive-float-mini { animation-duration: 12s; }
+
+/* ── The course ticker ─────────────────────────────────────────────────
+   Two identical copies of the list scroll left; when the first has moved
+   exactly its own width the animation restarts, so the seam never shows.
+   Pauses on hover and on keyboard focus so nobody has to read a moving
+   target or chase a moving link. */
+@keyframes ticker-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 150s linear infinite;
+}
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track {
+  animation-play-state: paused;
 }
 
 /* Respect the OS-level "reduce motion" setting: cut every animation and
    transition down to effectively instant rather than turning them off
    outright, so state changes (a saved form, a status badge) still land
-   correctly without the motion. */
+   correctly without the motion. The drifting olives and the ticker are
+   decorative, so those stop outright — and the ticker becomes an
+   ordinary scrollable row with its duplicate copy hidden. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -120,49 +333,15 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Neumorphic surface: soft raised look on a monochromatic ivory surface.
-   Dual shadow — an olive-tinted shadow down-right, a light highlight
-   up-left. */
-.shadow-neumorphic {
-  box-shadow:
-    6px 6px 14px rgba(11, 37, 69, 0.16),
-    -6px -6px 14px rgba(255, 255, 255, 0.85);
-}
-
-.shadow-neumorphic-sm {
-  box-shadow:
-    3px 3px 7px rgba(11, 37, 69, 0.14),
-    -3px -3px 7px rgba(255, 255, 255, 0.8);
-}
-
-.shadow-neumorphic-inset {
-  box-shadow:
-    inset 3px 3px 7px rgba(11, 37, 69, 0.16),
-    inset -3px -3px 7px rgba(255, 255, 255, 0.7);
-}
-
-/* Bevelled tile look — a single top-left light source, rather than the
-   symmetric neumorphic shadow above. */
-.shadow-tile {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -1px 0 rgba(11, 37, 69, 0.08),
-    0 1px 1px rgba(11, 37, 69, 0.1),
-    0 6px 12px rgba(11, 37, 69, 0.14);
-}
-
-.shadow-tile-hover {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 0 rgba(11, 37, 69, 0.08),
-    0 2px 2px rgba(11, 37, 69, 0.1),
-    0 10px 18px rgba(11, 37, 69, 0.2);
-}
-
-.shadow-tile-active {
-  box-shadow:
-    inset 0 1px 2px rgba(11, 37, 69, 0.18),
-    0 1px 1px rgba(11, 37, 69, 0.08);
+  .olive-float {
+    animation: none !important;
+  }
+  .ticker-track {
+    animation: none !important;
+    width: auto;
+    overflow-x: auto;
+  }
+  .ticker-duplicate {
+    display: none;
+  }
 }

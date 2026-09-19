@@ -208,7 +208,7 @@ export function VideoPlayer({
           id={`playback-rate-${lessonId}`}
           value={rate}
           onChange={(event) => handleRateChange(Number(event.target.value))}
-          className="rounded-md border border-black/10 bg-white px-2 py-1 font-body text-xs text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-2 py-1 font-body text-xs text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         >
           {PLAYBACK_RATES.map((value) => (
             <option key={value} value={value}>

@@ -17,7 +17,7 @@ export default function LoginPage() {
     <main className="flex flex-1 items-center justify-center px-4">
       <form
         action={formAction}
-        className="w-full max-w-sm rounded-2xl bg-[var(--color-card)] p-8 shadow-sm ring-1 ring-black/5"
+        className="w-full max-w-sm pop-lg rounded-[22px] bg-[var(--color-card)] p-8"
       >
         <div className="mb-6 flex flex-col gap-1">
           <Wordmark tone="dark" />
@@ -26,7 +26,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <h1 className="mb-6 font-heading text-xl font-semibold text-[var(--color-ink)]">
+        <h1 className="mb-6 font-heading text-xl font-medium text-[var(--color-ink)]">
           Sign in
         </h1>
 
@@ -41,7 +41,7 @@ export default function LoginPage() {
           name="email"
           type="email"
           required
-          className="mb-4 w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="mb-4 w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
 
         <label
@@ -55,7 +55,7 @@ export default function LoginPage() {
           name="password"
           type="password"
           required
-          className="mb-6 w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="mb-6 w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
 
         {state.status === "error" ? (
@@ -67,7 +67,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+          className="w-full btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>

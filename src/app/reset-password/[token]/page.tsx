@@ -30,12 +30,12 @@ export default async function ResetPasswordPage({
   return (
     <PublicShell>
       <div className="mx-auto w-full max-w-md px-6 py-12">
-        <div className="rounded-2xl bg-[var(--color-card)] p-8 shadow-sm ring-1 ring-black/5">
+        <div className="pop-lg rounded-[22px] bg-[var(--color-card)] p-8">
           {usable ? (
             <ResetPasswordForm token={token} />
           ) : (
             <div className="flex flex-col gap-3">
-              <h1 className="font-heading text-2xl font-semibold text-[var(--color-olive)]">
+              <h1 className="font-heading text-2xl font-medium text-[var(--color-olive)]">
                 That link has expired
               </h1>
               <p className="font-body text-sm text-[var(--color-ink-muted)]">
@@ -44,7 +44,7 @@ export default async function ResetPasswordPage({
               </p>
               <Link
                 href="/forgot-password"
-                className="inline-block rounded-md bg-[var(--color-olive)] px-4 py-2.5 text-center font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+                className="inline-block btn-pop rounded-xl bg-[var(--plum)] px-4 py-2.5 text-center font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
               >
                 Request a new link
               </Link>

@@ -118,18 +118,35 @@ course page both call these rather than deciding for themselves.
 
 ## Design system
 
-Tokens live in `src/app/globals.css`. Six brand colors — deep olive
-`#3F4F33`, sage `#7E9068`, pale sage `#EDF0E8`, warm ivory `#FAF8F2`,
-terracotta `#A0553A`, muted gold `#A98B4F` — plus hover/gradient/type steps
-derived from them. Headings use Cormorant Garamond (`font-heading`); body
-and UI text use DM Sans (`font-body`). There is deliberately no
-`font-serif` utility, so a class name can't drift from the face it renders.
+Tokens live in `src/app/globals.css`, and the palette is
+oliveclinical.com's own so the two sites read as one brand: ink `#0B2545`,
+paper `#F3F3F3`, linen `#E9E9E9`, glass `#9FB3B0`, plum `#7A4F6E`, gold
+`#C5A572`, rose `#C4877E`, dusk `#B88894`, with a set of type colours each
+named for the surface it is legible on (`--muted`, `--on-ink`,
+`--on-plum`, `--gold-on-plum`, …). Text on a coloured surface is always
+ink; the tinted-on-tinted combinations that read fine at a glance do not
+clear 4.5:1, and `tests/accessibility.spec.ts` fails the build over it.
+
+Every raised surface is a **2px ink outline plus a hard, un-blurred shadow**
+offset down and right — `.pop`, `.pop-lg`, `.pop-hover` and `.btn-pop` in
+the same file. Nothing is blurred, ringed or tinted; the style depends on
+the shadow reading as a second solid shape. Buttons press into that shadow
+on `:active`.
+
+Display type is Fraunces (`font-heading`, with its variable `SOFT` axis at
+50), body and UI are Geist (`font-body`), and small numerals — module
+numbers, durations, counts — are Geist Mono (`font-mono`). There is
+deliberately no `font-serif` utility, so a class name can't drift from the
+face it renders.
+
+The brand mark is `src/components/brand/OliveMark.tsx`: one even-odd path
+filled with `currentColor`, which is why the same file serves as the nav
+lockup, the drifting olives on the hero and dashboard band, and the
+separator dots in the course ticker. `src/components/shell/Wordmark.tsx`
+assembles it into the lockup.
 
 `/style-guide` renders every token and shared component in isolation; it is
 the fastest way to check a change against the whole system.
-
-There is no logo asset — `src/components/shell/Wordmark.tsx` is a text
-wordmark, and is the one place to swap artwork in when it exists.
 
 ## Base path
 

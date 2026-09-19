@@ -90,7 +90,7 @@ export default async function LessonPage({
           {lesson.module.title}
         </p>
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-heading text-2xl font-semibold text-[var(--color-ink)]">
+          <h1 className="font-heading text-2xl font-medium text-[var(--color-ink)]">
             {lesson.title}
           </h1>
           <Badge>{lesson.type}</Badge>
@@ -151,7 +151,7 @@ export default async function LessonPage({
 
       {lesson.transcript ? (
         <Card>
-          <h2 className="mb-2 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-2 font-heading text-lg font-medium text-[var(--color-ink)]">
             Transcript
           </h2>
           <p className="whitespace-pre-wrap font-body text-base text-[var(--color-ink-muted)]">
@@ -162,7 +162,7 @@ export default async function LessonPage({
 
       {lesson.type !== LessonType.PDF && lesson.resources.length > 0 ? (
         <Card>
-          <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-3 font-heading text-lg font-medium text-[var(--color-ink)]">
             Resources
           </h2>
           <ResourceList resources={lesson.resources} />

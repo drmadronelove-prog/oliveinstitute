@@ -1,6 +1,9 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/Card";
-import { CourseTile } from "@/components/dashboard/CourseTile";
+import {
+  CourseTile,
+  TILE_TONES,
+} from "@/components/dashboard/CourseTile";
+import { BentoTiles, TileIcons } from "@/components/dashboard/BentoTiles";
 
 type CourseSummary = {
   id: string;
@@ -14,102 +17,127 @@ type RolePanelProps =
   | { role: "INSTRUCTOR"; courses: (CourseSummary & { secondaryLabel: string })[] }
   | { role: "LEARNER"; courses: CourseSummary[] };
 
+function SectionHeading({
+  title,
+  subtext,
+}: {
+  title: string;
+  subtext: string;
+}) {
+  return (
+    <div className="mt-14">
+      <h2 className="m-0 font-heading text-[clamp(28px,3.2vw,38px)] font-medium leading-none tracking-[-0.025em] text-[var(--ink)]">
+        {title}
+      </h2>
+      <p className="mt-1.5 font-body text-[var(--muted)]">{subtext}</p>
+    </div>
+  );
+}
+
 export function RolePanel(props: RolePanelProps) {
   if (props.role === "ADMIN") {
-    const toolButtonClassName =
-      "flex h-[100px] items-center rounded-[22px] border border-[var(--color-olive-dark)]/40 bg-[var(--color-olive)] px-[55px] opacity-60 transition-colors duration-150 hover:bg-[var(--color-olive-dark)]";
-    const toolLabelClassName = "font-heading text-2xl font-semibold text-white";
-
     return (
-      <div className="flex flex-col gap-[18px]">
-        <div className="flex flex-col gap-[5px] border-b border-[var(--color-olive)]/[0.14] pb-3">
-          <h2 className="font-heading text-2xl font-semibold text-[var(--color-olive)]">
-            Admin tools
-          </h2>
-          <p className="text-[13.5px] font-body text-[#5a6360]">
-            Create and manage Instructor and Learner accounts, courses, and
-            enrollment.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Link href="/admin/courses" className={toolButtonClassName}>
-            <span className={toolLabelClassName}>Manage courses</span>
-          </Link>
-          <Link href="/admin/users" className={toolButtonClassName}>
-            <span className={toolLabelClassName}>Manage users</span>
-          </Link>
-          <Link href="/admin/learners" className={toolButtonClassName}>
-            <span className={toolLabelClassName}>Enrollment</span>
-          </Link>
-          <Link href="/admin/purchases" className={toolButtonClassName}>
-            <span className={toolLabelClassName}>Finances</span>
-          </Link>
-        </div>
-      </div>
+      <>
+        <SectionHeading
+          title="Admin tools"
+          subtext="Create and manage Instructor and Learner accounts, courses, and enrollment."
+        />
+        <BentoTiles
+          tiles={[
+            {
+              href: "/admin/courses",
+              title: "Manage courses",
+              description:
+                "Build modules and lessons, upload video, set prices and publish.",
+              icon: TileIcons.courses,
+            },
+            {
+              href: "/admin/users",
+              title: "Manage users",
+              description: "Invite instructors and learners, send reset links.",
+              icon: TileIcons.users,
+            },
+            {
+              href: "/admin/learners",
+              title: "Enrollment",
+              description:
+                "See who is enrolled where, and grant comp access.",
+              icon: TileIcons.enrollment,
+            },
+            {
+              href: "/admin/purchases",
+              title: "Finances",
+              description: "Purchases, refunds and course revenue.",
+              icon: TileIcons.finances,
+            },
+          ]}
+        />
+      </>
     );
   }
 
   if (props.role === "LEARNER") {
     return (
-      <div>
-        <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
-          Your courses
-        </h2>
+      <>
+        <SectionHeading
+          title="Your courses"
+          subtext="Take them in order, or jump to what you need today."
+        />
         {props.courses.length === 0 ? (
-          <p className="font-body text-sm text-[var(--color-ink-muted)]">
-            You aren&apos;t enrolled in any courses yet.
+          <p className="mt-5 font-body text-[var(--muted)]">
+            You aren&apos;t enrolled in any courses yet.{" "}
+            <Link
+              href="/explore"
+              className="text-[var(--ink)] underline underline-offset-4"
+            >
+              Browse the catalogue
+            </Link>
+            .
           </p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {props.courses.map((course) => (
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {props.courses.map((course, index) => (
               <CourseTile
                 key={course.id}
                 href={`/student/courses/${course.id}`}
                 title={course.title}
                 meta={course.meta}
                 secondaryLabel={course.secondaryLabel}
+                tone={TILE_TONES[index % TILE_TONES.length]}
+                muted={course.secondaryLabel === "Completed"}
               />
             ))}
           </div>
         )}
-      </div>
+      </>
     );
   }
 
   return (
-    <Card accentColor="var(--color-sage)">
-      <h3 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
-        Your courses
-      </h3>
+    <>
+      <SectionHeading
+        title="Your courses"
+        subtext="The courses you are the instructor on."
+      />
       {props.courses.length === 0 ? (
-        <p className="font-body text-sm text-[var(--color-ink-muted)]">
-          You haven&apos;t been assigned any courses yet. Ask an admin to
-          assign you as instructor on a course.
+        <p className="mt-5 font-body text-[var(--muted)]">
+          You haven&apos;t been assigned any courses yet. Ask an admin to assign
+          you as instructor on a course.
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {props.courses.map((course) => (
-            <li key={course.id}>
-              <Link
-                href={`/professor/courses/${course.id}`}
-                className="flex items-center justify-between gap-4 rounded-lg bg-[var(--color-sage-pale)] px-4 py-3 transition-colors hover:bg-[var(--color-sage-pale-deep)]"
-              >
-                <div>
-                  <p className="font-body text-sm font-medium text-[var(--color-ink)]">
-                    {course.title}
-                  </p>
-                  <p className="font-body text-xs text-[var(--color-ink-muted)]">
-                    {course.meta}
-                  </p>
-                </div>
-                <span className="font-body text-xs text-[var(--color-ink-muted)]">
-                  {course.secondaryLabel}
-                </span>
-              </Link>
-            </li>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {props.courses.map((course, index) => (
+            <CourseTile
+              key={course.id}
+              href={`/professor/courses/${course.id}`}
+              title={course.title}
+              meta={course.meta}
+              secondaryLabel={course.secondaryLabel}
+              tone={TILE_TONES[index % TILE_TONES.length]}
+            />
           ))}
-        </ul>
+        </div>
       )}
-    </Card>
+    </>
   );
 }

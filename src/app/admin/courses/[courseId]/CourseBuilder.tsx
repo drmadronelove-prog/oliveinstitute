@@ -60,9 +60,9 @@ export type BuilderModule = {
 };
 
 const fieldClassName =
-  "w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]";
+  "w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]";
 const smallButtonClassName =
-  "rounded-md border border-black/10 bg-white px-2 py-1 font-body text-xs text-[var(--color-ink)] transition-colors hover:bg-[var(--color-sage-pale)] disabled:cursor-not-allowed disabled:opacity-40";
+  "rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-2 py-1 font-body text-xs text-[var(--color-ink)] transition-colors hover:bg-[var(--color-sage-pale)] disabled:cursor-not-allowed disabled:opacity-40";
 
 export function CourseBuilder({
   courseId,
@@ -139,7 +139,7 @@ export function CourseBuilder({
               setNewModuleTitle("");
               run(() => addModuleAction(courseId, title));
             }}
-            className="shrink-0 rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+            className="shrink-0 btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
           >
             Add module
           </button>
@@ -295,7 +295,7 @@ function ModuleSection({
             setNewLessonTitle("");
             run(() => addLessonAction(courseModule.id, lessonTitle, newLessonType));
           }}
-          className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+          className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
         >
           Add lesson
         </button>
@@ -477,7 +477,7 @@ function AddQuizQuestionForm({
           reset();
           run(() => addQuizQuestionAction(quizId, input));
         }}
-        className="self-start rounded-md bg-[var(--color-olive)] px-3 py-1.5 font-body text-xs font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+        className="self-start btn-pop rounded-xl bg-[var(--plum)] px-3 py-1.5 font-body text-xs font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         Add question
       </button>
@@ -726,7 +726,7 @@ function LessonEditor({
               }),
             )
           }
-          className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+          className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
         >
           Save lesson
         </button>

@@ -45,7 +45,7 @@ export default async function AdminLearnerDetailPage({
         </Link>{" "}
         / {learner.name}
       </p>
-      <h1 className="mb-1 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+      <h1 className="mb-1 font-heading text-3xl font-medium text-[var(--color-olive)]">
         {learner.name}
       </h1>
       <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
@@ -55,7 +55,7 @@ export default async function AdminLearnerDetailPage({
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
-          <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
             Enrollments
           </h2>
           {learner.enrollments.length === 0 ? (
@@ -116,7 +116,7 @@ export default async function AdminLearnerDetailPage({
         </Card>
 
         <Card>
-          <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
             Grant comp access
           </h2>
           <GrantCompAccessForm learnerId={learner.id} courses={grantableCourses} />

@@ -80,17 +80,18 @@ test.describe("base path", () => {
     await logout(page);
   });
 
-  test("the dashboard hero image loads under the base path", async ({
+  test("app assets are served under the base path, and not above it", async ({
     page,
   }) => {
-    await login(page, SEEDED_ADMIN.email, SEEDED_ADMIN.password);
-    const hero = page.locator("img").first();
-    await expect(hero).toBeVisible();
-    // A broken image still renders an <img>, so assert it actually decoded.
-    await expect
-      .poll(() => hero.evaluate((img: HTMLImageElement) => img.naturalWidth))
-      .toBeGreaterThan(0);
-    await logout(page);
+    // This used to assert the dashboard's hero photo decoded, as the one
+    // next/image call site that could silently lose the base path. The
+    // redesign replaced that panel with inline SVG, so the asset this
+    // guards is the app icon instead — same concern, an asset that is
+    // actually still there.
+    const served = await page.request.get(appPath("/icon.png"));
+    expect(served.status()).toBe(200);
+    const aboveBasePath = await page.request.get("/icon.png");
+    expect(aboveBasePath.status()).toBe(404);
   });
 
   test("the style guide renders every shared component", async ({ page }) => {
@@ -100,14 +101,18 @@ test.describe("base path", () => {
     ).toBeVisible();
     for (const section of [
       "Brand palette",
-      "Derived shades",
+      "Type colours and fine detail",
       "Typography",
-      "Wordmark",
-      "Top nav",
+      "The mark",
+      "Lockup",
+      "Raised surfaces",
+      "Drifting olives",
+      "Top nav and footer",
       "Sidebar",
       "Badges",
-      "Hero card",
+      "Dashboard band",
       "Course tiles",
+      "Catalogue card",
       "Cards",
       "Resource list",
     ]) {

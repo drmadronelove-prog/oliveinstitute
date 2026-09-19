@@ -34,7 +34,7 @@ export default async function CliniciansPage() {
   return (
     <PublicShell>
       <div className="mx-auto max-w-7xl px-6 py-12 md:px-10">
-        <h1 className="mb-2 font-heading text-4xl font-semibold text-[var(--color-olive)]">
+        <h1 className="mb-2 font-heading text-4xl font-medium text-[var(--color-olive)]">
           {TITLE}
         </h1>
         <p className="mb-10 max-w-2xl font-body text-[var(--color-ink-muted)]">

@@ -16,7 +16,7 @@ export function TrackDisclaimer({ track }: { track: Track }) {
   return (
     <p
       role="note"
-      className="rounded-md border border-[var(--color-gold)]/40 bg-[var(--color-gold)]/10 px-4 py-2.5 font-body text-base text-[var(--color-ink)]"
+      className="rounded-2xl border-2 border-dashed border-[var(--ink)] px-5 py-3.5 font-body text-base text-[var(--ink)]"
     >
       {text}
     </p>

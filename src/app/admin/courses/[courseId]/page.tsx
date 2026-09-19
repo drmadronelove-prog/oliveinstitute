@@ -82,7 +82,7 @@ export default async function AdminCourseDetailPage({
             </Link>{" "}
             / {course.title}
           </p>
-          <h1 className="mb-1 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+          <h1 className="mb-1 font-heading text-3xl font-medium text-[var(--color-olive)]">
             {course.title}
           </h1>
           <p className="font-body text-sm text-[var(--color-ink-muted)]">
@@ -96,7 +96,7 @@ export default async function AdminCourseDetailPage({
           href={`/courses/${course.slug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 rounded-md border border-[var(--color-olive)] px-4 py-2 font-body text-sm text-[var(--color-olive)] transition-colors hover:bg-[var(--color-olive)] hover:text-white"
+          className="shrink-0 btn-pop rounded-xl border-2 border-[var(--ink)] bg-[var(--paper)] px-4 py-2 font-body text-sm text-[var(--ink)] hover:bg-white"
         >
           Preview sales page ↗
         </a>
@@ -105,7 +105,7 @@ export default async function AdminCourseDetailPage({
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex flex-col gap-8">
           <Card>
-            <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+            <h2 className="mb-3 font-heading text-lg font-medium text-[var(--color-ink)]">
               Course details
             </h2>
             <EditCourseForm
@@ -126,7 +126,7 @@ export default async function AdminCourseDetailPage({
           </Card>
 
           <Card>
-            <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+            <h2 className="mb-3 font-heading text-lg font-medium text-[var(--color-ink)]">
               Status
             </h2>
             <CourseStatusForm
@@ -141,7 +141,7 @@ export default async function AdminCourseDetailPage({
           </Card>
 
           <Card>
-            <h2 className="mb-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+            <h2 className="mb-3 font-heading text-lg font-medium text-[var(--color-ink)]">
               Instructor
             </h2>
             <ReassignInstructorForm
@@ -152,7 +152,7 @@ export default async function AdminCourseDetailPage({
           </Card>
 
           <Card>
-            <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+            <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
               Curriculum
             </h2>
             <CourseBuilder
@@ -174,7 +174,7 @@ export default async function AdminCourseDetailPage({
           </Card>
 
           <Card>
-            <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+            <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
               Enrolled learners
             </h2>
             {course.enrollments.length === 0 ? (
@@ -219,7 +219,7 @@ export default async function AdminCourseDetailPage({
         </div>
 
         <Card>
-          <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
             Enroll a learner
           </h2>
           <EnrollStudentForm courseId={course.id} students={enrollableLearners} />

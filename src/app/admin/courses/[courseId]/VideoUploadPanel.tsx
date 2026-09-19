@@ -186,7 +186,7 @@ export function VideoUploadPanel({
           type="button"
           disabled={busy}
           onClick={() => fileInputRef.current?.click()}
-          className="rounded-md border border-black/10 bg-white px-3 py-1.5 font-body text-xs font-medium text-[var(--color-ink)] transition-colors hover:bg-[var(--color-sage-pale)] disabled:opacity-60"
+          className="rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-1.5 font-body text-xs font-medium text-[var(--color-ink)] transition-colors hover:bg-[var(--color-sage-pale)] disabled:opacity-60"
         >
           {phase === "idle" || phase === "error"
             ? "Upload video"

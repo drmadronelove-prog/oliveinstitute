@@ -25,7 +25,7 @@ export function CreateUserForm() {
           name="name"
           type="text"
           required
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
       </div>
 
@@ -41,7 +41,7 @@ export function CreateUserForm() {
           name="email"
           type="email"
           required
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
       </div>
 
@@ -56,7 +56,7 @@ export function CreateUserForm() {
           id="create-user-role"
           name="role"
           defaultValue="LEARNER"
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         >
           <option value="LEARNER">Learner</option>
           <option value="INSTRUCTOR">Instructor</option>
@@ -67,7 +67,7 @@ export function CreateUserForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+        className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         {pending ? "Sending invitation…" : "Create user"}
       </button>

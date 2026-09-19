@@ -33,7 +33,7 @@ export default async function AdminLearnersPage({
 
   return (
     <AppShell>
-      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+      <h1 className="mb-2 font-heading text-3xl font-medium text-[var(--color-olive)]">
         Learners
       </h1>
       <p className="mb-8 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
@@ -48,11 +48,11 @@ export default async function AdminLearnersPage({
             name="q"
             defaultValue={query}
             placeholder="Search by name or email…"
-            className="w-full max-w-sm rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+            className="w-full max-w-sm rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
           />
           <button
             type="submit"
-            className="rounded-md border border-[var(--color-olive)] px-4 py-2 font-body text-sm text-[var(--color-olive)] transition-colors hover:bg-[var(--color-olive)] hover:text-white"
+            className="btn-pop rounded-xl border-2 border-[var(--ink)] bg-[var(--paper)] px-4 py-2 font-body text-sm text-[var(--ink)] hover:bg-white"
           >
             Search
           </button>

@@ -69,7 +69,7 @@ export default async function LearnerCourseDetailPage({
         </Link>{" "}
         / {course.title}
       </p>
-      <h1 className="mb-1 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+      <h1 className="mb-1 font-heading text-3xl font-medium text-[var(--color-olive)]">
         {course.title}
       </h1>
       {course.subtitle ? (
@@ -97,7 +97,7 @@ export default async function LearnerCourseDetailPage({
       ) : null}
 
       <Card>
-        <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+        <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
           Curriculum
         </h2>
         {course.modules.length === 0 ? (
@@ -108,7 +108,7 @@ export default async function LearnerCourseDetailPage({
           <div className="flex flex-col gap-6">
             {course.modules.map((courseModule) => (
               <section key={courseModule.id}>
-                <h3 className="mb-2 font-heading text-base font-semibold text-[var(--color-ink)]">
+                <h3 className="mb-2 font-heading text-base font-medium text-[var(--color-ink)]">
                   {courseModule.sortOrder}. {courseModule.title}
                 </h3>
                 <ul className="flex flex-col gap-3">

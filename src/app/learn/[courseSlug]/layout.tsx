@@ -91,24 +91,24 @@ export default async function LearnLayout({
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="w-full bg-[var(--color-olive)]">
+      <header className="w-full bg-[var(--ink)]">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4 md:px-10">
           <Link href="/my-courses" className="flex items-center">
             <Wordmark />
           </Link>
-          <p className="truncate font-body text-sm text-[var(--color-ivory)]/85">
+          <p className="truncate font-body text-sm text-[var(--on-ink)]">
             {course.title}
           </p>
           <Link
             href="/my-courses"
-            className="shrink-0 font-body text-sm text-[var(--color-ivory)]/85 underline-offset-4 hover:text-[var(--color-ivory)] hover:underline"
+            className="shrink-0 rounded-full px-3.5 py-2 font-body text-sm font-medium text-[var(--paper)]/[0.88] transition-colors hover:bg-[var(--paper)]/10 hover:text-[var(--paper)]"
           >
             My courses
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-8 md:px-10">
+      <main className="dot-grid mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-8 md:px-10">
         <TrackDisclaimer track={course.track} />
         <div className="flex flex-1 flex-col gap-8 md:flex-row">
           <LessonSidebar courseSlug={course.slug} modules={modules} />

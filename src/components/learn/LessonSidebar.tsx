@@ -41,7 +41,7 @@ export function LessonSidebar({
       <div className="flex flex-col gap-5">
         {modules.map((courseModule) => (
           <div key={courseModule.id}>
-            <h2 className="mb-2 px-1 font-heading text-sm font-semibold text-[var(--color-ink)]">
+            <h2 className="mb-2 px-1 font-heading text-sm font-medium text-[var(--color-ink)]">
               {courseModule.title}
             </h2>
             <ul className="flex flex-col gap-1">

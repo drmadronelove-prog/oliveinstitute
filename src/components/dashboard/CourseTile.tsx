@@ -1,10 +1,22 @@
 import Link from "next/link";
 
+/** The tiles cycle through three surfaces so a row of them reads as a set rather than a list. */
+const TONES = {
+  glass: "bg-[var(--glass)]",
+  paper: "bg-[var(--paper)]",
+  rose: "bg-[var(--rose)]",
+} as const;
+
+export type CourseTileTone = keyof typeof TONES;
+
+export const TILE_TONES: CourseTileTone[] = ["glass", "paper", "rose"];
+
 export function CourseTile({
   href,
   title,
   meta,
   secondaryLabel,
+  tone = "paper",
   muted = false,
 }: {
   href: string;
@@ -12,42 +24,26 @@ export function CourseTile({
   /** Short line under the title, e.g. "Clinician · 3h 10m". */
   meta: string;
   secondaryLabel?: string;
-  /** Flattened, low-contrast treatment for past-enrolled tiles. */
+  tone?: CourseTileTone;
+  /** Flattened treatment for a course that is finished rather than in progress. */
   muted?: boolean;
 }) {
-  if (muted) {
-    return (
-      <Link
-        href={href}
-        className="block rounded-xl border border-black/10 bg-[var(--color-sage-pale-top)] p-5 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
-      >
-        <h3 className="font-heading text-lg font-semibold text-[var(--color-ink-muted)]">
-          {title}
-        </h3>
-        <div className="my-2 h-[2px] w-10 bg-[var(--color-ink-muted)]/30" />
-        <p className="font-body text-sm text-[var(--color-ink-muted)]">{meta}</p>
-        {secondaryLabel && (
-          <span className="mt-3 inline-block rounded-full bg-black/5 px-3 py-0.5 font-body text-xs text-[var(--color-ink-muted)]">
-            {secondaryLabel}
-          </span>
-        )}
-      </Link>
-    );
-  }
-
   return (
     <Link
       href={href}
-      className="block rounded-xl bg-[var(--color-olive)] p-5 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
+      className={`pop pop-hover-sm flex flex-col gap-2.5 rounded-[18px] p-6 text-[var(--ink)] ${
+        muted ? "bg-[var(--linen)]" : TONES[tone]
+      }`}
     >
-      <h3 className="font-heading text-lg font-semibold text-white">{title}</h3>
-      <div className="my-2 h-[2px] w-10 bg-[var(--color-gold-light)]" />
-      <p className="font-body text-sm text-white/85">{meta}</p>
-      {secondaryLabel && (
-        <span className="mt-3 inline-block rounded-full bg-white/15 px-3 py-0.5 font-body text-xs text-white">
+      <h3 className="m-0 font-heading text-[21px] font-medium leading-[1.15] tracking-[-0.015em]">
+        {title}
+      </h3>
+      <p className="m-0 font-mono text-xs text-[var(--ink)]">{meta}</p>
+      {secondaryLabel ? (
+        <span className="mt-auto self-start rounded-full border-[1.5px] border-[var(--ink)] bg-[var(--paper)] px-2.5 py-1 font-body text-xs font-semibold text-[var(--ink)]">
           {secondaryLabel}
         </span>
-      )}
+      ) : null}
     </Link>
   );
 }

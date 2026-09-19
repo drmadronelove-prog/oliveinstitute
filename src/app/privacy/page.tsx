@@ -16,14 +16,14 @@ export default function PrivacyPage() {
   return (
     <PublicShell>
       <div className="mx-auto max-w-3xl px-6 py-12 md:px-10">
-        <h1 className="mb-2 font-heading text-4xl font-semibold text-[var(--color-olive)]">
+        <h1 className="mb-2 font-heading text-4xl font-medium text-[var(--color-olive)]">
           {TITLE}
         </h1>
         <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">
           Last updated {LAST_UPDATED}
         </p>
 
-        <div className="mb-8 rounded-xl border-l-4 border-[var(--color-gold)] bg-[var(--color-card)] p-5 shadow-sm ring-1 ring-black/5">
+        <div className="mb-8 rounded-xl border-l-4 border-[var(--color-gold)] bg-[var(--color-card)] p-5">
           <p className="font-body text-sm text-[var(--color-ink)]">
             This document was drafted with AI assistance and reviewed for
             plain-language accuracy, but it is not a substitute for advice
@@ -35,7 +35,7 @@ export default function PrivacyPage() {
 
         <div className="flex flex-col gap-8 font-body text-base leading-relaxed text-[var(--color-ink)]">
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               1. What this covers
             </h2>
             <p>
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               2. Information we collect
             </h2>
             <ul className="ml-5 flex list-disc flex-col gap-1">
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               3. How we use it
             </h2>
             <p>
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               4. Who we share it with
             </h2>
             <p>
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               5. Security
             </h2>
             <p>
@@ -140,7 +140,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               6. Data retention
             </h2>
             <p>
@@ -154,7 +154,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               7. Your choices
             </h2>
             <p>
@@ -169,7 +169,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               8. Children
             </h2>
             <p>
@@ -179,7 +179,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               9. Changes to this policy
             </h2>
             <p>
@@ -190,7 +190,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-heading text-xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-2 font-heading text-xl font-medium text-[var(--color-olive)]">
               10. Contact
             </h2>
             <p>

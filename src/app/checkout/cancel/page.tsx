@@ -29,7 +29,7 @@ export default async function CheckoutCancelPage({
     <PublicShell>
       <div className="mx-auto max-w-lg px-6 py-16">
         <Card>
-          <h1 className="mb-2 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+          <h1 className="mb-2 font-heading text-2xl font-medium text-[var(--color-olive)]">
             Checkout canceled
           </h1>
           <p className="mb-6 font-body text-sm text-[var(--color-ink-muted)]">
@@ -38,7 +38,7 @@ export default async function CheckoutCancelPage({
           </p>
           <Link
             href={course ? `/courses/${course.slug}` : "/explore"}
-            className="block rounded-md bg-[var(--color-olive)] px-4 py-2.5 text-center font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+            className="block btn-pop rounded-xl bg-[var(--plum)] px-4 py-2.5 text-center font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
           >
             {course ? "Back to the course page" : "Browse courses"}
           </Link>

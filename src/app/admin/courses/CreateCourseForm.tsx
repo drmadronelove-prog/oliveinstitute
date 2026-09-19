@@ -7,7 +7,7 @@ import { createCourseAction, type CreateCourseState } from "./actions";
 const initialState: CreateCourseState = { status: "idle" };
 
 const fieldClassName =
-  "w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]";
+  "w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]";
 const labelClassName =
   "mb-1 block font-body text-sm font-medium text-[var(--color-ink)]";
 
@@ -171,7 +171,7 @@ export function CreateCourseForm({
       <button
         type="submit"
         disabled={pending || instructors.length === 0}
-        className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+        className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         {pending ? "Creating…" : "Create course"}
       </button>

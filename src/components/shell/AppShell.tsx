@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { TopNav } from "./TopNav";
+import { TopNav, type NavLink } from "./TopNav";
 import { Sidebar } from "./Sidebar";
 
 async function loadLearnerCourseLinks(userId: string) {
@@ -28,12 +28,21 @@ export async function AppShell({
     ? await loadLearnerCourseLinks(session.user.id)
     : null;
 
+  const links: NavLink[] = isLearner ? [{ href: "/explore", label: "Explore" }] : [];
+  const cta = isLearner
+    ? { href: "/my-courses", label: "My courses" }
+    : undefined;
+
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <TopNav logoHref={logoHref ?? "/dashboard"} />
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-8 md:flex-row">
-        <Sidebar learnerCourses={learnerCourses} />
-        <main className="min-w-0 flex-1">{children}</main>
+      <TopNav logoHref={logoHref ?? "/dashboard"} links={links} cta={cta} />
+      {/* The dot grid is the app's ground, the same one the hero sits on,
+          so an outlined card has something to read against. */}
+      <div className="dot-grid flex flex-1 flex-col">
+        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-8 md:flex-row">
+          <Sidebar learnerCourses={learnerCourses} />
+          <main className="min-w-0 flex-1">{children}</main>
+        </div>
       </div>
     </div>
   );

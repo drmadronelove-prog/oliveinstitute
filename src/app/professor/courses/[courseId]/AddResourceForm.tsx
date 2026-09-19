@@ -36,7 +36,7 @@ export function AddResourceForm({
         <select
           name="lessonId"
           required
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         >
           <option value="">Select a lesson…</option>
           {lessons.map((lesson) => (
@@ -55,7 +55,7 @@ export function AddResourceForm({
           name="type"
           value={type}
           onChange={(event) => setType(event.target.value as typeof type)}
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         >
           <option value="PDF">PDF</option>
           <option value="LINK">Web link</option>
@@ -71,7 +71,7 @@ export function AddResourceForm({
           name="title"
           type="text"
           required
-          className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+          className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
         />
       </div>
 
@@ -85,7 +85,7 @@ export function AddResourceForm({
             type="file"
             accept="application/pdf"
             required
-            className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)]"
+            className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)]"
           />
           <p className="mt-1 font-body text-xs text-[var(--color-ink-muted)]">
             Up to 15 MB.
@@ -101,7 +101,7 @@ export function AddResourceForm({
             type="url"
             placeholder="https://…"
             required
-            className="w-full rounded-md border border-black/10 bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
+            className="w-full rounded-lg border-[1.5px] border-[var(--ink)] bg-white px-3 py-2 font-body text-sm text-[var(--color-ink)] focus:outline-2 focus:outline-[var(--color-olive)]"
           />
         </div>
       )}
@@ -109,7 +109,7 @@ export function AddResourceForm({
       <button
         type="submit"
         disabled={pending || lessons.length === 0}
-        className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)] disabled:opacity-60"
+        className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         {pending ? "Adding…" : "Add resource"}
       </button>

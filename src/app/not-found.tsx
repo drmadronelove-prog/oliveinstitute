@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <AppShell>
       <Card className="max-w-md" accentColor="var(--color-gold)">
-        <h1 className="mb-2 font-heading text-xl font-semibold text-[var(--color-ink)]">
+        <h1 className="mb-2 font-heading text-xl font-medium text-[var(--color-ink)]">
           404 — Page not found
         </h1>
         <p className="mb-4 font-body text-sm text-[var(--color-ink-muted)]">

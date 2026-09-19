@@ -47,7 +47,7 @@ export default async function AdminPurchasesPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+      <h1 className="mb-2 font-heading text-3xl font-medium text-[var(--color-olive)]">
         Purchases
       </h1>
       <p className="mb-8 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
@@ -56,7 +56,7 @@ export default async function AdminPurchasesPage() {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
         <Card>
-          <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
             Transactions
           </h2>
           {purchases.length === 0 ? (
@@ -121,7 +121,7 @@ export default async function AdminPurchasesPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-4 font-heading text-lg font-semibold text-[var(--color-ink)]">
+          <h2 className="mb-4 font-heading text-lg font-medium text-[var(--color-ink)]">
             Revenue by month
           </h2>
           {monthRows.length === 0 ? (

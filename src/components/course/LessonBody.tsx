@@ -14,19 +14,19 @@ export function LessonBody({ body }: { body: string }) {
         components={{
           h1: (props) => (
             <h3
-              className="font-heading text-xl font-semibold text-[var(--color-ink)]"
+              className="font-heading text-xl font-medium text-[var(--color-ink)]"
               {...props}
             />
           ),
           h2: (props) => (
             <h3
-              className="font-heading text-lg font-semibold text-[var(--color-ink)]"
+              className="font-heading text-lg font-medium text-[var(--color-ink)]"
               {...props}
             />
           ),
           h3: (props) => (
             <h4
-              className="font-heading text-base font-semibold text-[var(--color-ink)]"
+              className="font-heading text-base font-medium text-[var(--color-ink)]"
               {...props}
             />
           ),

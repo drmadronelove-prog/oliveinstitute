@@ -1,9 +1,12 @@
+import { OliveMark } from "@/components/brand/OliveMark";
+
 /**
- * Text wordmark. Stands in for a logo asset until real Olive Institute
- * artwork exists — at which point this is the one place to swap it in.
+ * The lockup: the olive mark, a gold hairline, and the name. This is the
+ * one place the brand's identity is assembled — nav, footer, the login
+ * card and the lesson player header all render it.
  *
- * `tone` picks the type color for the surface it sits on: "light" for the
- * olive nav bar, "dark" for the ivory page ground.
+ * `tone` picks the type colour for the surface it sits on: "light" for the
+ * ink nav bar, "dark" for the paper page ground.
  */
 export function Wordmark({
   tone = "light",
@@ -13,13 +16,18 @@ export function Wordmark({
   className?: string;
 }) {
   const color =
-    tone === "light" ? "text-[var(--color-ivory)]" : "text-[var(--color-olive)]";
+    tone === "light" ? "text-[var(--paper)]" : "text-[var(--ink)]";
 
   return (
-    <span
-      className={`font-heading text-2xl font-semibold tracking-[0.01em] ${color} ${className}`}
-    >
-      Olive Institute
+    <span className={`inline-flex items-center gap-[11px] ${color} ${className}`}>
+      <OliveMark className="block h-9 w-9" />
+      <span
+        aria-hidden="true"
+        className="block h-[30px] w-[1.5px] bg-[var(--rule)]"
+      />
+      <span className="font-heading whitespace-nowrap text-[28px] font-normal leading-none tracking-[-0.02em]">
+        Olive Institute
+      </span>
     </span>
   );
 }

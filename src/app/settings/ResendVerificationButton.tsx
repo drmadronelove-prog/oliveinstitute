@@ -16,7 +16,7 @@ export function ResendVerificationButton() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md border border-[var(--color-olive)] px-3 py-1.5 font-body text-sm text-[var(--color-olive)] transition-colors hover:bg-[var(--color-olive)] hover:text-white disabled:opacity-60"
+        className="btn-pop rounded-xl border-2 border-[var(--ink)] bg-[var(--paper)] px-3 py-1.5 font-body text-sm text-[var(--ink)] hover:bg-white disabled:opacity-60"
       >
         {pending ? "Sending…" : "Send a new confirmation email"}
       </button>

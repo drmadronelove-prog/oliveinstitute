@@ -47,7 +47,7 @@ export function LessonPreview({ lesson }: { lesson: PreviewLesson }) {
   const youTubeUrl = linkedVideo ? youTubeEmbedUrl(linkedVideo.url) : null;
 
   return (
-    <div className="rounded-xl bg-[var(--color-card)] p-6 shadow-sm ring-1 ring-black/5">
+    <div className="pop rounded-[18px] bg-[var(--color-card)] p-6">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Badge>Free preview</Badge>
         <span className="font-body text-sm font-medium text-[var(--color-ink)]">

@@ -11,8 +11,8 @@ export default function GlobalError({
 }) {
   return (
     <div className="flex min-h-full flex-1 items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl bg-[var(--color-card)] p-8 shadow-sm ring-1 ring-black/5">
-        <h1 className="mb-2 font-heading text-xl font-semibold text-[var(--color-ink)]">
+      <div className="w-full max-w-md pop-lg rounded-[22px] bg-[var(--color-card)] p-8">
+        <h1 className="mb-2 font-heading text-xl font-medium text-[var(--color-ink)]">
           Something went wrong
         </h1>
         <p className="mb-4 font-body text-sm text-[var(--color-ink-muted)]">
@@ -28,13 +28,13 @@ export default function GlobalError({
           <button
             type="button"
             onClick={reset}
-            className="rounded-md bg-[var(--color-olive)] px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+            className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
           >
             Try again
           </button>
           <Link
             href="/dashboard"
-            className="rounded-md border border-black/10 px-4 py-2 font-body text-sm text-[var(--color-ink)] hover:bg-[var(--color-sage-pale)]"
+            className="btn-pop rounded-xl bg-[var(--paper)] px-4 py-2 font-body text-sm text-[var(--color-ink)] hover:bg-[var(--color-sage-pale)]"
           >
             Dashboard
           </Link>

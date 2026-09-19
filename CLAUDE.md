@@ -511,8 +511,9 @@ References list per handout, well-formed quizzes, DRAFT/unpriced).
 
 ## Known loose ends
 
-- There is no logo asset. `src/components/shell/Wordmark.tsx` renders a
-  text wordmark; swap real artwork in there when it exists.
+- `public/olive-blobs.png` is no longer referenced by anything — the
+  dashboard's photo panel became the drifting olives in phase 14. Delete
+  it if nothing else claims it.
 - `docs/screenshots/` was removed as stale; regenerate if screenshots are
   wanted in the README again.
 - Route segments still read `professor`/`student`
@@ -524,9 +525,86 @@ References list per handout, well-formed quizzes, DRAFT/unpriced).
 - `Enrollment` carries both `createdAt` and `grantedAt`, which are
   redundant today. `grantedAt` was specified; `createdAt` predates it.
 
+## Site redesign (phase 14)
+
+Rebuilt to the mockup the account holder sent
+(`https://claude.ai/artifact/YZYg93mXFbr321TQeXe9er`): phase 12's palette
+kept exactly, an entirely new treatment on top of it. Every raised surface
+is now a **2px ink outline plus a hard, un-blurred shadow** offset down and
+right, lifting toward the top-left on hover; a button presses into the
+space its shadow occupied. Nothing is blurred, ringed or tinted anywhere —
+the style depends on the shadow reading as a second solid shape.
+
+`src/app/globals.css` is the one place the treatment lives (`.pop`,
+`.pop-lg`, `.pop-hover`, `.btn-pop`, the `.dot-grid` page ground, the olive
+drift keyframes and the ticker). The old soft `shadow-neumorphic*` /
+`shadow-tile*` utilities were **redefined onto the new treatment rather
+than deleted**, so any surface still asking for one gets the current look
+instead of keeping the old one.
+
+- **Type changed.** Cormorant Garamond → **Fraunces** (variable; its `SOFT`
+  axis is dialled to 50, which rounds the terminals just enough that large
+  headings don't read as severe inside hard outlines — asking for the axis
+  in `layout.tsx` is what makes that `font-variation-settings` rule do
+  anything). DM Sans → **Geist**, and **Geist Mono** is new, for small
+  numerals: module numbers, durations, counts. `font-heading` / `font-body`
+  kept their names so every existing class carried over; 96 class strings
+  had `font-semibold` swapped for `font-medium`, since Fraunces at
+  semibold is far heavier than Cormorant was at the same weight.
+- **Colour did not change**, but two tokens were added. The mockup
+  emphasises a word in gold inside a plum heading and in plum inside a gold
+  one, and the two brand values are 2.83:1 against each other — short of
+  the 3:1 large-text minimum `tests/accessibility.spec.ts` enforces (it
+  caught exactly this, on `/` and `/dashboard`, and nothing else).
+  `--gold-on-plum` (`#d4bc95`, 3.61) and `--plum-on-gold` (`#63405a`,
+  3.74) are each the brand colour shifted just far enough, and are used
+  only for type on that one surface.
+- **The olive is drawn now.** `src/components/brand/OliveMark.tsx` is a
+  single even-odd path filled with `currentColor`, so the same file is the
+  lockup's mark, the ticker's separator dots and the olives drifting
+  across the hero and the dashboard band. `Wordmark.tsx` became the full
+  lockup — mark, gold hairline, name — rather than text alone, which
+  closes the "there is no logo asset" loose end that had stood since the
+  fork. `DriftingOlives` is decorative throughout: `aria-hidden`, no text,
+  and stopped outright (not merely shortened) under
+  `prefers-reduced-motion`.
+- **The home page was rebuilt** to the mockup's sections: hero on the dot
+  grid, the course ticker, the ethos pair, the topics board, three path
+  cards, three steps. **The two `CatalogGrid` blocks that listed every
+  published course on `/` are gone** — the ticker names every published
+  course, and `/clinicians` and `/explore` are still the full listings.
+  The ticker's badge ("Certificate" vs "Course") is read off the title
+  rather than a new column: it is an editorial distinction, not a
+  different kind of record. Only the first appearance of each course is
+  focusable; every repeat is `aria-hidden` with `tabindex="-1"`, so a
+  keyboard user walks the list once.
+- **The topics board is editorial copy, not a query.** The five areas and
+  their pills are what the Institute teaches, which moves more slowly than
+  the list of courses currently on sale. Edit them in `src/app/page.tsx`.
+- **The dashboard** lost `HeroCard` (deleted — its photo panel had nothing
+  to show once the art became the olives) in favour of `DashboardBand`:
+  plum for a learner, gold for staff. The admin band gained four real
+  figures (`loadAdminStats`; revenue counts PAID purchases only, since a
+  refund is reversed in the webhook), and the four admin tools became the
+  bento tiles. The learner dashboard gained a "pick up where you left off"
+  panel whose every figure comes from `src/lib/progress.ts` — that file is
+  still the only place progress is computed.
+- **Buttons.** Primary is plum with paper type (5.98:1); secondary is
+  paper with an ink outline. Both were swept across the app by pattern,
+  not rewritten page by page, so the two shapes stay the only two.
+- **Sandbox note, unrelated to the design:** this sandbox's pre-installed
+  Chromium (build 1194) is older than the Playwright the repo installs, so
+  every spec fails with `Executable doesn't exist … chromium_headless_shell-1234`
+  until it is pointed at the browser that is actually there. That is what
+  `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` in `playwright.config.ts` exists
+  for: run
+  `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/opt/pw-browsers/chromium npx playwright test`.
+
 ## Rebrand (phase 2)
 
-The Sati palette and typography were replaced wholesale:
+The Sati palette and typography were replaced wholesale. **Both were
+superseded** — the colours by phase 12 below, the type and the whole
+surface treatment by phase 14 above.
 
 - **Palette** (`src/app/globals.css`), superseded by phase 12 below — see
   there for the current colors.

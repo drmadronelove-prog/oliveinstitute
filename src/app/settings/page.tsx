@@ -21,7 +21,7 @@ function Panel({
 }) {
   return (
     <section>
-      <h2 className="mb-1 font-heading text-xl font-semibold text-[var(--color-ink)]">
+      <h2 className="mb-1 font-heading text-xl font-medium text-[var(--color-ink)]">
         {title}
       </h2>
       {description ? (
@@ -52,7 +52,7 @@ export default async function SettingsPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-2 font-heading text-3xl font-semibold text-[var(--color-olive)]">
+      <h1 className="mb-2 font-heading text-3xl font-medium text-[var(--color-olive)]">
         Settings
       </h1>
       <p className="mb-8 font-body text-sm text-[var(--color-ink-muted)]">

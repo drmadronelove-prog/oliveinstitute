@@ -16,23 +16,23 @@ export function CourseCard({ course }: { course: CatalogCourse }) {
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="flex flex-col gap-3 rounded-xl bg-[var(--color-card)] p-6 shadow-sm ring-1 ring-black/5 transition-transform hover:-translate-y-0.5 hover:shadow-md"
+      className="pop-lg pop-hover flex flex-col gap-3 rounded-[22px] bg-white p-7"
     >
       {/* self-start so the pill hugs its text instead of stretching. */}
       <span className="self-start">
         <Badge>{trackLabel(course.track)}</Badge>
       </span>
-      <h2 className="font-heading text-xl font-semibold text-[var(--color-olive)]">
+      <h2 className="font-heading text-2xl font-medium leading-[1.1] tracking-[-0.02em] text-[var(--ink)]">
         {course.title}
       </h2>
       {course.subtitle ? (
-        <p className="font-body text-sm text-[var(--color-ink-muted)]">
+        <p className="font-body text-[15px] leading-[1.5] text-[var(--muted)]">
           {course.subtitle}
         </p>
       ) : null}
-      <p className="mt-auto font-body text-sm text-[var(--color-ink)]">
-        <span className="font-medium">{formatPrice(course.priceCents)}</span>
-        <span className="text-[var(--color-ink-muted)]">
+      <p className="mt-auto pt-2 font-mono text-[13px] text-[var(--ink)]">
+        <span className="font-semibold">{formatPrice(course.priceCents)}</span>
+        <span className="text-[var(--muted)]">
           {" "}
           · {formatMinutes(course.estimatedMinutes)} · {course.lessonCount}{" "}
           lesson{course.lessonCount === 1 ? "" : "s"}

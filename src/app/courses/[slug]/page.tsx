@@ -134,20 +134,20 @@ export default async function CourseSalesPage({
 
   return (
     <PublicShell>
-      <section className="bg-gradient-to-br from-[var(--color-sage)] to-[var(--color-olive)]">
+      <section className="border-b-2 border-[var(--ink)] bg-[var(--ink)]">
         <div className="mx-auto max-w-7xl px-6 py-14 md:px-10">
-          <p className="mb-3 font-body text-xs uppercase tracking-[0.14em] text-[var(--color-ivory)]/75">
+          <p className="mb-3 font-body text-[13px] font-semibold uppercase tracking-[0.14em] text-[var(--gold)]">
             {trackLabel(course.track)}
           </p>
-          <h1 className="max-w-3xl font-heading text-5xl font-semibold leading-[1.05] text-[var(--color-ivory)]">
+          <h1 className="max-w-3xl font-heading text-[clamp(2.6rem,5vw,4rem)] font-medium leading-[1.02] tracking-[-0.03em] text-[var(--paper)]">
             {course.title}
           </h1>
           {course.subtitle ? (
-            <p className="mt-3 max-w-2xl font-body text-lg text-[var(--color-ivory)]/85">
+            <p className="mt-3 max-w-2xl font-body text-lg text-[var(--on-ink)]">
               {course.subtitle}
             </p>
           ) : null}
-          <p className="mt-4 font-body text-sm text-[var(--color-ivory)]/75">
+          <p className="mt-4 font-mono text-[13px] text-[var(--on-ink)]">
             Taught by {course.instructor.name} &middot;{" "}
             {formatMinutes(course.estimatedMinutes)} &middot; {totalLessons}{" "}
             lesson{totalLessons === 1 ? "" : "s"}
@@ -180,7 +180,7 @@ export default async function CourseSalesPage({
         <div className="flex flex-col gap-10">
           {course.description ? (
             <section>
-              <h2 className="mb-3 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+              <h2 className="mb-3 font-heading text-2xl font-medium text-[var(--color-olive)]">
                 About this course
               </h2>
               <p className="max-w-prose whitespace-pre-wrap font-body text-[var(--color-ink-muted)]">
@@ -191,7 +191,7 @@ export default async function CourseSalesPage({
 
           {previewLesson ? (
             <section>
-              <h2 className="mb-3 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+              <h2 className="mb-3 font-heading text-2xl font-medium text-[var(--color-olive)]">
                 Watch the free preview
               </h2>
               <LessonPreview lesson={previewLesson} />
@@ -199,13 +199,13 @@ export default async function CourseSalesPage({
           ) : null}
 
           <section>
-            <h2 className="mb-3 font-heading text-2xl font-semibold text-[var(--color-olive)]">
+            <h2 className="mb-3 font-heading text-2xl font-medium text-[var(--color-olive)]">
               What&apos;s inside
             </h2>
             <div className="flex flex-col gap-6">
               {course.modules.map((courseModule) => (
                 <div key={courseModule.id}>
-                  <h3 className="mb-2 flex flex-wrap items-baseline gap-x-3 font-heading text-lg font-semibold text-[var(--color-ink)]">
+                  <h3 className="mb-2 flex flex-wrap items-baseline gap-x-3 font-heading text-lg font-medium text-[var(--color-ink)]">
                     <span>
                       {courseModule.sortOrder}. {courseModule.title}
                     </span>
@@ -244,8 +244,8 @@ export default async function CourseSalesPage({
         </div>
 
         <aside className="lg:sticky lg:top-8 lg:self-start">
-          <div className="rounded-xl bg-[var(--color-card)] p-6 shadow-sm ring-1 ring-black/5">
-            <p className="font-heading text-4xl font-semibold text-[var(--color-olive)]">
+          <div className="pop rounded-[18px] bg-[var(--color-card)] p-6">
+            <p className="font-heading text-4xl font-medium text-[var(--color-olive)]">
               {formatPrice(course.priceCents)}
             </p>
             <p className="mt-1 font-body text-sm text-[var(--color-ink-muted)]">
@@ -257,7 +257,7 @@ export default async function CourseSalesPage({
               {enrolled ? (
                 <Link
                   href={`/student/courses/${course.id}`}
-                  className="block rounded-md bg-[var(--color-olive)] px-4 py-3 text-center font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+                  className="block btn-pop rounded-xl bg-[var(--plum)] px-4 py-3 text-center font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
                 >
                   Go to course
                 </Link>
@@ -270,14 +270,14 @@ export default async function CourseSalesPage({
                 <button
                   type="button"
                   disabled
-                  className="w-full cursor-not-allowed rounded-md bg-[var(--color-olive)] px-4 py-3 font-body text-sm font-medium text-white opacity-60"
+                  className="w-full cursor-not-allowed btn-pop rounded-xl bg-[var(--plum)] px-4 py-3 font-body text-sm font-medium text-[var(--paper)] opacity-60"
                 >
                   Buy — {formatPrice(course.priceCents)}
                 </button>
               ) : (
                 <Link
                   href="/register"
-                  className="block rounded-md bg-[var(--color-olive)] px-4 py-3 text-center font-body text-sm font-medium text-white transition-colors hover:bg-[var(--color-olive-dark)]"
+                  className="block btn-pop rounded-xl bg-[var(--plum)] px-4 py-3 text-center font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)]"
                 >
                   Buy — {formatPrice(course.priceCents)}
                 </Link>
