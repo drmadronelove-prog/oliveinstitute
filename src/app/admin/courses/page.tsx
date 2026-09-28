@@ -2,7 +2,12 @@ import Link from "next/link";
 import { PurchaseStatus, Role } from "@prisma/client";
 import { requireRole } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
-import { formatMinutes, formatPrice, trackLabel } from "@/lib/format";
+import {
+  formatMinutes,
+  formatNameList,
+  formatPrice,
+  trackLabel,
+} from "@/lib/format";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { CreateCourseForm } from "./CreateCourseForm";
@@ -16,12 +21,17 @@ export default async function AdminCoursesPage() {
     prisma.course.findMany({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       include: {
-        instructor: { select: { name: true } },
+        instructors: {
+          orderBy: { sortOrder: "asc" },
+          select: { user: { select: { name: true } } },
+        },
         _count: { select: { enrollments: true, modules: true } },
       },
     }),
+    // Admins are offered alongside instructors: this practice is run by
+    // one clinician who is both.
     prisma.user.findMany({
-      where: { role: Role.INSTRUCTOR },
+      where: { role: { in: [Role.ADMIN, Role.INSTRUCTOR] } },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
@@ -49,7 +59,7 @@ export default async function AdminCoursesPage() {
         Manage courses
       </h1>
       <p className="mb-8 max-w-prose font-body text-sm text-[var(--color-ink-muted)]">
-        Create courses, assign an instructor, and manage each course&apos;s
+        Create courses, assign instructors, and manage each course&apos;s
         enrolled learners.
       </p>
 
@@ -73,7 +83,7 @@ export default async function AdminCoursesPage() {
                     <th className="py-2 pr-4">Price</th>
                     <th className="py-2 pr-4">Length</th>
                     <th className="py-2 pr-4">Modules</th>
-                    <th className="py-2 pr-4">Instructor</th>
+                    <th className="py-2 pr-4">Instructors</th>
                     <th className="py-2 pr-4">Enrolled</th>
                     <th className="py-2 pr-4">Revenue</th>
                     <th className="py-2">
@@ -97,7 +107,13 @@ export default async function AdminCoursesPage() {
                         {formatMinutes(course.estimatedMinutes)}
                       </td>
                       <td className="py-3 pr-4">{course._count.modules}</td>
-                      <td className="py-3 pr-4">{course.instructor.name}</td>
+                      <td className="py-3 pr-4">
+                        {formatNameList(
+                          course.instructors.map((entry) => entry.user.name),
+                        ) || (
+                          <span className="text-[var(--muted)]">Unassigned</span>
+                        )}
+                      </td>
                       <td className="py-3 pr-4">{course._count.enrollments}</td>
                       <td className="py-3 pr-4">
                         {formatRevenue(revenueCentsByCourseId.get(course.id) ?? 0)}

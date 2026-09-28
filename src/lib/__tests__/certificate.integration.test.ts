@@ -60,7 +60,7 @@ beforeAll(async () => {
       estimatedMinutes: 150, // 2.5 hours
       sortOrder: 0,
       status: CourseStatus.PUBLISHED,
-      instructorId: instructor.id,
+      instructors: { create: { userId: instructor.id } },
     },
   });
 
@@ -73,7 +73,7 @@ beforeAll(async () => {
       estimatedMinutes: 60,
       sortOrder: 0,
       status: CourseStatus.PUBLISHED,
-      instructorId: instructor.id,
+      instructors: { create: { userId: instructor.id } },
     },
   });
 
@@ -89,7 +89,7 @@ beforeAll(async () => {
       estimatedMinutes: 60,
       sortOrder: 0,
       status: CourseStatus.PUBLISHED,
-      instructorId: instructor.id,
+      instructors: { create: { userId: instructor.id } },
     },
   });
   await prisma.course.create({
@@ -101,7 +101,7 @@ beforeAll(async () => {
       estimatedMinutes: 60,
       sortOrder: 1,
       status: CourseStatus.PUBLISHED,
-      instructorId: instructor.id,
+      instructors: { create: { userId: instructor.id } },
     },
   });
 

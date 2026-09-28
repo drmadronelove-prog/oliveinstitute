@@ -32,6 +32,7 @@ export default async function InstructorCourseDetailPage({
           },
         },
       },
+      instructors: { select: { userId: true } },
       enrollments: { select: { userId: true } },
       _count: { select: { enrollments: true } },
     },

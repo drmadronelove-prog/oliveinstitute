@@ -140,37 +140,48 @@ export function CreateCourseForm({
         </div>
       </div>
 
-      <div>
-        <label htmlFor="create-course-instructor" className={labelClassName}>
-          Instructor
-        </label>
-        <select
-          id="create-course-instructor"
-          name="instructorId"
-          required
-          className={fieldClassName}
-        >
-          <option value="">Select an instructor…</option>
-          {instructors.map((instructor) => (
-            <option key={instructor.id} value={instructor.id}>
-              {instructor.name}
-            </option>
-          ))}
-        </select>
+      {/* Checkboxes rather than a multi-select: a course can be taught by
+          several people, and a <select multiple> hides that you can pick
+          more than one (and needs a modifier key to do it). */}
+      <fieldset>
+        <legend className={labelClassName}>Instructors</legend>
         {instructors.length === 0 ? (
-          <p className="mt-1 font-body text-xs text-[var(--color-ink-muted)]">
-            No instructor accounts yet — create one from{" "}
+          <p className="font-body text-xs text-[var(--color-ink-muted)]">
+            No accounts can teach yet — create an instructor from{" "}
             <Link href="/admin/users" className="underline underline-offset-2">
               Manage users
             </Link>{" "}
             first.
           </p>
-        ) : null}
-      </div>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            {instructors.map((instructor) => (
+              <label
+                key={instructor.id}
+                htmlFor={`create-course-instructor-${instructor.id}`}
+                className="flex items-center gap-2 font-body text-sm text-[var(--color-ink)]"
+              >
+                <input
+                  type="checkbox"
+                  id={`create-course-instructor-${instructor.id}`}
+                  name="instructorIds"
+                  value={instructor.id}
+                  className="h-4 w-4"
+                />
+                {instructor.name}
+              </label>
+            ))}
+          </div>
+        )}
+        <p className="mt-1 font-body text-xs text-[var(--color-ink-muted)]">
+          You can leave this empty for now and add instructors later — a
+          course just can&apos;t be published without at least one.
+        </p>
+      </fieldset>
 
       <button
         type="submit"
-        disabled={pending || instructors.length === 0}
+        disabled={pending}
         className="btn-pop rounded-xl bg-[var(--plum)] px-4 py-2 font-body text-sm font-medium text-[var(--paper)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-60"
       >
         {pending ? "Creating…" : "Create course"}

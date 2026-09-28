@@ -6,7 +6,13 @@ import { CourseStatus } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canPurchase, canViewLesson } from "@/lib/entitlements";
-import { formatDuration, formatMinutes, formatPrice, trackLabel } from "@/lib/format";
+import {
+  formatDuration,
+  formatMinutes,
+  formatNameList,
+  formatPrice,
+  trackLabel,
+} from "@/lib/format";
 import { absoluteUrl, SITE_NAME } from "@/lib/site";
 import { withBasePath } from "@/lib/basePath";
 import { PublicShell } from "@/components/shell/PublicShell";
@@ -25,7 +31,10 @@ async function loadPublishedCourse(slug: string) {
   return prisma.course.findFirst({
     where: { slug, status: CourseStatus.PUBLISHED },
     include: {
-      instructor: { select: { name: true } },
+      instructors: {
+        orderBy: { sortOrder: "asc" },
+        select: { user: { select: { name: true } } },
+      },
       modules: {
         orderBy: { sortOrder: "asc" },
         include: {
@@ -58,7 +67,10 @@ export async function generateMetadata({
       description: true,
       track: true,
       coverImageKey: true,
-      instructor: { select: { name: true } },
+      instructors: {
+        orderBy: { sortOrder: "asc" },
+        select: { user: { select: { name: true } } },
+      },
     },
   });
 
@@ -86,7 +98,7 @@ export async function generateMetadata({
       title: course.title,
       description,
       url,
-      authors: [course.instructor.name],
+      authors: course.instructors.map((entry) => entry.user.name),
       images: coverImageUrl ? [{ url: coverImageUrl }] : undefined,
     },
     twitter: {
@@ -148,7 +160,11 @@ export default async function CourseSalesPage({
             </p>
           ) : null}
           <p className="mt-4 font-mono text-[13px] text-[var(--on-ink)]">
-            Taught by {course.instructor.name} &middot;{" "}
+            {course.instructors.length > 0
+              ? `Taught by ${formatNameList(
+                  course.instructors.map((entry) => entry.user.name),
+                )} · `
+              : null}
             {formatMinutes(course.estimatedMinutes)} &middot; {totalLessons}{" "}
             lesson{totalLessons === 1 ? "" : "s"}
           </p>

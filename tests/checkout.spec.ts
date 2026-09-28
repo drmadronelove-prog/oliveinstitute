@@ -92,7 +92,7 @@ test.beforeAll(async () => {
         estimatedMinutes: 45,
         sortOrder: 0,
         status: CourseStatus.PUBLISHED,
-        instructorId: instructor.id,
+        instructors: { create: { userId: instructor.id } },
       },
     }),
     prisma.course.create({
@@ -104,7 +104,7 @@ test.beforeAll(async () => {
         estimatedMinutes: 10,
         sortOrder: 0,
         status: CourseStatus.PUBLISHED,
-        instructorId: instructor.id,
+        instructors: { create: { userId: instructor.id } },
       },
     }),
   ]);

@@ -33,3 +33,15 @@ const TRACK_LABEL: Record<string, string> = {
 export function trackLabel(track: string): string {
   return TRACK_LABEL[track] ?? track;
 }
+
+/**
+ * Joins names the way a byline reads: "Ada", "Ada and Grace", "Ada, Grace
+ * and Alan". Used for a course's "Taught by …" line, which can now name
+ * several instructors.
+ */
+export function formatNameList(names: string[]): string {
+  const present = names.filter((name) => name.trim().length > 0);
+  if (present.length === 0) return "";
+  if (present.length === 1) return present[0];
+  return `${present.slice(0, -1).join(", ")} and ${present[present.length - 1]}`;
+}

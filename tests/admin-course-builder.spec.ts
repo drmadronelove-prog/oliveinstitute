@@ -58,9 +58,8 @@ test.describe.serial("admin course builder", () => {
     await page.locator('input[name="slug"]').fill(courseSlug);
     await page.locator('input[name="priceCents"]').fill("0");
     await page.locator('input[name="estimatedMinutes"]').fill("30");
-    await page
-      .locator('select[name="instructorId"]')
-      .selectOption({ label: `Builder Instructor ${TAG}` });
+    // Instructors are checkboxes now — a course can have several.
+    await page.getByLabel(`Builder Instructor ${TAG}`).check();
 
     await page.getByRole("button", { name: "Create course" }).click();
     await expect(page.getByText(`Course "${courseTitle}" created.`)).toBeVisible();

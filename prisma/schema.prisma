@@ -71,7 +71,7 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  coursesTaught           Course[]                 @relation("InstructorCourses")
+  coursesTaught           CourseInstructor[]
   enrollments             Enrollment[]
   purchases               Purchase[]
   lessonProgress          LessonProgress[]
@@ -139,16 +139,41 @@ model Course {
   estimatedMinutes Int
   sortOrder        Int
   publishedAt      DateTime?
-  instructorId     String
-  instructor       User         @relation("InstructorCourses", fields: [instructorId], references: [id])
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
+  /// Everyone who teaches this course. A course may briefly have none
+  /// while it is a DRAFT; the publish gate refuses to publish one that
+  /// still does.
+  instructors CourseInstructor[]
   modules     Module[]
   enrollments Enrollment[]
   purchases   Purchase[]
 
   @@map("courses")
+}
+
+/// Who teaches a course. A flat list of equals — every instructor on a
+/// course can manage it (`canManageCourse`), and the sales page names them
+/// all. This replaced `Course.instructorId`, a single owning instructor.
+///
+/// The user side is deliberately *not* `onDelete: Cascade`: removing an
+/// account should never quietly drop them off a course they teach.
+/// `deleteUserAction` refuses while any of these rows exist, and this
+/// constraint is the database's own backstop for that rule.
+model CourseInstructor {
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  /// Display order in the "Taught by …" byline.
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@id([courseId, userId])
+  @@index([userId])
+  @@index([courseId, sortOrder])
+  @@map("course_instructors")
 }
 
 model Module {
@@ -184,13 +209,13 @@ model Quiz {
 }
 
 model QuizQuestion {
-  id        String   @id @default(cuid())
-  quizId    String
-  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  sortOrder Int
-  prompt    String
+  id           String   @id @default(cuid())
+  quizId       String
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sortOrder    Int
+  prompt       String
   /// JSON array of option strings, e.g. ["Option A", "Option B", ...].
-  options   Json
+  options      Json
   /// Index into `options` of the correct answer.
   correctIndex Int
   /// Shown after the learner picks an answer, right or wrong.
@@ -245,23 +270,23 @@ model LessonResource {
 }
 
 model Enrollment {
-  id                  String           @id @default(cuid())
-  userId              String
-  user                User             @relation(fields: [userId], references: [id])
-  courseId            String
-  course              Course           @relation(fields: [courseId], references: [id])
-  source              EnrollmentSource
-  purchaseId          String?
-  purchase            Purchase?        @relation(fields: [purchaseId], references: [id])
-  grantedAt           DateTime         @default(now())
-  completedAt         DateTime?
-  certificateIssuedAt DateTime?
+  id                    String           @id @default(cuid())
+  userId                String
+  user                  User             @relation(fields: [userId], references: [id])
+  courseId              String
+  course                Course           @relation(fields: [courseId], references: [id])
+  source                EnrollmentSource
+  purchaseId            String?
+  purchase              Purchase?        @relation(fields: [purchaseId], references: [id])
+  grantedAt             DateTime         @default(now())
+  completedAt           DateTime?
+  certificateIssuedAt   DateTime?
   /// StorageService key for the generated certificate PDF — set alongside
   /// certificateIssuedAt so re-requesting the certificate serves the same
   /// stored file rather than generating (and storing) a new one each time.
   certificateStorageKey String?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
 
   @@unique([userId, courseId])
   @@map("enrollments")

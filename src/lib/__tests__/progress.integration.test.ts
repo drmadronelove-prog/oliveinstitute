@@ -70,7 +70,7 @@ beforeAll(async () => {
       estimatedMinutes: 30,
       sortOrder: 0,
       status: CourseStatus.PUBLISHED,
-      instructorId: instructor.id,
+      instructors: { create: { userId: instructor.id } },
     },
   });
   const moduleA = await prisma.module.create({
@@ -108,7 +108,7 @@ beforeAll(async () => {
       estimatedMinutes: 15,
       sortOrder: 0,
       status: CourseStatus.PUBLISHED,
-      instructorId: instructor.id,
+      instructors: { create: { userId: instructor.id } },
     },
   });
   const moduleB = await prisma.module.create({

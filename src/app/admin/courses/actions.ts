@@ -24,8 +24,33 @@ const createCourseSchema = z.object({
   priceCents: z.coerce.number().int().min(0).max(1_000_000),
   estimatedMinutes: z.coerce.number().int().min(0).max(100_000),
   sortOrder: z.coerce.number().int().min(0).max(10_000),
-  instructorId: z.string().trim().min(1, "Choose an instructor"),
+  // Zero is allowed: a course can be drafted before anyone is assigned
+  // to teach it. The publish gate below refuses to publish one that
+  // still has none.
+  instructorIds: z.array(z.string().trim().min(1)).default([]),
 });
+
+/**
+ * Checks that every chosen instructor exists and may actually teach,
+ * returning the ids de-duplicated and in the order given, or null if any
+ * one of them is invalid.
+ *
+ * ADMIN counts as eligible alongside INSTRUCTOR: this practice is run by
+ * one clinician who is both, and the seed has always listed the admin as
+ * the instructor on its courses.
+ */
+async function resolveInstructorIds(ids: string[]): Promise<string[] | null> {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return [];
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: unique }, role: { in: [Role.ADMIN, Role.INSTRUCTOR] } },
+    select: { id: true },
+  });
+  if (users.length !== unique.length) return null;
+
+  return unique;
+}
 
 export type CreateCourseState = {
   status: "idle" | "success" | "error";
@@ -47,7 +72,7 @@ export async function createCourseAction(
     priceCents: formData.get("priceCents"),
     estimatedMinutes: formData.get("estimatedMinutes"),
     sortOrder: formData.get("sortOrder"),
-    instructorId: formData.get("instructorId"),
+    instructorIds: formData.getAll("instructorIds").map(String),
   });
 
   if (!parsed.success) {
@@ -57,11 +82,9 @@ export async function createCourseAction(
     };
   }
 
-  const instructor = await prisma.user.findUnique({
-    where: { id: parsed.data.instructorId },
-  });
-  if (!instructor || instructor.role !== Role.INSTRUCTOR) {
-    return { status: "error", message: "Selected instructor is invalid." };
+  const instructorIds = await resolveInstructorIds(parsed.data.instructorIds);
+  if (instructorIds === null) {
+    return { status: "error", message: "One of the chosen instructors is invalid." };
   }
 
   const existing = await prisma.course.findUnique({
@@ -84,7 +107,12 @@ export async function createCourseAction(
       estimatedMinutes: parsed.data.estimatedMinutes,
       sortOrder: parsed.data.sortOrder,
       status: CourseStatus.DRAFT,
-      instructorId: instructor.id,
+      instructors: {
+        create: instructorIds.map((userId, index) => ({
+          userId,
+          sortOrder: index,
+        })),
+      },
     },
   });
 
@@ -118,6 +146,7 @@ export async function updateCourseStatusAction(
       status: true,
       publishedAt: true,
       priceCents: true,
+      instructors: { select: { userId: true } },
       modules: {
         select: { lessons: { select: { isFreePreview: true } } },
       },
@@ -135,6 +164,7 @@ export async function updateCourseStatusAction(
     const problems: string[] = [];
     if (lessons.length === 0) problems.push("it has no lessons");
     if (course.priceCents <= 0) problems.push("it has no price set");
+    if (course.instructors.length === 0) problems.push("it has no instructor");
     if (!lessons.some((lesson) => lesson.isFreePreview)) {
       problems.push("it has no free-preview lesson");
     }
@@ -190,6 +220,7 @@ export async function duplicateCourseAction(
           quiz: { include: { questions: { orderBy: { sortOrder: "asc" } } } },
         },
       },
+      instructors: { orderBy: { sortOrder: "asc" } },
     },
   });
   if (!source) {
@@ -217,7 +248,12 @@ export async function duplicateCourseAction(
         estimatedMinutes: source.estimatedMinutes,
         sortOrder: source.sortOrder,
         status: CourseStatus.DRAFT,
-        instructorId: source.instructorId,
+        instructors: {
+          create: source.instructors.map((entry, index) => ({
+            userId: entry.userId,
+            sortOrder: index,
+          })),
+        },
       },
     });
 

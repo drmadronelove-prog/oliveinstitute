@@ -9,7 +9,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { EnrollStudentForm } from "./EnrollStudentForm";
 import { UnenrollButton } from "./UnenrollButton";
-import { ReassignInstructorForm } from "./ReassignInstructorForm";
+import { CourseInstructorsPanel } from "./CourseInstructorsPanel";
 import { CourseStatusForm } from "./CourseStatusForm";
 import { EditCourseForm } from "./EditCourseForm";
 import { CourseBuilder } from "./CourseBuilder";
@@ -25,7 +25,10 @@ export default async function AdminCourseDetailPage({
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
-      instructor: { select: { id: true, name: true } },
+      instructors: {
+        orderBy: { sortOrder: "asc" },
+        select: { user: { select: { id: true, name: true } } },
+      },
       modules: {
         orderBy: { sortOrder: "asc" },
         include: {
@@ -53,7 +56,7 @@ export default async function AdminCourseDetailPage({
 
   const [instructors, enrollableLearners] = await Promise.all([
     prisma.user.findMany({
-      where: { role: Role.INSTRUCTOR },
+      where: { role: { in: [Role.ADMIN, Role.INSTRUCTOR] } },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
@@ -142,12 +145,17 @@ export default async function AdminCourseDetailPage({
 
           <Card>
             <h2 className="mb-3 font-heading text-lg font-medium text-[var(--color-ink)]">
-              Instructor
+              Instructors
             </h2>
-            <ReassignInstructorForm
+            <CourseInstructorsPanel
               courseId={course.id}
-              currentInstructorId={course.instructor.id}
-              instructors={instructors}
+              instructors={course.instructors.map((entry) => entry.user)}
+              candidates={instructors.filter(
+                (candidate) =>
+                  !course.instructors.some(
+                    (entry) => entry.user.id === candidate.id,
+                  ),
+              )}
             />
           </Card>
 

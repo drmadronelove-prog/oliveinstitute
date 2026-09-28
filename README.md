@@ -1,7 +1,8 @@
 # Olive Institute
 
 A self-hosted storefront for self-paced courses. An admin creates accounts
-and courses, assigns an instructor to each, and enrolls learners;
+and courses, assigns one or more instructors to each, and enrolls
+learners;
 instructors publish course materials (PDFs, links, videos); learners sign in
 and work through the materials at their own pace.
 
@@ -47,8 +48,10 @@ In `prisma/schema.prisma`:
 - `User` — name, email, bcrypt password hash, role, `emailVerifiedAt`
 - `Course` — a sellable product: `slug`, title, subtitle, `track`
   (CLINICIAN / PUBLIC), `priceCents`, `status` (DRAFT / PUBLISHED /
-  ARCHIVED), `estimatedMinutes`, `sortOrder`, Stripe price id, owning
-  instructor
+  ARCHIVED), `estimatedMinutes`, `sortOrder`, Stripe price id
+- `CourseInstructor` — who teaches a course, as a flat list of equals
+  with a `sortOrder` for the byline. Any instructor on the list can manage
+  the course; a course needs at least one before it can be published
 - `Module` — an ordered section of a course
 - `Lesson` — an ordered unit inside a module: `type` (VIDEO / TEXT / PDF /
   QUIZ), `durationSeconds`, `isFreePreview`, plus video uid, body, and
@@ -110,8 +113,8 @@ that; scope any loading UI to a segment that never calls `notFound()`.
 `src/lib/entitlements.ts` is the single place any code asks whether someone
 may see something. It exports two functions:
 
-- `hasAccess(userId, courseId)` — an admin sees everything; a course's own
-  instructor sees that course at any status; anyone else needs an
+- `hasAccess(userId, courseId)` — an admin sees everything; any
+  instructor listed on a course sees it at any status; anyone else needs an
   enrollment and the course must not be a DRAFT. ARCHIVED still grants
   access, because archiving retires a course from the storefront rather
   than revoking what people already own.
@@ -261,11 +264,11 @@ it is added there.
 | `/learn/[courseSlug]/[lessonSlug]` | `canViewLesson` — the player; open to a logged-out visitor for a free preview |
 | `/certificates/[enrollmentId]` | owner of the enrollment, or ADMIN — print-styled certificate |
 | `/api/certificates/[enrollmentId]/pdf` | owner or ADMIN — issues (if needed) and streams the stored certificate PDF |
-| `/admin/users` | ADMIN — create accounts (emails an invite), send reset links |
-| `/admin/courses`, `/admin/courses/[id]` | ADMIN — create, edit, duplicate, archive courses; the module/lesson builder; assign an instructor; enroll/unenroll |
+| `/admin/users` | ADMIN — create accounts (emails an invite), send reset links, delete accounts |
+| `/admin/courses`, `/admin/courses/[id]` | ADMIN — create, edit, duplicate, archive courses; the module/lesson builder; add and remove instructors; enroll/unenroll |
 | `/admin/learners`, `/admin/learners/[id]` | ADMIN — search learners, review enrollments, grant comp access |
 | `/admin/purchases` | ADMIN — every transaction, plus revenue by month |
-| `/professor/courses/[id]` | course's instructor or ADMIN — curriculum, lesson resources, enroll learners |
+| `/professor/courses/[id]` | any of the course's instructors, or ADMIN — curriculum, lesson resources, enroll learners |
 | `/student/courses/[id]` | any signed-in user — curriculum, gated per lesson by `canViewLesson` |
 | `/checkout/success`, `/checkout/cancel` | any signed-in user — reads a `Purchase`, never writes access |
 | `/api/checkout` | verified, signed-in user — starts a Stripe Checkout Session |

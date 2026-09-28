@@ -27,7 +27,7 @@ async function requireManageableLesson(
     where: { id: lessonId },
     select: {
       id: true,
-      module: { select: { course: { select: { id: true, instructorId: true } } } },
+      module: { select: { course: { select: { id: true, instructors: { select: { userId: true } } } } } },
     },
   });
 
@@ -173,7 +173,7 @@ export async function enrollStudentAction(
 
   const course = await prisma.course.findUnique({
     where: { id: parsed.data.courseId },
-    select: { id: true, instructorId: true },
+    select: { id: true, instructors: { select: { userId: true } } },
   });
   if (!course || !canManageCourse(session, course)) {
     return { status: "error", message: "Course not found." };

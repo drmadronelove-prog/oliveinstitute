@@ -42,7 +42,7 @@ test.beforeAll(async () => {
       estimatedMinutes: 30,
       sortOrder: 99,
       status: CourseStatus.DRAFT,
-      instructorId: admin.id,
+      instructors: { create: { userId: admin.id } },
     },
   });
   const draftModule = await prisma.module.create({

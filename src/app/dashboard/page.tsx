@@ -18,7 +18,7 @@ import { RolePanel } from "@/components/dashboard/RolePanel";
 async function loadRolePanelData(userId: string, role: string) {
   if (role === "INSTRUCTOR") {
     const courses = await prisma.course.findMany({
-      where: { instructorId: userId },
+      where: { instructors: { some: { userId } } },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       include: { _count: { select: { enrollments: true } } },
     });

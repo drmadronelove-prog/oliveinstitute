@@ -83,7 +83,7 @@ async function makeFixture(label: string): Promise<Fixture> {
       estimatedMinutes: 60,
       sortOrder: 0,
       status: CourseStatus.PUBLISHED,
-      instructorId: instructor.id,
+      instructors: { create: { userId: instructor.id } },
     },
   });
 

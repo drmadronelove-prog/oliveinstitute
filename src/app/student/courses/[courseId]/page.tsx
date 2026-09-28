@@ -4,7 +4,7 @@ import { CourseStatus } from "@prisma/client";
 import { requireSession } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { canViewLesson, hasAccess } from "@/lib/entitlements";
-import { formatDuration, formatMinutes, trackLabel } from "@/lib/format";
+import { formatDuration, formatMinutes, formatNameList, trackLabel } from "@/lib/format";
 import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -22,7 +22,10 @@ export default async function LearnerCourseDetailPage({
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
-      instructor: { select: { name: true } },
+      instructors: {
+        orderBy: { sortOrder: "asc" },
+        select: { user: { select: { name: true } } },
+      },
       modules: {
         orderBy: { sortOrder: "asc" },
         include: {
@@ -79,8 +82,12 @@ export default async function LearnerCourseDetailPage({
       ) : null}
       <p className="mb-4 font-body text-sm text-[var(--color-ink-muted)]">
         {trackLabel(course.track)} &middot;{" "}
-        {formatMinutes(course.estimatedMinutes)} &middot; Taught by{" "}
-        {course.instructor.name}
+        {formatMinutes(course.estimatedMinutes)}
+        {course.instructors.length > 0
+          ? ` · Taught by ${formatNameList(
+              course.instructors.map((entry) => entry.user.name),
+            )}`
+          : null}
       </p>
 
       <div className="mb-8">

@@ -48,14 +48,19 @@ export async function hasAccess(
     }),
     prisma.course.findUnique({
       where: { id: courseId },
-      select: { id: true, status: true, instructorId: true },
+      select: {
+        id: true,
+        status: true,
+        instructors: { select: { userId: true } },
+      },
     }),
   ]);
 
   if (!user || !course) return false;
 
   if (user.role === Role.ADMIN) return true;
-  if (course.instructorId === user.id) return true;
+  // Any instructor listed on the course can see it, not just one owner.
+  if (course.instructors.some((entry) => entry.userId === user.id)) return true;
 
   if (!ENROLLED_VISIBLE_STATUSES.includes(course.status)) return false;
 

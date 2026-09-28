@@ -213,7 +213,8 @@ async function seedCourse(seed: CourseSeed, instructorId: string) {
   const course = await prisma.course.upsert({
     where: { slug: seed.slug },
     // Re-seeding refreshes the catalogue fields but never touches status,
-    // price, or publishedAt: those are the admin's to change in the editor.
+    // price, publishedAt, or the instructor list: those are the admin's to
+    // change in the editor, and a re-seed must not undo them.
     update: {
       title: seed.title,
       subtitle: seed.subtitle,
@@ -221,7 +222,6 @@ async function seedCourse(seed: CourseSeed, instructorId: string) {
       track: seed.track,
       estimatedMinutes: seed.estimatedMinutes,
       sortOrder: seed.sortOrder,
-      instructorId,
     },
     create: {
       slug: seed.slug,
@@ -234,7 +234,7 @@ async function seedCourse(seed: CourseSeed, instructorId: string) {
       sortOrder: seed.sortOrder,
       status: seed.status,
       publishedAt: seed.status === CourseStatus.PUBLISHED ? new Date() : null,
-      instructorId,
+      instructors: { create: { userId: instructorId } },
     },
   });
 

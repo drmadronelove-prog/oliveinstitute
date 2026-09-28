@@ -62,7 +62,7 @@ async function makeCourse(
       estimatedMinutes: 60,
       sortOrder: 0,
       status,
-      instructorId,
+      instructors: { create: { userId: instructorId } },
     },
   });
   const courseModule = await prisma.module.create({

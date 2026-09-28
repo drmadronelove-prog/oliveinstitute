@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { EnrollmentSource, Role, Track } from "@prisma/client";
+import { CourseStatus, EnrollmentSource, Role, Track } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
@@ -94,20 +94,27 @@ export async function unenrollStudentAction(
   return { status: "success", message: "Learner unenrolled." };
 }
 
-const reassignSchema = z.object({
+const instructorSchema = z.object({
   courseId: z.string().trim().min(1),
-  instructorId: z.string().trim().min(1, "Choose an instructor"),
+  userId: z.string().trim().min(1, "Choose someone to add"),
 });
 
-export async function reassignInstructorAction(
+/**
+ * Adds someone to a course's instructor list. A course carries a flat list
+ * of instructors rather than one owner, so this is an add, not a reassign.
+ *
+ * ADMIN counts as eligible alongside INSTRUCTOR — this practice is run by
+ * one clinician who is both.
+ */
+export async function addCourseInstructorAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   await requireRole(Role.ADMIN);
 
-  const parsed = reassignSchema.safeParse({
+  const parsed = instructorSchema.safeParse({
     courseId: formData.get("courseId"),
-    instructorId: formData.get("instructorId"),
+    userId: formData.get("userId"),
   });
   if (!parsed.success) {
     return {
@@ -116,21 +123,87 @@ export async function reassignInstructorAction(
     };
   }
 
-  const instructor = await prisma.user.findUnique({
-    where: { id: parsed.data.instructorId },
+  const user = await prisma.user.findUnique({
+    where: { id: parsed.data.userId },
+    select: { id: true, name: true, role: true },
   });
-  if (!instructor || instructor.role !== Role.INSTRUCTOR) {
-    return { status: "error", message: "Selected instructor is invalid." };
+  if (!user || (user.role !== Role.INSTRUCTOR && user.role !== Role.ADMIN)) {
+    return { status: "error", message: "That account cannot teach a course." };
   }
 
-  await prisma.course.update({
-    where: { id: parsed.data.courseId },
-    data: { instructorId: instructor.id },
+  const last = await prisma.courseInstructor.findFirst({
+    where: { courseId: parsed.data.courseId },
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
+
+  // Idempotent: adding someone already listed is a no-op, not an error —
+  // two admins on the page at once shouldn't produce a failure.
+  await prisma.courseInstructor.upsert({
+    where: {
+      courseId_userId: { courseId: parsed.data.courseId, userId: user.id },
+    },
+    update: {},
+    create: {
+      courseId: parsed.data.courseId,
+      userId: user.id,
+      sortOrder: (last?.sortOrder ?? -1) + 1,
+    },
   });
 
   revalidatePath(`/admin/courses/${parsed.data.courseId}`);
+  revalidatePath("/admin/courses");
 
-  return { status: "success", message: `Instructor set to ${instructor.name}.` };
+  return { status: "success", message: `${user.name} added.` };
+}
+
+/**
+ * Removes someone from a course's instructor list. Removing the last one
+ * is allowed on a DRAFT but refused on a live course: a published course
+ * with nobody teaching it would show an empty "Taught by" line, and the
+ * publish gate would not let it be published in that state either.
+ */
+export async function removeCourseInstructorAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireRole(Role.ADMIN);
+
+  const parsed = instructorSchema.safeParse({
+    courseId: formData.get("courseId"),
+    userId: formData.get("userId"),
+  });
+  if (!parsed.success) {
+    return { status: "error", message: "Invalid request." };
+  }
+
+  const course = await prisma.course.findUnique({
+    where: { id: parsed.data.courseId },
+    select: { status: true, instructors: { select: { userId: true } } },
+  });
+  if (!course) {
+    return { status: "error", message: "Course not found." };
+  }
+
+  if (
+    course.status === CourseStatus.PUBLISHED &&
+    course.instructors.length <= 1
+  ) {
+    return {
+      status: "error",
+      message:
+        "A published course needs at least one instructor. Add someone else first, or archive the course.",
+    };
+  }
+
+  await prisma.courseInstructor.deleteMany({
+    where: { courseId: parsed.data.courseId, userId: parsed.data.userId },
+  });
+
+  revalidatePath(`/admin/courses/${parsed.data.courseId}`);
+  revalidatePath("/admin/courses");
+
+  return { status: "success", message: "Instructor removed." };
 }
 
 const MAX_COVER_IMAGE_BYTES = 5 * 1024 * 1024;

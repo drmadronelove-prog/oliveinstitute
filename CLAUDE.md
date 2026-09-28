@@ -20,7 +20,10 @@ product decision, not an omission, and don't reintroduce any of it without
 being asked:
 
 - **Models:** `Assignment`, `Submission`, `Feedback` (submission feedback),
-  `AttendanceRecord`, `CourseProfessor` (co-teachers), `DirectEmail`
+  `AttendanceRecord`, `DirectEmail`. (`CourseProfessor`, the cohort-era
+  co-teacher table, was also removed here — but **that one decision was
+  reversed** in phase 15 below, at the account holder's request. Courses
+  carry several instructors again, through a new `CourseInstructor`.)
 - **Enums:** `SubmissionStatus`, `SubmissionGrade`, `AttendanceStatus`,
   `CreditStatus`, `EnrollmentStatus`
 - **Routes:** professor assignment and attendance pages, student
@@ -42,8 +45,8 @@ by a single `init` migration matching the current schema.
 
 `src/lib/auth.ts`, `src/lib/rbac.ts`, `src/lib/storage.ts`,
 `src/lib/email.ts`, the `AppShell` shell and `ui/` components, and
-`/api/files`. `Role` still has two non-admin values alongside `ADMIN`, and
-`Course` still has one owning instructor.
+`/api/files`. `Role` still has two non-admin values alongside `ADMIN`. `Course` had one
+owning instructor until phase 15, which made it a list.
 
 ## Storefront schema (phase 3)
 
@@ -527,6 +530,73 @@ References list per handout, well-formed quizzes, DRAFT/unpriced).
   Markdown body inline (a 4,000-word handout rendered as plain text was
   unreadable), and the sales page shows each module's total running time
   next to its title.
+
+## Several instructors, and deleting users (phase 15)
+
+Two things the account holder asked for directly.
+
+### A course has a list of instructors, not one
+
+`Course.instructorId` is gone, replaced by **`CourseInstructor`**, a join
+table with a `sortOrder` for the byline. It is a **flat list of equals** —
+there is no owner among them — chosen over "one owner plus co-teachers"
+because a course taught by two people has two instructors, and a
+primary/secondary split would have shown up in the admin UI as a
+distinction nobody asked for.
+
+- `canManageCourse` now takes `course: { instructors: { userId }[] }` and
+  returns true for any of them. It deliberately requires the caller to
+  have selected the list, so a course fetched without it cannot be
+  silently treated as having nobody. `hasAccess` in `entitlements.ts`
+  changed the same way.
+- **The migration backfills before it drops.** `course_instructors` is
+  created and populated from `courses.instructorId` first; only then is
+  the column dropped. Reversing those two statements would lose every
+  course's instructor — the same "safe on a populated database" rule the
+  phase-3 migration follows.
+- **A course may have zero instructors while it is a DRAFT**, so one can
+  be sketched out before anyone is assigned. The publish gate refuses to
+  publish one that still has none (a fourth reason alongside no lessons,
+  no price, no free preview), and `removeCourseInstructorAction` refuses
+  to take the last one off a course that is already PUBLISHED.
+- **ADMIN counts as able to teach, alongside INSTRUCTOR.** The old create
+  form only accepted `Role.INSTRUCTOR`, which meant the admin could not
+  be assigned to a course — while the seed had always done exactly that.
+  This practice is one clinician who is both.
+- `formatNameList` in `src/lib/format.ts` is the one place a byline is
+  assembled ("Ada", "Ada and Grace", "Ada, Grace and Alan"); the sales
+  page, the learner overview and the admin list all use it.
+- **Re-seeding no longer touches the instructor list**, for the same
+  reason it never touches status, price or `publishedAt`: it is the
+  admin's, and a re-seed must not undo their edits. The list is set only
+  when the seed *creates* a course.
+
+### An admin can delete a user
+
+`deleteUserAction` removes the account plus the rows that exist only to
+serve it — enrollments and lesson progress, with the reset/verification
+tokens cascading in the schema. It **refuses**, naming the reason, in four
+cases:
+
+- **yourself**, and **the last remaining ADMIN** — both lock the admin out
+  of their own site;
+- **anyone who teaches a course** — remove them from it deliberately, so a
+  course is never silently left unattributed. `course_instructors.userId`
+  is `RESTRICT` rather than `CASCADE` precisely so the database enforces
+  this too;
+- **anyone with a purchase** — that row is the record of a real sale and
+  refunds are matched against it, so it outlives the account;
+- **anyone whose uploaded lesson resources are still attached to lessons.**
+
+All blockers are reported at once rather than one per attempt. The
+alternatives — deleting everything including purchase records, or a
+deactivate-instead-of-delete state — were both put to the account holder;
+this is the option they chose.
+
+Two incidental fixes on `/admin/users` while the actions column was being
+edited: the "Email" action linked to `/admin/users/[id]/email`, a route
+deleted in the original conversion, so it 404'd; and two columns were both
+headed "Email" (the address, and whether it was confirmed).
 
 ## Known loose ends
 

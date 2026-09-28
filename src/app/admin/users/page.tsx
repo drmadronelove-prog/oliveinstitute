@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Role } from "@prisma/client";
 import { requireRole } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
@@ -6,6 +5,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { Card } from "@/components/ui/Card";
 import { CreateUserForm } from "./CreateUserForm";
 import { SendResetLinkButton } from "./SendResetLinkButton";
+import { DeleteUserButton } from "./DeleteUserButton";
 
 export default async function AdminUsersPage() {
   await requireRole(Role.ADMIN);
@@ -36,7 +36,7 @@ export default async function AdminUsersPage() {
                   <th className="py-2 pr-4">Name</th>
                   <th className="py-2 pr-4">Email</th>
                   <th className="py-2 pr-4">Role</th>
-                  <th className="py-2 pr-4">Email</th>
+                  <th className="py-2 pr-4">Confirmed</th>
                   <th className="py-2 pr-4">Joined</th>
                   <th className="py-2">Actions</th>
                 </tr>
@@ -58,14 +58,9 @@ export default async function AdminUsersPage() {
                       })}
                     </td>
                     <td className="py-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3">
                         <SendResetLinkButton userId={user.id} />
-                        <Link
-                          href={`/admin/users/${user.id}/email`}
-                          className="font-body text-xs text-[var(--color-olive)] underline underline-offset-2"
-                        >
-                          Email
-                        </Link>
+                        <DeleteUserButton userId={user.id} name={user.name} />
                       </div>
                     </td>
                   </tr>
