@@ -111,6 +111,22 @@ Reversed the original admin-invite model: people register themselves at
   counted in an hourly window, keyed by both IP and the target email, so
   it survives a restart. Applies to `/register` and `/forgot-password`
   (and settings' resend-verification, which shares the register budget).
+- **Sending real mail needs `RESEND_API_KEY` *and* `EMAIL_FROM`, both.**
+  `EMAIL_FROM` must be an address at a domain verified in Resend; Resend
+  rejects a send from anything else. There is deliberately no default —
+  the old one guessed `noreply@oliveinstitute.org`, a domain nobody owns,
+  so a deployment that set only the API key still had every send
+  rejected. With either variable missing, development logs the message to
+  the console (so local work needs no key) and **production throws**,
+  naming the missing variable: a confirmation email that is silently
+  dropped is worse than a visible error, because the person who just
+  registered is told to check an inbox nothing will ever arrive in.
+  `emailConfigured` mirrors `stripeConfigured`/`streamConfigured`. The
+  receipt email in the Stripe webhook and the certificate email in
+  `markLessonComplete` are both already wrapped in try/catch, so this
+  throw can never cost someone a purchase or a completion — it surfaces
+  on registration, password reset and resend-verification, which is
+  exactly where someone is waiting on the mail.
 - `EMAIL_CAPTURE_DIR` (dev/test only — never set in production) makes
   `src/lib/email.ts` also write every sent message to disk as JSON, which
   is how `tests/accounts.spec.ts` follows real links instead of reaching
@@ -382,9 +398,12 @@ autonomously here: it moves real money and needs a human's Stripe
 dashboard access. Checklist, in order:
 
 1. Deploy this app; confirm `NEXTAUTH_URL`, `NEXTAUTH_SECRET`,
-   `DATABASE_URL`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_STREAM_TOKEN`, and
+   `DATABASE_URL`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_STREAM_TOKEN`,
+   `RESEND_API_KEY`/`EMAIL_FROM`, and
    `CERTIFICATE_ISSUER_NAME`/`CERTIFICATE_ISSUER_LICENSE_NUMBER` are all
    set for real (see "Working notes" — there is no demo/fallback config).
+   Without the two email variables nobody can confirm an address, and
+   confirmation gates purchasing — so the store cannot take money at all.
 2. Deploy `oliveclinical` with `INSTITUTE_ORIGIN` pointed at that
    deployment; confirm `https://oliveclinical.com/institute/login` actually
    reaches this app before touching Stripe at all.

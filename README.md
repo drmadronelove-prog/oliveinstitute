@@ -21,9 +21,16 @@ are always-available content, not live classes.
 - **File storage:** local disk, abstracted behind a `StorageService`
   interface (`src/lib/storage.ts`) so swapping to S3 is a config change.
 - **Email:** abstracted behind an `EmailService` interface
-  (`src/lib/email.ts`); logs to console in dev, sends via Resend when
-  `RESEND_API_KEY` is set. Nothing in the app sends mail today — the
-  interface is kept for password handoff and future transactional mail.
+  (`src/lib/email.ts`), used for email confirmation, password reset, admin
+  invitations, purchase receipts and course-completion certificates.
+  Sending for real needs **both** `RESEND_API_KEY` and `EMAIL_FROM`, and
+  `EMAIL_FROM` must be an address at a domain verified in Resend — Resend
+  rejects any other sender, so there is deliberately no default to
+  inherit. With either missing, development logs each message to the
+  console and production refuses to send, raising an error that names the
+  missing variable rather than silently telling someone to check an inbox
+  nothing will arrive in (`emailConfigured` mirrors `stripeConfigured` and
+  `streamConfigured`).
 
 ### Why Prisma 6, not 7
 
