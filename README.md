@@ -683,6 +683,14 @@ Auth.js v5 needs explicit host trust outside Vercel; `src/lib/auth.ts` sets
 with `UntrustedHost`. Set a strong `NEXTAUTH_SECRET` and a correct
 `NEXTAUTH_URL`, and put the app behind a reverse proxy you control.
 
+Every credential this app needs lives in the deployment's environment, so a
+compromised host means a compromised app. **`docs/secret-rotation.md`** is
+the rotation runbook: what each variable grants if it leaks, the order to
+roll them in, and the traps (`NEXTAUTH_SECRET` is an authentication bypass
+on its own, and `SEED_ADMIN_PASSWORD` gets written back to the admin
+account by the seed). `scripts/security-audit.ts` is the read-only database
+pass that goes with it.
+
 **Production `NEXTAUTH_URL` is `https://oliveclinical.com/institute`** — not
 `http://localhost:3000/institute`, which is only ever correct for local dev.
 The reverse proxy in front of this app is the `oliveclinical` marketing site

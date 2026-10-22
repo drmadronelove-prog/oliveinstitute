@@ -762,6 +762,42 @@ layout box) to make sense; flag if that's wanted.
 the token so it re-themed automatically with the rest of the palette)
 needed no change.
 
+## Secrets, and rotating them
+
+Railway disclosed on 2026-10-22 that an unauthorized third party may have
+decrypted customer environment variables. Everything this app needs to run
+is a Railway environment variable, so the whole set had to be treated as
+leaked. **`docs/secret-rotation.md` is the runbook** — what each variable
+buys an attacker, the rotation order, and the Railway-specific traps.
+Reuse it for any future rotation rather than reasoning it out again.
+
+The two findings worth remembering even if that file is never opened again:
+
+- **`NEXTAUTH_SECRET` is an authentication bypass, not just a session
+  nuisance.** `src/lib/auth.ts` uses `session: { strategy: "jwt" }` and its
+  callbacks read the id and role straight off the token, so whoever holds
+  the secret can mint an `ADMIN` cookie for any user id without touching
+  the login form. It is the first thing to rotate, always.
+- **`SEED_ADMIN_PASSWORD` is the live admin password in plaintext, and
+  `prisma/seed.ts` writes it back.** The upsert's `update` branch sets
+  `passwordHash`, so re-seeding restores whatever that variable holds.
+  Changing the password in `/settings` without updating the variable leaves
+  the old one one seed run away from coming back. Change both, together.
+
+`scripts/security-audit.ts` is the companion: a read-only pass over the
+database that reports what an attacker would have had to leave behind — a
+privileged account nobody can name, a purchase-sourced enrollment with no
+`PAID` purchase behind it (the forged-webhook shape), `PAID` session ids to
+reconcile against Stripe, an unrequested admin password reset, a course
+published or repriced to 0. It prints no hashes, no tokens and not even the
+connection string, and writes nothing, so it is safe to run against
+production repeatedly. `--since=30d` sets the window.
+
+Its limit is structural and worth stating: **this app keeps no audit log**,
+so the script is a snapshot, not a history — a value changed and changed
+back leaves nothing behind. If an audit trail is ever wanted, that is a
+schema change, not a script.
+
 ## Working notes
 
 - Prioritize RBAC correctness: every page and Server Action calls
